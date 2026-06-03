@@ -1,0 +1,125 @@
+import React, { useState } from "react";
+import { BarChart3, TrendingUp, Download, ArrowUpRight } from "lucide-react";
+import DateRangePicker from "../../components/ui/DateRangePicker";
+import { 
+  ResponsiveContainer, AreaChart, Area, CartesianGrid, 
+  XAxis, YAxis, Tooltip, BarChart, Bar, Legend, Cell 
+} from "recharts";
+import toast from "react-hot-toast";
+
+export const ReportsPage = () => {
+  const [dateRange, setDateRange] = useState("This Month");
+  const [activeTab, setActiveTab] = useState("overview");
+
+  const revenueTrend = [
+    { name: "Week 1", revenue: 15000, profit: 8000 },
+    { name: "Week 2", revenue: 22000, profit: 12000 },
+    { name: "Week 3", revenue: 18000, profit: 9500 },
+    { name: "Week 4", revenue: 35000, profit: 18000 }
+  ];
+
+  const sourceData = [
+    { name: "WhatsApp", count: 48, fill: "#1D9E75" },
+    { name: "Website", count: 32, fill: "#378ADD" },
+    { name: "Instagram", count: 24, fill: "#E24B4A" },
+    { name: "Referrals", count: 18, fill: "#C9A84C" }
+  ];
+
+  const handleExportCSV = () => {
+    toast.success("CSV Export started for reports data!");
+  };
+
+  return (
+    <div className="space-y-6 font-sans">
+      
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-display font-bold text-white tracking-wide">CRM Reports & Analytics</h1>
+          <p className="text-xs text-on-primary-container/50">Perform auditing analyses on sales, team throughput and approval rates.</p>
+        </div>
+
+        <div className="flex items-center space-x-3 self-end sm:self-center">
+          <DateRangePicker value={dateRange} onChange={setDateRange} />
+          
+          <button
+            onClick={handleExportCSV}
+            className="px-4 py-2 border border-on-primary-fixed-variant hover:border-secondary text-secondary text-xs font-bold rounded-button flex items-center space-x-1.5 transition-colors"
+          >
+            <Download className="h-4 w-4" />
+            <span>Export CSV</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex space-x-2 border-b border-outline-variant/10 pb-2">
+        {["overview", "revenue", "leads", "performance"].map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={`px-4 py-2 text-xs font-semibold uppercase tracking-wider border-b-2 transition-colors ${
+              activeTab === tab 
+                ? "border-secondary text-secondary" 
+                : "border-transparent text-on-primary-container/40 hover:text-white"
+            }`}
+          >
+            {tab}
+          </button>
+        ))}
+      </div>
+
+      {activeTab === "overview" && (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          
+          {/* Revenue Chart */}
+          <div className="lg:col-span-8 glass-card p-6 border border-on-primary-fixed-variant/60">
+            <h3 className="text-base font-semibold text-white mb-4">Revenue & Profit Margins</h3>
+            <div className="h-64 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={revenueTrend}>
+                  <defs>
+                    <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#C9A84C" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#C9A84C" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1A2B47" />
+                  <XAxis dataKey="name" stroke="#F5EDD8" style={{ fontSize: 10 }} />
+                  <YAxis stroke="#F5EDD8" style={{ fontSize: 10 }} />
+                  <Tooltip contentStyle={{ backgroundColor: "#0B1424", borderColor: "#1A2B47" }} />
+                  <Area type="monotone" dataKey="revenue" stroke="#C9A84C" fillOpacity={1} fill="url(#colorRev)" strokeWidth={2.5} />
+                  <Area type="monotone" dataKey="profit" stroke="#1D9E75" fillOpacity={0} strokeWidth={2} />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Lead Sources breakdown */}
+          <div className="lg:col-span-4 glass-card p-6 border border-on-primary-fixed-variant/60 flex flex-col justify-between">
+            <h3 className="text-base font-semibold text-white mb-4">Lead Source Channels</h3>
+            <div className="h-60 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={sourceData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1A2B47" />
+                  <XAxis dataKey="name" stroke="#F5EDD8" style={{ fontSize: 10 }} />
+                  <YAxis stroke="#F5EDD8" style={{ fontSize: 10 }} />
+                  <Tooltip contentStyle={{ backgroundColor: "#0B1424", borderColor: "#1A2B47" }} />
+                  <Bar dataKey="count" fill="#C9A84C" radius={[4, 4, 0, 0]}>
+                    {sourceData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+        </div>
+      )}
+
+    </div>
+  );
+};
+
+export default ReportsPage;

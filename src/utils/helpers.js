@@ -1,0 +1,59 @@
+import { collection, query, where, getDocs, orderBy, limit } from "firebase/firestore";
+import { db } from "../lib/firebase";
+
+/**
+ * Generates unique sequence reference numbers like PREFIX-YYYYMMDD-001.
+ * Fetches the highest counter for today's date from Firestore and increments it.
+ */
+export const generateRefNo = async (prefix, collectionName, fieldName) => {
+  try {
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, "0");
+    const dd = String(today.getDate()).padStart(2, "0");
+    const todayStr = `${yyyy}${mm}${dd}`; // YYYYMMDD
+
+    const collRef = collection(db, collectionName);
+    
+    // Query for today's documents to find the highest sequence
+    const startStr = `${prefix}-${todayStr}-000`;
+    const endStr = `${prefix}-${todayStr}-999`;
+    
+    const q = query(
+      collRef,
+      where(fieldName, ">=", startStr),
+      where(fieldName, "<=", endStr),
+      orderBy(fieldName, "desc"),
+      limit(1)
+    );
+
+    const snapshot = await getDocs(q);
+    let nextCounter = 1;
+
+    if (!snapshot.empty) {
+      const latestNo = snapshot.docs[0].data()[fieldName];
+      const parts = latestNo.split("-");
+      const lastSeq = parseInt(parts[2], 10);
+      if (!isNaN(lastSeq)) {
+        nextCounter = lastSeq + 1;
+      }
+    }
+
+    const counterStr = String(nextCounter).padStart(3, "0");
+    return `${prefix}-${todayStr}-${counterStr}`;
+  } catch (error) {
+    console.error(`Error generating reference number for ${prefix}:`, error);
+    // Fallback in case of query fails (e.g. index not built yet)
+    const randomSuffix = Math.floor(100 + Math.random() * 900);
+    const today = new Date();
+    const todayStr = today.toISOString().slice(0, 10).replace(/-/g, "");
+    return `${prefix}-${todayStr}-${randomSuffix}`;
+  }
+};
+
+export const generateLeadNo = () => generateRefNo("LD", "leads", "leadNo");
+export const generateCaseNo = () => generateRefNo("VC", "visa_cases", "caseNo");
+export const generateQuoteNo = () => generateRefNo("QT", "quotations", "quoteNo");
+export const generateOrderNo = () => generateRefNo("ORD", "orders", "orderNo");
+export const generatePaymentNo = () => generateRefNo("PAY", "payments", "paymentNo");
+export const generateDocNo = () => generateRefNo("DOC", "documents", "docNo");

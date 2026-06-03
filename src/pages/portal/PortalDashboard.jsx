@@ -1,0 +1,134 @@
+import React, { useState, useEffect } from "react";
+import { useAuth } from "../../contexts/AuthContext";
+import { Link, useNavigate } from "react-router-dom";
+import { collection, query, where, onSnapshot } from "firebase/firestore";
+import { db } from "../../lib/firebase";
+import {
+  FileText, UploadCloud, Calendar, DollarSign,
+  MessageSquare, HelpCircle, ChevronRight, CheckCircle2
+} from "lucide-react";
+import KPICard from "../../components/ui/KPICard";
+import StatusBadge from "../../components/ui/StatusBadge";
+import { formatCurrency } from "../../utils/formatters";
+import toast from "react-hot-toast";
+import { auth } from "../../lib/firebase";
+
+export const PortalDashboard = () => {
+  const { userProfile } = useAuth();
+  const navigate = useNavigate();
+
+  const [loading, setLoading] = useState(true);
+  const [activeCases, setActiveCases] = useState([]);
+  const [pendingDocsCount, setPendingDocsCount] = useState(2);
+  const [nextAppointment, setNextAppointment] = useState("02 Jun, 10:30 AM");
+  const [outstandingBalance, setOutstandingBalance] = useState(0);
+  console.log("Firebase Auth:", auth);
+  useEffect(() => {
+    if (!userProfile?.email) return;
+
+    const casesRef = collection(db, "visa_cases");
+    const q = query(casesRef, where("travellerEmail", "==", userProfile.email.toLowerCase()));
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      if (!snapshot.empty) {
+        const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setActiveCases(items);
+
+        // Calculate pending docs count
+        const totalPending = items.reduce((acc, curr) => {
+          const pending = curr.checklist?.filter(d => d.status === "Pending" || d.status === "Rejected").length || 0;
+          return acc + pending;
+        }, 0);
+        setPendingDocsCount(totalPending);
+      }
+      setLoading(false);
+    }, (error) => {
+      console.warn("Using mock traveller details:", error);
+      setActiveCases([
+        { id: "1", caseNo: "VC-20260601-002", visaType: "UK Visa", destination: "United Kingdom", stage: "Docs Pending", priority: "Normal", createdAt: new Date() }
+      ]);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [userProfile]);
+
+  return (
+    <div className="space-y-6 font-sans">
+
+      {/* Welcome Banner */}
+      <div className="glass-card p-6 border border-secondary/15 relative overflow-hidden bg-gradient-to-r from-primary-container to-primary-container">
+        <div className="relative z-10 space-y-2">
+          <h1 className="text-xl sm:text-2xl font-display font-bold text-white">
+            Good morning, {userProfile?.name || "Client"}
+          </h1>
+          <p className="text-xs text-on-primary-container/60 max-w-lg leading-relaxed">
+            Track your passport status, upload VFS documents or message your dedicated visa consultant from your secure portal dashboard.
+          </p>
+        </div>
+        <div className="absolute -bottom-16 -right-16 h-40 w-40 bg-secondary-container/5 blur-3xl rounded-full"></div>
+      </div>
+
+      {/* KPI Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+        <KPICard title="Active Cases" value={activeCases.length} icon="FileText" color="blue" />
+        <KPICard title="Pending Uploads" value={pendingDocsCount} icon="UploadCloud" color={pendingDocsCount > 0 ? "orange" : "green"} />
+        <KPICard title="Next Appointment" value={nextAppointment} icon="Calendar" color="gold" />
+        <KPICard title="Pending Balance" value={`${outstandingBalance} AED`} icon="Landmark" color="orange" />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* Active Cases Details (2/3) */}
+        <div className="lg:col-span-8 space-y-6">
+          <div className="glass-card p-6 border border-on-primary-fixed-variant/60 space-y-4">
+            <h3 className="text-base font-semibold text-white border-b border-on-primary-fixed-variant pb-2">Active Applications</h3>
+
+            <div className="space-y-4">
+              {activeCases.map((c) => (
+                <div key={c.id} className="p-4 bg-white/5 border border-outline-variant/10 rounded-card flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4 hover:border-secondary/20 transition-all">
+                  <div className="space-y-1">
+                    <span className="text-[9px] font-mono text-secondary">{c.caseNo}</span>
+                    <h4 className="text-sm font-semibold text-white">{c.visaType} - {c.destination}</h4>
+                    <span className="text-[10px] text-on-primary-container/50 block">Current Stage: {c.stage}</span>
+                  </div>
+                  <div className="flex items-center space-x-3 self-end sm:self-center">
+                    <StatusBadge status={c.stage} />
+                    <Link
+                      to={`/portal/applications/${c.id}`}
+                      className="p-1.5 rounded-lg bg-primary-container border border-on-primary-fixed-variant hover:border-secondary/40 text-secondary transition-all"
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </Link>
+                  </div>
+                </div>
+              ))}
+              {activeCases.length === 0 && (
+                <div className="text-center py-6 text-xs text-on-primary-container/40 italic">No applications active currently.</div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Quick actions (1/3) */}
+        <div className="lg:col-span-4 space-y-6">
+          <div className="glass-card p-6 border border-on-primary-fixed-variant/60 space-y-4">
+            <h3 className="text-sm font-semibold text-white border-b border-on-primary-fixed-variant pb-2">Quick Actions</h3>
+            <div className="grid grid-cols-2 gap-3.5 text-xs text-center">
+              <button onClick={() => navigate("/portal/documents")} className="p-4 bg-primary-container hover:bg-primary-container border border-outline-variant/10 rounded hover:border-secondary/25 transition-all text-on-primary-container font-semibold space-y-2">
+                <UploadCloud className="h-5 w-5 mx-auto text-secondary" />
+                <span>Upload Documents</span>
+              </button>
+              <button onClick={() => navigate("/portal/messages")} className="p-4 bg-primary-container hover:bg-primary-container border border-outline-variant/10 rounded hover:border-secondary/25 transition-all text-on-primary-container font-semibold space-y-2">
+                <MessageSquare className="h-5 w-5 mx-auto text-secondary" />
+                <span>Message Advisor</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  );
+};
+
+export default PortalDashboard;
