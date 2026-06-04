@@ -5,7 +5,7 @@ import { useAppState, useAppDispatch } from "../contexts/AppContext";
 import { 
   LayoutDashboard, Users, FileText, CalendarCheck, FileSpreadsheet, 
   CreditCard, ShieldAlert, BarChart3, Settings, LogOut, ChevronLeft, 
-  ChevronRight, Search, Bell, Plus, Menu, X, HelpCircle, Compass
+  ChevronRight, Search, Bell, Plus, Menu, X, HelpCircle, Compass, Globe
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -66,6 +66,12 @@ export const AdminLayout = () => {
       title: "Reports",
       items: [
         { label: "Analytics", path: "/admin/reports", icon: BarChart3 }
+      ]
+    },
+    {
+      title: "Website Content",
+      items: [
+        { label: "Visa Pages", path: "/admin/visa-types", icon: Globe }
       ]
     },
     {

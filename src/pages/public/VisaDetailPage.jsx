@@ -1,291 +1,649 @@
-import React from "react";
-import { useParams, Link } from "react-router-dom";
+import React, { useState, useEffect, useRef } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import { getVisaTypeBySlug, saveVisaType, createLead } from "../../lib/firestore";
+import { useAuth } from "../../contexts/AuthContext";
+import { generateLeadNo } from "../../utils/helpers";
+import { serverTimestamp } from "../../lib/firebase";
+import Modal from "../../components/ui/Modal";
+import { 
+  Clock, TrendingUp, FileText, Calendar, Shield, Star, 
+  CheckCircle, Globe, CreditCard, Award, ChevronDown, Check, Phone, ArrowLeft, AlertCircle
+} from "lucide-react";
+import toast from "react-hot-toast";
+
+// Icon mapping helper
+const StatIcon = ({ name, className }) => {
+  const icons = {
+    Clock: Clock,
+    TrendingUp: TrendingUp,
+    FileText: FileText,
+    Calendar: Calendar,
+    Shield: Shield,
+    Star: Star,
+    CheckCircle: CheckCircle,
+    Globe: Globe,
+    CreditCard: CreditCard,
+    Award: Award
+  };
+  const IconComponent = icons[name] || FileText;
+  return <IconComponent className={className} />;
+};
 
 export const VisaDetailPage = () => {
   const { slug } = useParams();
+  const navigate = useNavigate();
+  const { user, isAdmin } = useAuth();
 
-  // Requirements Data
-  const requirementsData = [
-    {
-      title: "1. Passport & Residency Documents",
-      content: "A passport valid for at least 6 months with two blank pages. A valid UAE residency visa (valid for at least 3 months from the date of return). Passport-sized photographs (white background, taken within 6 months)."
-    },
-    {
-      title: "2. Proof of Employment & Financials",
-      content: "NOC letter from your employer/sponsor showing salary, designation, and joining date. 3 to 6 months personal bank statement stamped by the bank showing sufficient funds."
-    },
-    {
-      title: "3. Accommodation & Flight Details",
-      content: "Confirmed round-trip flight booking showing flight numbers and dates. Hotel bookings matching your travel dates across the Schengen area."
-    },
-    {
-      title: "4. Travel Medical Insurance",
-      content: "A travel insurance policy covering medical expenses up to €30,000, valid for the entire duration of stay and all Schengen countries."
-    }
-  ];
+  const [visaData, setVisaData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
 
-  // FAQ Data
-  const faqs = [
-    {
-      q: "How early can I apply for a Schengen Visa?",
-      a: "You can apply up to 6 months before your intended travel date. We recommend applying at least 4-6 weeks before departure to secure biometrics slots."
-    },
-    {
-      q: "Which embassy should I submit my Schengen application to?",
-      a: "You must apply to the embassy of the country where you will spend the most nights. If spending equal nights in multiple countries, apply to the country of your first entry."
-    },
-    {
-      q: "What happens if my visa gets rejected?",
-      a: "Embassy fees are non-refundable. However, Eshaare Tours performs a 3-point compliance audit to minimize rejection risk. If rejected, you can appeal or reapply after addressing the rejection letter reasons."
+  // Tabs state
+  const [activeTab, setActiveTab] = useState("overview");
+
+  // Accordion state
+  const [openFaqs, setOpenFaqs] = useState({});
+
+  // Enquiry Modal state
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    phone: "",
+    email: "",
+    nationality: "",
+    travelDate: "",
+    message: ""
+  });
+  const [submitting, setSubmitting] = useState(false);
+
+  // Minimum loading state duration (500ms)
+  useEffect(() => {
+    setLoading(true);
+    setNotFound(false);
+    
+    let isMounted = true;
+    const startTime = Date.now();
+
+    const fetchVisa = async () => {
+      try {
+        const data = await getVisaTypeBySlug(slug);
+        const elapsedTime = Date.now() - startTime;
+        const remainingTime = Math.max(500 - elapsedTime, 0);
+
+        setTimeout(() => {
+          if (!isMounted) return;
+          if (!data) {
+            setNotFound(true);
+          } else {
+            setVisaData(data);
+          }
+          setLoading(false);
+        }, remainingTime);
+      } catch (err) {
+        console.error("Error loading visa detail:", err);
+        setNotFound(true);
+        setLoading(false);
+      }
+    };
+
+    fetchVisa();
+    return () => {
+      isMounted = false;
+    };
+  }, [slug]);
+
+  // Handle accordion toggle
+  const toggleFaq = (idx) => {
+    setOpenFaqs(prev => ({
+      ...prev,
+      [idx]: !prev[idx]
+    }));
+  };
+
+  const handlePublishNow = async () => {
+    if (!visaData) return;
+    try {
+      await saveVisaType(visaData.id, { isPublished: true });
+      toast.success("Visa page published successfully!");
+      setVisaData(prev => ({ ...prev, isPublished: true }));
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to publish page");
     }
-  ];
+  };
+
+  const handleApplyClick = () => {
+    setFormData({
+      name: "",
+      phone: "",
+      email: "",
+      nationality: "",
+      travelDate: "",
+      message: ""
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
+    if (!formData.name || !formData.phone || !formData.email) {
+      toast.error("Please complete all required fields.");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const generatedNo = await generateLeadNo();
+      const submission = {
+        leadNo: generatedNo,
+        contactName: formData.name,
+        contactPhone: formData.phone.startsWith("+") ? formData.phone : `+971${formData.phone}`,
+        contactEmail: formData.email,
+        nationality: formData.nationality,
+        destinationCountry: visaData?.name || "Global Visa",
+        serviceType: "Visa",
+        travelStart: formData.travelDate,
+        source: "website_cms_detail",
+        stage: "New",
+        priority: "Medium",
+        ownerId: null,
+        notes: formData.message,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      };
+
+      await createLead(submission);
+      toast.success(`Inquiry submitted! Reference: ${generatedNo}`);
+      setIsModalOpen(false);
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to submit inquiry. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const scrollToSection = (id) => {
+    setActiveTab(id);
+    const element = document.getElementById(id);
+    if (element) {
+      const offset = 140; // sticky header + sticky tabs offset
+      const bodyRect = document.body.getBoundingClientRect().top;
+      const elementRect = element.getBoundingClientRect().top;
+      const elementPosition = elementRect - bodyRect;
+      const offsetPosition = elementPosition - offset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: "smooth"
+      });
+    }
+  };
+
+  if (loading) {
+    /* Full Page Skeleton Loader */
+    return (
+      <div className="bg-[#070D1A] min-h-screen text-[#F5EDD8] font-sans">
+        {/* Skeleton Hero */}
+        <section className="py-24 bg-[#0B1424] border-b border-[#1A2B47] animate-pulse">
+          <div className="max-w-container-max mx-auto px-4 space-y-6">
+            <div className="h-10 bg-[#1A2B47] rounded w-1/3"></div>
+            <div className="h-5 bg-[#1A2B47] rounded w-2/3"></div>
+            <div className="flex gap-4 pt-4">
+              <div className="h-12 bg-[#1A2B47] rounded w-32"></div>
+              <div className="h-12 bg-[#1A2B47] rounded w-32"></div>
+            </div>
+            {/* Stats row */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-10 border-t border-[#1A2B47]/40">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="h-16 bg-[#1A2B47] rounded"></div>
+              ))}
+            </div>
+          </div>
+        </section>
+        {/* Tab bar skeleton */}
+        <div className="bg-[#0B1424] h-14 border-b border-[#1A2B47]"></div>
+      </div>
+    );
+  }
+
+  // Not found or Draft Mode validation
+  // Show not found if document is draft AND viewer is not admin
+  const isDraft = visaData && !visaData.isPublished;
+  const showNotFound = notFound || (isDraft && !isAdmin);
+
+  if (showNotFound) {
+    return (
+      <div className="bg-[#070D1A] min-h-screen text-[#F5EDD8] flex flex-col justify-center items-center py-24 text-center px-4 font-sans">
+        <div className="max-w-md space-y-6">
+          <AlertCircle className="h-20 w-20 text-[#E24B4A] mx-auto animate-bounce" />
+          <h1 className="text-3xl font-bold font-display text-white">Visa Type Not Found</h1>
+          <p className="text-sm text-[#EDE0C4]/60 leading-relaxed">
+            The page you're looking for doesn't exist or may have been un-published. Please check the URL or view our full services list.
+          </p>
+          <div className="flex justify-center gap-4">
+            <Link
+              to="/visa-services"
+              className="px-6 py-3 border border-[#1A2B47] text-white hover:border-[#C9A84C] hover:text-[#C9A84C] rounded-xl text-xs font-bold uppercase tracking-wider transition-colors"
+            >
+              View Services
+            </Link>
+            <Link
+              to="/contact"
+              className="px-6 py-3 bg-[#C9A84C] text-[#070D1A] rounded-xl text-xs font-bold uppercase tracking-wider hover:opacity-90 transition-opacity"
+            >
+              Contact Us
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="bg-surface min-h-screen">
+    <div className="bg-[#070D1A] min-h-screen text-[#F5EDD8] font-sans pb-24 relative">
       
-      {/* HERO GRADIENT (DARK) */}
-      <section className="hero-gradient text-white py-24 px-margin-mobile md:px-margin-desktop relative">
-        <div className="max-w-container-max mx-auto space-y-6 relative z-10">
+      {/* Draft Mode Banner (Visible to Admin only) */}
+      {isDraft && isAdmin && (
+        <div className="bg-amber-500/10 border-b border-amber-500/30 text-amber-400 py-3.5 px-6 sticky top-24 z-30 flex items-center justify-between text-xs font-semibold backdrop-blur-md">
+          <div className="flex items-center gap-2">
+            <AlertCircle className="h-4.5 w-4.5" />
+            <span>Draft Mode — This page is not visible to the public</span>
+          </div>
+          <button
+            onClick={handlePublishNow}
+            className="px-4 py-1.5 bg-[#C9A84C] text-[#070D1A] font-bold rounded hover:opacity-95 transition-opacity"
+          >
+            Publish Now
+          </button>
+        </div>
+      )}
+
+      {/* HERO SECTION */}
+      <section className="relative py-20 overflow-hidden border-b border-[#1A2B47]">
+        {visaData.imageUrl && (
+          <div className="absolute inset-0 z-0">
+            <img 
+              src={visaData.imageUrl} 
+              alt={visaData.name} 
+              className="w-full h-full object-cover" 
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#0B1424]/95 via-[#0B1424]/80 to-transparent"></div>
+          </div>
+        )}
+        <div className="relative z-10 max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop space-y-6">
+          
           {/* Breadcrumbs */}
-          <div className="text-body-sm text-white/70 flex items-center gap-1.5">
-            <Link to="/" className="hover:text-white transition-colors">Home</Link>
+          <div className="flex items-center gap-1.5 text-xs text-[#EDE0C4]/60 pb-2">
+            <Link to="/" className="hover:text-white">Home</Link>
             <span className="material-symbols-outlined text-xs">chevron_right</span>
-            <Link to="/visa-services" className="hover:text-white transition-colors">Visa Services</Link>
+            <Link to="/visa-services" className="hover:text-white">Visa Services</Link>
             <span className="material-symbols-outlined text-xs">chevron_right</span>
-            <span className="text-white font-medium">Schengen Visa</span>
+            <span className="text-[#C9A84C] font-medium">{visaData.name}</span>
           </div>
 
-          <h1 className="font-display-lg text-display-lg-mobile md:text-display-lg text-white max-w-xl leading-tight uppercase">
-            Schengen Europe Visa Support
+          <h1 className="text-4xl md:text-5xl font-bold font-display text-white tracking-wide leading-tight max-w-2xl">
+            {visaData.name}
           </h1>
-          
-          <p className="text-white/80 text-body-lg max-w-2xl leading-relaxed">
-            Apply for a Schengen visa to travel freely across 27 European member states. Our processing services ensure premium slot bookings, application audits, and custom itinerary drafts.
+          <p className="text-base text-[#EDE0C4]/70 max-w-xl leading-relaxed">
+            {visaData.tagline}
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 pt-4">
-            <Link
-              to="/appointment"
-              className="bg-secondary-container text-on-secondary-container px-8 py-4 rounded-xl font-bold hover:scale-105 transition-transform flex items-center justify-center gap-2"
+          <div className="flex gap-4 pt-2">
+            <button
+              onClick={handleApplyClick}
+              className="px-8 py-3.5 bg-[#C9A84C] text-[#070D1A] font-bold rounded-xl text-xs uppercase tracking-wider hover:opacity-95 hover:shadow-[0_0_15px_rgba(201,168,76,0.3)] transition-all"
             >
-              <span>Start Application</span>
-              <span className="material-symbols-outlined text-lg">edit_note</span>
-            </Link>
-            <a
-              href="#requirements"
-              className="border border-white/40 hover:border-white text-white px-8 py-4 rounded-xl font-bold flex items-center justify-center transition-colors"
+              Start Application
+            </button>
+            <button
+              onClick={() => scrollToSection("documents")}
+              className="px-8 py-3.5 border border-[#1A2B47] text-white hover:border-[#C9A84C] hover:text-[#C9A84C] rounded-xl text-xs font-bold uppercase tracking-wider transition-colors"
             >
               View Requirements
-            </a>
-          </div>
-        </div>
-      </section>
-
-      {/* QUICK STATS BAR */}
-      <section className="border-b border-outline-variant/15 bg-surface-container-lowest">
-        <div className="max-w-container-max mx-auto grid grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-outline-variant/15 text-center">
-          <div className="py-6 px-4">
-            <div className="font-headline-md text-secondary font-bold text-2xl md:text-3xl">5 - 10 Days</div>
-            <div className="text-body-sm text-on-surface-variant mt-1">Processing Time</div>
-          </div>
-          <div className="py-6 px-4">
-            <div className="font-headline-md text-secondary font-bold text-2xl md:text-3xl">98.2%</div>
-            <div className="text-body-sm text-on-surface-variant mt-1">Success Rate</div>
-          </div>
-          <div className="py-6 px-4">
-            <div className="font-headline-md text-secondary font-bold text-2xl md:text-3xl">4 Core Docs</div>
-            <div className="text-body-sm text-on-surface-variant mt-1">Required Documents</div>
-          </div>
-          <div className="py-6 px-4">
-            <div className="font-headline-md text-secondary font-bold text-2xl md:text-3xl">Express Slots</div>
-            <div className="text-body-sm text-on-surface-variant mt-1">Embassy Appointments</div>
-          </div>
-        </div>
-      </section>
-
-      {/* DETAILED CONTENT SECTION */}
-      <section id="requirements" className="py-[120px] px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12">
-        {/* Left Side: Accordion, Timeline, Fees (8 cols) */}
-        <div className="lg:col-span-8 space-y-12">
-          
-          {/* Overview Rich Text */}
-          <div className="space-y-4">
-            <h2 className="font-headline-lg text-headline-lg text-primary">Overview</h2>
-            <p className="text-on-surface-variant text-body-md leading-relaxed">
-              The Schengen Visa allows short-term stays in any of the 27 member states for up to 90 days within any 180-day period. Navigating biometrics slots and document compliance at VFS Global in Dubai or Abu Dhabi can be challenging. Eshaare Tours takes care of your entire application flow, ensuring you get compliant flight bookings, hotel vouchers, NOC evaluation check-sheets, and an early biometrics appointment.
-            </p>
+            </button>
           </div>
 
-          {/* Requirements Accordion */}
-          <div className="space-y-4">
-            <h3 className="font-headline-md text-headline-md text-primary">Required Documents Checklist</h3>
-            <div className="border border-outline-variant/15 rounded-xl divide-y divide-outline-variant/15 bg-surface-container-lowest premium-shadow overflow-hidden">
-              {requirementsData.map((item, idx) => (
-                <details key={idx} className="group" open={idx === 0}>
-                  <summary className="flex justify-between items-center p-5 cursor-pointer font-semibold text-body-md text-primary select-none hover:bg-surface transition-colors">
-                    <span>{item.title}</span>
-                    <span className="material-symbols-outlined transition-transform duration-300 group-open:rotate-180 text-secondary">
-                      expand_more
-                    </span>
-                  </summary>
-                  <div className="px-5 pb-5 text-body-sm text-on-surface-variant leading-relaxed animate-[fadeIn_0.2s_ease-out]">
-                    {item.content}
-                  </div>
-                </details>
-              ))}
-            </div>
-          </div>
-
-          {/* Process Timeline */}
-          <div className="space-y-6">
-            <h3 className="font-headline-md text-headline-md text-primary">How Eshaare Processes Your Visa</h3>
-            
-            <div className="relative border-l border-outline-variant/35 pl-6 ml-4 space-y-8">
-              <div className="relative">
-                <span className="absolute -left-10 top-0.5 w-8 h-8 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-bold text-body-sm border border-secondary">
-                  1
-                </span>
-                <h4 className="font-bold text-body-md text-primary">Submit Details & NOC Checklist</h4>
-                <p className="text-on-surface-variant text-body-sm mt-1">
-                  Fill in your travel information on our site. We generate custom NOC templates matching your specific UAE employer.
-                </p>
-              </div>
-
-              <div className="relative">
-                <span className="absolute -left-10 top-0.5 w-8 h-8 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-bold text-body-sm border border-secondary">
-                  2
-                </span>
-                <h4 className="font-bold text-body-md text-primary">Compliance Audit Check</h4>
-                <p className="text-on-surface-variant text-body-sm mt-1">
-                  Our senior visa executives verify bank statement transactions, passport validity, photo dimensions, and itinerary matches.
-                </p>
-              </div>
-
-              <div className="relative">
-                <span className="absolute -left-10 top-0.5 w-8 h-8 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-bold text-body-sm border border-secondary">
-                  3
-                </span>
-                <h4 className="font-bold text-body-md text-primary">VFS Slot Booking & Submission</h4>
-                <p className="text-on-surface-variant text-body-sm mt-1">
-                  We secure and schedule an appointment slot at VFS Dubai/Abu Dhabi, compile your complete document dossier, and accompany you through submission.
-                </p>
-              </div>
-
-              <div className="relative">
-                <span className="absolute -left-10 top-0.5 w-8 h-8 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-bold text-body-sm border border-secondary">
-                  4
-                </span>
-                <h4 className="font-bold text-body-md text-primary">Visa Approved & Delivery</h4>
-                <p className="text-on-surface-variant text-body-sm mt-1">
-                  Track passport return in real-time inside our portal. Receive your passport back with your approved Schengen sticker.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Fee Table */}
-          <div className="space-y-4">
-            <h3 className="font-headline-md text-headline-md text-primary">Schengen Visa Fee Structure</h3>
-            
-            <div className="overflow-x-auto border border-outline-variant/15 rounded-xl premium-shadow bg-surface-container-lowest">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-surface border-b border-outline-variant/15 text-body-sm text-on-surface font-semibold">
-                    <th className="p-4">Applicant Type</th>
-                    <th className="p-4">Embassy Fee</th>
-                    <th className="p-4">Service Fee</th>
-                    <th className="p-4 text-right">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="text-body-sm text-on-surface-variant divide-y divide-outline-variant/15">
-                  <tr>
-                    <td className="p-4 font-semibold text-primary">Adult (12+ years)</td>
-                    <td className="p-4">320 AED (€80)</td>
-                    <td className="p-4">280 AED</td>
-                    <td className="p-4 text-right">
-                      <Link to="/appointment" className="text-secondary font-bold hover:underline">
-                        Apply Now
-                      </Link>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="p-4 font-semibold text-primary">Child (6 - 12 years)</td>
-                    <td className="p-4">160 AED (€40)</td>
-                    <td className="p-4">280 AED</td>
-                    <td className="p-4 text-right">
-                      <Link to="/appointment" className="text-secondary font-bold hover:underline">
-                        Apply Now
-                      </Link>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="p-4 font-semibold text-primary">Infant (under 6 years)</td>
-                    <td className="p-4">Free</td>
-                    <td className="p-4">200 AED</td>
-                    <td className="p-4 text-right">
-                      <Link to="/appointment" className="text-secondary font-bold hover:underline">
-                        Apply Now
-                      </Link>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {/* FAQ Accordion */}
-          <div className="space-y-4">
-            <h3 className="font-headline-md text-headline-md text-primary">Frequently Asked Questions</h3>
-            
-            <div className="border border-outline-variant/15 rounded-xl divide-y divide-outline-variant/15 bg-surface-container-lowest premium-shadow overflow-hidden">
-              {faqs.map((faq, idx) => (
-                <details key={idx} className="group">
-                  <summary className="flex justify-between items-center p-5 cursor-pointer font-semibold text-body-md text-primary select-none hover:bg-surface transition-colors">
-                    <span>{faq.q}</span>
-                    <span className="material-symbols-outlined transition-transform duration-300 group-open:rotate-180 text-secondary">
-                      expand_more
-                    </span>
-                  </summary>
-                  <div className="px-5 pb-5 text-body-sm text-on-surface-variant leading-relaxed animate-[fadeIn_0.2s_ease-out]">
-                    {faq.a}
-                  </div>
-                </details>
-              ))}
-            </div>
-          </div>
-
-        </div>
-
-        {/* Right Side Sidebar (4 cols) */}
-        <div className="lg:col-span-4 space-y-6">
-          <div className="bg-surface-container-lowest p-6 rounded-xl premium-shadow border border-outline-variant/10 sticky top-24 space-y-6">
-            <h3 className="font-headline-md text-headline-md text-primary border-b border-outline-variant/15 pb-2">Embassy Locations</h3>
-            
-            <div className="space-y-4 text-body-sm text-on-surface-variant">
-              <div>
-                <h4 className="font-bold text-primary">VFS Dubai (Wafi Mall)</h4>
-                <p className="mt-0.5">3rd Floor, Falcon Phase 2, Wafi Mall, Business Bay Bypass, Dubai, UAE</p>
-              </div>
-              
-              <div className="border-t border-outline-variant/15 pt-4">
-                <h4 className="font-bold text-primary">VFS Abu Dhabi (The Mall WTC)</h4>
-                <p className="mt-0.5">Level B2, The Mall, World Trade Center, Khalifa Bin Zayed Street, Abu Dhabi, UAE</p>
-              </div>
-            </div>
-
-            <div className="border-t border-outline-variant/15 pt-6">
-              <Link
-                to="/appointment"
-                className="bg-primary text-on-primary w-full py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
+          {/* Hero Stats Row */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-12 border-t border-[#1A2B47]/40 mt-10">
+            {visaData.heroStats?.map((stat, index) => (
+              <div 
+                key={index} 
+                className="bg-[#111E35] border border-[#1A2B47] p-4 rounded-xl flex items-center gap-3.5 shadow-sm"
               >
-                <span>Book Biometrics Slot</span>
-                <span className="material-symbols-outlined text-lg">calendar_today</span>
-              </Link>
-            </div>
+                <div className="p-2.5 rounded-lg bg-[#0B1424] text-[#C9A84C]">
+                  <StatIcon name={stat.icon} className="h-5 w-5" />
+                </div>
+                <div>
+                  <div className="text-lg font-bold text-white font-mono leading-tight">{stat.value}</div>
+                  <span className="text-[10px] text-[#EDE0C4]/45 font-bold uppercase tracking-wider">{stat.label}</span>
+                </div>
+              </div>
+            ))}
           </div>
+
         </div>
       </section>
 
+      {/* STICKY TAB NAVIGATION BAR */}
+      <div className="bg-[#0B1424] border-b border-[#1A2B47] sticky top-24 z-20 shadow-md">
+        <div className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop flex gap-6 overflow-x-auto whitespace-nowrap scrollbar-none h-14 items-center">
+          {[
+            { id: "overview", label: "Overview" },
+            { id: "documents", label: "Required Documents" },
+            { id: "process", label: "Process Steps" },
+            { id: "fees", label: "Fees & Pricing" },
+            { id: "faq", label: "FAQ" }
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => scrollToSection(tab.id)}
+              className={`h-full text-xs font-bold uppercase tracking-widest relative px-1 transition-colors hover:text-white ${
+                activeTab === tab.id ? "text-[#C9A84C]" : "text-[#EDE0C4]/60"
+              }`}
+            >
+              <span>{tab.label}</span>
+              {activeTab === tab.id && (
+                <span className="absolute bottom-0 left-0 right-0 h-[3px] bg-[#C9A84C] rounded-t-full"></span>
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* CONTENT SECTIONS CONTAINER */}
+      <div className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-16 space-y-24">
+        
+        {/* SECTION 2 - OVERVIEW */}
+        <section id="overview" className="space-y-4 scroll-mt-40">
+          <h2 className="text-xl font-bold font-display text-[#C9A84C] uppercase tracking-wider border-b border-[#1A2B47] pb-2">
+            Overview
+          </h2>
+          <p className="text-sm md:text-base text-[#EDE0C4]/80 leading-relaxed max-w-4xl">
+            {visaData.overviewText}
+          </p>
+        </section>
+
+        {/* SECTION 3 - REQUIRED DOCUMENTS */}
+        <section id="documents" className="space-y-6 scroll-mt-40">
+          <h2 className="text-xl font-bold font-display text-[#C9A84C] uppercase tracking-wider border-b border-[#1A2B47] pb-2">
+            Required Documents Checklist
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl">
+            {visaData.requiredDocuments?.map((doc, idx) => (
+              <div 
+                key={idx} 
+                className="bg-[#0B1424] border border-[#1A2B47]/60 p-4 rounded-xl flex items-start gap-3"
+              >
+                <div className="h-5 w-5 bg-emerald-500/10 text-emerald-400 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 border border-emerald-500/20">
+                  <Check className="h-3 w-3" />
+                </div>
+                <span className="text-xs md:text-sm text-[#EDE0C4]/80 leading-relaxed">
+                  {doc}
+                </span>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* SECTION 4 - HOW ESHAARE PROCESSES YOUR VISA */}
+        <section id="process" className="space-y-10 scroll-mt-40">
+          <h2 className="text-xl font-bold font-display text-[#C9A84C] uppercase tracking-wider border-b border-[#1A2B47] pb-2">
+            How Eshaare Processes Your Visa
+          </h2>
+
+          <div className="relative max-w-3xl pl-4 md:pl-10 space-y-12">
+            {/* Connecting line on desktop */}
+            <div className="absolute left-[20px] md:left-[43px] top-4 bottom-4 w-[2px] bg-[#C9A84C]/25 hidden sm:block"></div>
+
+            {visaData.processSteps?.map((step, idx) => (
+              <div key={idx} className="relative flex flex-col sm:flex-row gap-4 md:gap-8 items-start">
+                {/* Step Circle */}
+                <div className="h-10 w-10 md:h-12 md:w-12 bg-[#0B1424] border-2 border-[#C9A84C] text-[#C9A84C] font-bold font-display text-lg md:text-xl rounded-full flex items-center justify-center flex-shrink-0 relative z-10">
+                  {step.stepNumber || idx + 1}
+                </div>
+
+                <div className="space-y-1">
+                  <h4 className="text-base md:text-lg font-semibold text-white">
+                    {step.title}
+                  </h4>
+                  <p className="text-xs md:text-sm text-[#EDE0C4]/60 leading-relaxed">
+                    {step.description}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* SECTION 5 - FEE TABLE */}
+        <section id="fees" className="space-y-6 scroll-mt-40">
+          <h2 className="text-xl font-bold font-display text-[#C9A84C] uppercase tracking-wider border-b border-[#1A2B47] pb-2">
+            Fee & Pricing Table
+          </h2>
+
+          {/* Desktop Table View */}
+          <div className="hidden sm:block overflow-x-auto border border-[#1A2B47] rounded-xl shadow-lg bg-[#0B1424]">
+            <table className="w-full text-left border-collapse text-xs md:text-sm text-[#EDE0C4]/80">
+              <thead>
+                <tr className="bg-[#111E35] border-b border-[#1A2B47] text-[#EDE0C4]/50 font-bold uppercase tracking-wider text-[10px]">
+                  <th className="p-4">Applicant Type</th>
+                  <th className="p-4">Embassy Fee</th>
+                  <th className="p-4">Service Fee</th>
+                  <th className="p-4 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#1A2B47]/60">
+                {visaData.feeStructure?.map((fee, idx) => (
+                  <tr key={idx} className="hover:bg-white/5 transition-colors">
+                    <td className="p-4 font-semibold text-white">{fee.applicantType}</td>
+                    <td className="p-4 font-mono">{fee.embassyFee}</td>
+                    <td className="p-4 font-mono text-[#C9A84C] font-bold">{fee.serviceFee}</td>
+                    <td className="p-4 text-right">
+                      <button
+                        onClick={handleApplyClick}
+                        className="px-4 py-1.5 bg-gradient-to-r from-[#C9A84C] to-[#E2BC6A] text-[#070D1A] font-bold rounded text-xs uppercase tracking-wider"
+                      >
+                        Apply Now
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Card Stack View */}
+          <div className="block sm:hidden space-y-4">
+            {visaData.feeStructure?.map((fee, idx) => (
+              <div 
+                key={idx}
+                className="bg-[#0B1424] border border-[#1A2B47] p-5 rounded-xl space-y-3"
+              >
+                <h4 className="text-sm font-bold text-white border-b border-[#1A2B47]/50 pb-2">{fee.applicantType}</h4>
+                <div className="flex justify-between text-xs text-[#EDE0C4]/70">
+                  <span>Embassy Fee:</span>
+                  <span className="font-mono font-semibold text-white">{fee.embassyFee}</span>
+                </div>
+                <div className="flex justify-between text-xs text-[#EDE0C4]/70">
+                  <span>Service Fee:</span>
+                  <span className="font-mono font-bold text-[#C9A84C]">{fee.serviceFee}</span>
+                </div>
+                <button
+                  onClick={handleApplyClick}
+                  className="w-full py-2 bg-gradient-to-r from-[#C9A84C] to-[#E2BC6A] text-[#070D1A] font-bold rounded-lg text-xs uppercase tracking-wider pt-2 mt-1"
+                >
+                  Apply Now
+                </button>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* SECTION 6 - FAQ ACCORDION */}
+        <section id="faq" className="space-y-6 scroll-mt-40 max-w-4xl">
+          <h2 className="text-xl font-bold font-display text-[#C9A84C] uppercase tracking-wider border-b border-[#1A2B47] pb-2">
+            Frequently Asked Questions
+          </h2>
+          <div className="border border-[#1A2B47] rounded-xl overflow-hidden divide-y divide-[#1A2B47] bg-[#0B1424]">
+            {visaData.faqs?.map((faq, idx) => {
+              const isOpen = !!openFaqs[idx];
+              return (
+                <div key={idx} className="transition-colors hover:bg-white/2">
+                  <button
+                    onClick={() => toggleFaq(idx)}
+                    className="w-full flex items-center justify-between p-5 text-left text-sm font-bold text-white focus:outline-none select-none"
+                  >
+                    <span>{faq.question}</span>
+                    <ChevronDown 
+                      className={`h-4.5 w-4.5 text-[#C9A84C] transition-transform duration-300 ${
+                        isOpen ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
+                  <div 
+                    className={`px-5 text-xs md:text-sm text-[#EDE0C4]/60 leading-relaxed overflow-hidden transition-all duration-300 ${
+                      isOpen ? "max-h-60 pb-5 opacity-100" : "max-h-0 opacity-0"
+                    }`}
+                  >
+                    <div className="pt-2 border-t border-[#1A2B47]/20">
+                      {faq.answer}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* SECTION 7 - CTA BAND */}
+        <section className="bg-[#0B1424] border border-[#1A2B47] rounded-3xl p-8 md:p-12 text-center space-y-6 relative overflow-hidden">
+          <div className="absolute -top-24 -right-24 w-64 h-64 bg-[#C9A84C]/5 rounded-full blur-3xl"></div>
+          <div className="max-w-xl mx-auto space-y-4 relative z-10">
+            <h2 className="text-2xl md:text-3xl font-bold font-display text-white">
+              Ready to apply for your {visaData.name}?
+            </h2>
+            <p className="text-xs md:text-sm text-[#EDE0C4]/60 leading-relaxed">
+              Start your visa application today. Our experienced document compliance team will guide you through VFS slot schedules, NOC forms, and interview prep.
+            </p>
+            <button
+              onClick={handleApplyClick}
+              className="px-8 py-3.5 bg-gradient-to-r from-[#C9A84C] to-[#E2BC6A] text-[#070D1A] font-bold rounded-xl text-xs uppercase tracking-wider hover:opacity-95 transition-all shadow-md inline-flex items-center gap-1.5"
+            >
+              <Phone className="h-4 w-4" />
+              <span>Start Application Now</span>
+            </button>
+          </div>
+        </section>
+
+      </div>
+
+      {/* Enquiry Modal */}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title={`Apply for: ${visaData.name}`}
+        size="md"
+      >
+        <form onSubmit={handleFormSubmit} className="space-y-4 font-sans text-xs">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex flex-col space-y-1.5">
+              <label className="text-[10px] font-bold text-[#EDE0C4]/40 uppercase tracking-wider">Full Name *</label>
+              <input
+                type="text"
+                required
+                className="px-3.5 py-2.5 bg-[#111E35] border border-[#1A2B47] text-white placeholder-[#EDE0C4]/20 rounded focus:outline-none focus:border-[#C9A84C] text-xs"
+                placeholder="Jane Doe"
+                name="name"
+                value={formData.name}
+                onChange={handleInputChange}
+              />
+            </div>
+            <div className="flex flex-col space-y-1.5">
+              <label className="text-[10px] font-bold text-[#EDE0C4]/40 uppercase tracking-wider">WhatsApp Phone *</label>
+              <input
+                type="tel"
+                required
+                className="px-3.5 py-2.5 bg-[#111E35] border border-[#1A2B47] text-white placeholder-[#EDE0C4]/20 rounded focus:outline-none focus:border-[#C9A84C] text-xs"
+                placeholder="e.g. 501234567"
+                name="phone"
+                value={formData.phone}
+                onChange={handleInputChange}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex flex-col space-y-1.5">
+              <label className="text-[10px] font-bold text-[#EDE0C4]/40 uppercase tracking-wider">Email Address *</label>
+              <input
+                type="email"
+                required
+                className="px-3.5 py-2.5 bg-[#111E35] border border-[#1A2B47] text-white placeholder-[#EDE0C4]/20 rounded focus:outline-none focus:border-[#C9A84C] text-xs"
+                placeholder="jane@example.com"
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
+              />
+            </div>
+            <div className="flex flex-col space-y-1.5">
+              <label className="text-[10px] font-bold text-[#EDE0C4]/40 uppercase tracking-wider">Nationality</label>
+              <input
+                type="text"
+                className="px-3.5 py-2.5 bg-[#111E35] border border-[#1A2B47] text-white placeholder-[#EDE0C4]/20 rounded focus:outline-none focus:border-[#C9A84C] text-xs"
+                placeholder="e.g. Indian, Jordanian"
+                name="nationality"
+                value={formData.nationality}
+                onChange={handleInputChange}
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col space-y-1.5">
+            <label className="text-[10px] font-bold text-[#EDE0C4]/40 uppercase tracking-wider">Travel Start Date</label>
+            <input
+              type="date"
+              className="px-3.5 py-2.5 bg-[#111E35] border border-[#1A2B47] text-white rounded focus:outline-none focus:border-[#C9A84C] text-xs"
+              name="travelDate"
+              value={formData.travelDate}
+              onChange={handleInputChange}
+            />
+          </div>
+
+          <div className="flex flex-col space-y-1.5">
+            <label className="text-[10px] font-bold text-[#EDE0C4]/40 uppercase tracking-wider">Message</label>
+            <textarea
+              rows={3}
+              className="px-3.5 py-2.5 bg-[#111E35] border border-[#1A2B47] text-white placeholder-[#EDE0C4]/20 rounded focus:outline-none focus:border-[#C9A84C] text-xs"
+              placeholder="Provide details about your travel history or urgent timing..."
+              name="message"
+              value={formData.message}
+              onChange={handleInputChange}
+            />
+          </div>
+
+          <div className="flex space-x-3 pt-4 border-t border-[#1A2B47]">
+            <button
+              type="button"
+              onClick={() => setIsModalOpen(false)}
+              className="flex-1 py-2.5 bg-[#1A2B47] border border-[#1A2B47] text-white font-bold rounded text-xs uppercase tracking-wider"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={submitting}
+              className="flex-1 py-2.5 bg-gradient-to-r from-[#C9A84C] to-[#E2BC6A] text-[#070D1A] font-bold rounded text-xs uppercase tracking-wider shadow-sm disabled:opacity-50"
+            >
+              {submitting ? "Submitting..." : "Submit Enquiry"}
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 };

@@ -7,7 +7,7 @@ import toast from "react-hot-toast";
 
 export const HomePage = () => {
   const navigate = useNavigate();
-  
+
   // Hero Slider State
   const [activeSlide, setActiveSlide] = useState(0);
   const slides = [
@@ -44,10 +44,10 @@ export const HomePage = () => {
         const next = { ...prev };
         if (next.visas < 1500) next.visas += 30;
         else next.visas = 1500;
-        
+
         if (next.countries < 120) next.countries += 3;
         else next.countries = 120;
-        
+
         if (next.rate < 98) next.rate += 2;
         else next.rate = 98;
 
@@ -206,15 +206,14 @@ export const HomePage = () => {
 
   return (
     <div className="bg-surface min-h-screen">
-      
+
       {/* HERO SLIDER SECTION */}
       <section className="relative overflow-hidden h-[70vh] min-h-[500px]">
         {slides.map((slide, index) => (
           <div
             key={index}
-            className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-              activeSlide === index ? "opacity-100 z-10" : "opacity-0 z-0"
-            }`}
+            className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${activeSlide === index ? "opacity-100 z-10" : "opacity-0 z-0"
+              }`}
           >
             {/* Background Image */}
             <img
@@ -224,7 +223,7 @@ export const HomePage = () => {
             />
             {/* Dark Overlay */}
             <div className="absolute inset-0 bg-black/40"></div>
-            
+
             {/* Content Container */}
             <div className="absolute inset-0 flex flex-col justify-center max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop text-white">
               <h1 className="font-display-lg text-display-lg-mobile md:text-display-lg text-white mb-4 max-w-2xl leading-tight">
@@ -250,9 +249,8 @@ export const HomePage = () => {
             <button
               key={index}
               onClick={() => setActiveSlide(index)}
-              className={`w-3 h-3 rounded-full transition-all ${
-                activeSlide === index ? "bg-white scale-125" : "bg-white/50 hover:bg-white"
-              }`}
+              className={`w-2 h-2 rounded-full transition-all ${activeSlide === index ? "bg-white scale-125" : "bg-white/50 hover:bg-white"
+                }`}
               title={`Go to slide ${index + 1}`}
             ></button>
           ))}
@@ -293,7 +291,7 @@ export const HomePage = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {services.map((srv, idx) => (
-              <div 
+              <div
                 key={idx}
                 className="bg-surface-container-lowest p-8 rounded-xl border border-outline-variant/10 hover:border-secondary transition-all premium-shadow group flex flex-col justify-between"
               >
@@ -308,7 +306,7 @@ export const HomePage = () => {
                     {srv.desc}
                   </p>
                 </div>
-                
+
                 <Link
                   to={`/visa-services/${srv.slug}`}
                   className="text-secondary font-bold flex items-center gap-2 group-hover:gap-4 transition-all w-fit mt-auto text-body-sm"
@@ -451,11 +449,10 @@ export const HomePage = () => {
               <button
                 key={continent}
                 onClick={() => setActiveContinent(continent)}
-                className={`pb-3 text-label-md font-label-md whitespace-nowrap cursor-pointer transition-colors ${
-                  activeContinent === continent
+                className={`pb-3 text-label-md font-label-md whitespace-nowrap cursor-pointer transition-colors ${activeContinent === continent
                     ? "text-secondary border-b-2 border-secondary font-semibold"
                     : "text-on-surface-variant hover:text-primary"
-                }`}
+                  }`}
               >
                 {continent}
               </button>
@@ -465,7 +462,7 @@ export const HomePage = () => {
           {/* Countries Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
             {continentCountries[activeContinent].map((country, idx) => (
-              <div 
+              <div
                 key={idx}
                 className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/10 premium-shadow flex flex-col justify-between gap-4"
               >
@@ -560,7 +557,7 @@ export const HomePage = () => {
       {/* LEAD INQUIRY SECTION (2-COL) */}
       <section id="enquire" className="py-[120px] px-margin-mobile md:px-margin-desktop bg-surface-container-low">
         <div className="max-w-container-max mx-auto bg-surface-container-lowest rounded-3xl overflow-hidden premium-shadow border border-outline-variant/10 grid grid-cols-1 md:grid-cols-3">
-          
+
           {/* Left Column (Dark Navy) */}
           <div className="bg-primary-container p-12 text-on-primary-container flex flex-col justify-between gap-8">
             <div className="space-y-4">
@@ -605,7 +602,7 @@ export const HomePage = () => {
           <div className="md:col-span-2 p-12 space-y-6">
             <h3 className="font-headline-md text-headline-md text-primary">Request an Eligibility Assessment</h3>
             <form onSubmit={handleFormSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              
+
               <div className="flex flex-col gap-2">
                 <label className="font-label-md text-label-md text-on-surface-variant">Full Name *</label>
                 <input
@@ -717,7 +714,7 @@ export const HomePage = () => {
         <div className="max-w-container-max mx-auto bg-primary-container p-12 rounded-3xl relative overflow-hidden space-y-12">
           {/* Decorative Blobs */}
           <div className="absolute -top-24 -right-24 w-64 h-64 bg-secondary/10 rounded-full blur-3xl"></div>
-          
+
           <div className="text-center space-y-3 max-w-xl mx-auto relative z-10">
             <h2 className="font-headline-lg text-headline-lg text-white">What Our Travellers Say</h2>
             <p className="text-on-primary-container text-body-md">Read positive reviews from satisfied clients who booked their visa assistance through Eshaare Tours.</p>

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { doc, onSnapshot, setDoc } from "firebase/firestore";
+import { doc, onSnapshot, setDoc, getDoc } from "firebase/firestore";
 import { db } from "../../lib/firebase";
-import { Settings, Shield, HelpCircle, Save, Plus, Trash2 } from "lucide-react";
+import { Settings, Shield, HelpCircle, Save, Plus, Trash2, Database, Loader2 } from "lucide-react";
 import { VISA_REQUIREMENTS } from "../../utils/constants";
+import { seedVisaTypes } from "../../lib/firestore";
 import toast from "react-hot-toast";
 
 export const SettingsPage = () => {
@@ -23,6 +24,40 @@ export const SettingsPage = () => {
   ]);
 
   const [newFee, setNewFee] = useState({ type: "Schengen", dest: "", govFee: "", serviceFee: "", days: "" });
+  
+  const [isSeeded, setIsSeeded] = useState(false);
+  const [seeding, setSeeding] = useState(false);
+
+  // Check if database is already seeded on page load
+  useEffect(() => {
+    const checkSeeded = async () => {
+      try {
+        const docRef = doc(db, "visa_types", "schengen");
+        const snap = await getDoc(docRef);
+        if (snap.exists()) {
+          setIsSeeded(true);
+        }
+      } catch (err) {
+        console.warn("Error checking seeded state:", err);
+      }
+    };
+    checkSeeded();
+  }, []);
+
+  const handleSeedDatabase = async () => {
+    setSeeding(true);
+    try {
+      const success = await seedVisaTypes();
+      if (success) {
+        setIsSeeded(true);
+      }
+    } catch (err) {
+      console.error("Error seeding database:", err);
+      toast.error(err.message || "Failed to seed database. Check your Firestore Security Rules.");
+    } finally {
+      setSeeding(false);
+    }
+  };
 
   // Listen to Firestore settings
   useEffect(() => {
@@ -179,6 +214,45 @@ export const SettingsPage = () => {
                   <Save className="h-4 w-4" />
                   <span>Save Config</span>
                 </button>
+              </div>
+
+              {/* CMS Database Setup Section */}
+              <div className="border-t border-on-primary-fixed-variant/40 pt-6 space-y-4">
+                <h3 className="text-base font-semibold text-white pb-2 flex items-center gap-2">
+                  <Database className="h-5 w-5 text-secondary" />
+                  <span>CMS Database Setup</span>
+                </h3>
+                <p className="text-on-primary-container/70 leading-relaxed text-xs">
+                  Populate your visa pages database with the 5 default visa types (Schengen, UK, USA, UAE, Saudi Arabia). Run this once when setting up the system for the first time.
+                </p>
+                
+                {/* Warning box */}
+                <div className="p-3 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-lg text-xs leading-relaxed flex items-start gap-2">
+                  <span className="flex-shrink-0 mt-0.5">⚠️</span>
+                  <span><strong>Only run this once.</strong> If visa types already exist, this will not overwrite them.</span>
+                </div>
+
+                <div className="flex justify-end pt-2">
+                  <button
+                    onClick={handleSeedDatabase}
+                    disabled={isSeeded || seeding}
+                    className="px-4 py-2 border-2 border-secondary hover:border-secondary-fixed text-secondary hover:text-secondary-fixed font-bold rounded uppercase tracking-wider shadow-sm flex items-center space-x-1.5 disabled:opacity-40 disabled:border-on-primary-fixed-variant disabled:text-on-primary-fixed-variant cursor-pointer disabled:cursor-not-allowed transition-all"
+                  >
+                    {seeding ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span>Creating visa types...</span>
+                      </>
+                    ) : isSeeded ? (
+                      <span>✓ Already Seeded</span>
+                    ) : (
+                      <>
+                        <Database className="h-4 w-4" />
+                        <span>Seed Visa Database</span>
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
           )}

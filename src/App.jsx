@@ -43,6 +43,8 @@ import PaymentsPage from "./pages/admin/PaymentsPage";
 import StaffManagementPage from "./pages/admin/StaffManagementPage";
 import ReportsPage from "./pages/admin/ReportsPage";
 import SettingsPage from "./pages/admin/SettingsPage";
+import VisaTypesListPage from "./pages/admin/VisaTypesListPage";
+import VisaTypeEditorPage from "./pages/admin/VisaTypeEditorPage";
 
 // Portal Pages
 import PortalDashboard from "./pages/portal/PortalDashboard";
@@ -76,6 +78,7 @@ function App() {
               <Route path="/" element={<PublicLayout />}>
                 <Route index element={<HomePage />} />
                 <Route path="visa-services" element={<VisaServicesPage />} />
+                <Route path="visa/:slug" element={<VisaDetailPage />} />
                 <Route path="visa-services/:slug" element={<VisaDetailPage />} />
                 <Route path="packages" element={<PackagesPage />} />
                 <Route path="packages/:slug" element={<PackageDetailPage />} />
@@ -114,6 +117,9 @@ function App() {
                 <Route path="staff" element={<StaffManagementPage />} />
                 <Route path="reports" element={<ReportsPage />} />
                 <Route path="settings" element={<SettingsPage />} />
+                <Route path="visa-types" element={<VisaTypesListPage />} />
+                <Route path="visa-types/new" element={<VisaTypeEditorPage />} />
+                <Route path="visa-types/:id/edit" element={<VisaTypeEditorPage />} />
               </Route>
 
               {/* CLIENT TRAVELLER PORTAL */}

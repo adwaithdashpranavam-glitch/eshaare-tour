@@ -369,7 +369,7 @@ export default function GlobePage() {
 
     setGlobeLoading(false);
 
-    globe.pointOfView({ lat: 32, lng: 70.0, altitude: 2.2 }, 0);
+    globe.pointOfView({ lat: 70, lng: 70.0, altitude: 2.2 }, 0);
 
     const controls = globe.controls();
     controls.enableDamping = true;
@@ -536,7 +536,7 @@ export default function GlobePage() {
 
   // Shared panel classes
   const panelBase =
-    "absolute right-0 top-[80px] z-40 flex h-[calc(100%-160px)] w-full flex-col border-l border-white/[0.06] bg-black/60 text-white backdrop-blur-2xl lg:w-[420px] xl:w-[460px] rounded-tl-2xl rounded-bl-2xl overflow-hidden";
+    "absolute right-0 top-[50px] z-40 flex h-[calc(100%-40px)] w-full flex-col border-l border-white/[0.06] bg-black/60 text-white backdrop-blur-2xl lg:w-[420px] xl:w-[460px] rounded-tl-2xl rounded-bl-2xl overflow-hidden";
 
   return (
     <section
