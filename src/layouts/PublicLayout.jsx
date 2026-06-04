@@ -226,28 +226,29 @@ export const PublicLayout = () => {
   return (
     <div className="min-h-screen flex flex-col bg-surface font-body-md text-on-surface">
 
+      {/* Welcome Banner if authenticated */}
+      {user && (
+        <div className="fixed top-0 left-0 w-full z-50 h-8 bg-gradient-to-r from-[#060e1a] via-[#0b1626] to-[#060e1a] text-gray-300 text-xs px-4 xl:px-8 flex items-center justify-between border-b border-amber-500/10 font-medium tracking-wide shadow-sm">
+          <div className="flex items-center gap-1.5">
+            <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+            <span>
+              Welcome,{" "}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#e68932] to-amber-300 font-extrabold uppercase tracking-wider">
+                {userName}
+              </span>
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Sticky Top Navbar */}
       <header
-        className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
+        className={`fixed left-0 w-full z-50 transition-all duration-300 ${
           scrolled
             ? "bg-white/95 backdrop-blur-md shadow-md border-b border-gray-100"
             : "bg-white/90 backdrop-blur-xl shadow-md border-b border-gray-100"
-        }`}
+        } ${user ? "top-8" : "top-0"}`}
       >
-        {/* Welcome Banner if authenticated */}
-        {user && (
-          <div className="bg-gradient-to-r from-[#060e1a] via-[#0b1626] to-[#060e1a] text-gray-300 text-xs py-2 px-4 xl:px-8 flex items-center justify-between border-b border-amber-500/10 font-medium tracking-wide shadow-sm z-50">
-            <div className="flex items-center gap-1.5">
-              <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-              <span>
-                Welcome,{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#e68932] to-amber-300 font-extrabold uppercase tracking-wider">
-                  {userName}
-                </span>
-              </span>
-            </div>
-          </div>
-        )}
 
         <div className="max-w-[95rem] mx-auto px-4 xl:px-6 h-16 flex items-center justify-between">
 
