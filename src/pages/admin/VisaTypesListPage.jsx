@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { GripVertical, Plus, Edit, Trash2, Loader2, Eye, Globe, ArrowUpDown, AlertCircle } from "lucide-react";
 import { getVisaTypes, saveVisaType, deleteVisaType, updateVisaTypeSortOrders } from "../../lib/firestore";
 import { formatShortDate } from "../../utils/formatters";
+import LoadingSpinner from "../../components/ui/LoadingSpinner";
 import toast from "react-hot-toast";
 
 export const VisaTypesListPage = () => {
@@ -168,10 +169,7 @@ export const VisaTypesListPage = () => {
 
       {/* Table Section */}
       {loading ? (
-        <div className="flex flex-col items-center justify-center py-16 space-y-4">
-          <Loader2 className="h-8 w-8 text-secondary animate-spin" />
-          <span className="text-xs text-on-primary-container/60">Loading CMS Pages...</span>
-        </div>
+        <LoadingSpinner message="Loading CMS Pages..." />
       ) : filteredVisaTypes.length === 0 ? (
         <div className="border border-on-primary-fixed-variant bg-primary-container/40 rounded-card p-12 text-center space-y-3">
           <Globe className="h-10 w-10 text-on-primary-container/30 mx-auto" />

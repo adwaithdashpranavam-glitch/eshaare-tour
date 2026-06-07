@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
-import { getVisaTypeBySlug, saveVisaType, createLead } from "../../lib/firestore";
+import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
+import { getVisaTypeBySlug, saveVisaType, createLead, createApplicationDraft } from "../../lib/firestore";
 import { useAuth } from "../../contexts/AuthContext";
 import { generateLeadNo } from "../../utils/helpers";
 import { serverTimestamp } from "../../lib/firebase";
 import Modal from "../../components/ui/Modal";
-import { 
-  Clock, TrendingUp, FileText, Calendar, Shield, Star, 
-  CheckCircle, Globe, CreditCard, Award, ChevronDown, Check, Phone, ArrowLeft, AlertCircle
+import {
+  Clock, TrendingUp, FileText, Calendar, Shield, Star,
+  CheckCircle, Globe, CreditCard, Award, ChevronDown, Check, Phone, ArrowLeft, AlertCircle,
+  X, Sparkles
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -32,7 +33,9 @@ const StatIcon = ({ name, className }) => {
 export const VisaDetailPage = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
-  const { user, isAdmin } = useAuth();
+  const location = useLocation();
+  const { user, userProfile, isAdmin } = useAuth();
+  const [isAuthRequiredModalOpen, setIsAuthRequiredModalOpen] = useState(false);
 
   const [visaData, setVisaData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -60,7 +63,7 @@ export const VisaDetailPage = () => {
   useEffect(() => {
     setLoading(true);
     setNotFound(false);
-    
+
     let isMounted = true;
     const startTime = Date.now();
 
@@ -112,16 +115,28 @@ export const VisaDetailPage = () => {
     }
   };
 
-  const handleApplyClick = () => {
-    setFormData({
-      name: "",
-      phone: "",
-      email: "",
-      nationality: "",
-      travelDate: "",
-      message: ""
-    });
-    setIsModalOpen(true);
+  const handleApplyClick = async (packageType = "standard", amount = 299) => {
+    if (!user) {
+      setIsAuthRequiredModalOpen(true);
+      return;
+    }
+    
+    const loadingToast = toast.loading("Creating application draft...");
+    try {
+      const draftId = await createApplicationDraft(
+        user.uid,
+        visaData.id,
+        visaData.name,
+        userProfile,
+        packageType,
+        amount
+      );
+      toast.success("Application draft created!", { id: loadingToast });
+      navigate("/portal/applications");
+    } catch (error) {
+      console.error("Failed to create draft:", error);
+      toast.error("Failed to create draft application.", { id: loadingToast });
+    }
   };
 
   const handleInputChange = (e) => {
@@ -246,7 +261,7 @@ export const VisaDetailPage = () => {
 
   return (
     <div className="bg-[#070D1A] min-h-screen text-[#F5EDD8] font-sans pb-24 relative">
-      
+
       {/* Draft Mode Banner (Visible to Admin only) */}
       {isDraft && isAdmin && (
         <div className="bg-amber-500/10 border-b border-amber-500/30 text-amber-400 py-3.5 px-6 sticky top-24 z-30 flex items-center justify-between text-xs font-semibold backdrop-blur-md">
@@ -267,16 +282,16 @@ export const VisaDetailPage = () => {
       <section className="relative py-20 overflow-hidden border-b border-[#1A2B47]">
         {visaData.imageUrl && (
           <div className="absolute inset-0 z-0">
-            <img 
-              src={visaData.imageUrl} 
-              alt={visaData.name} 
-              className="w-full h-full object-cover" 
+            <img
+              src={visaData.imageUrl}
+              alt={visaData.name}
+              className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-r from-[#0B1424]/95 via-[#0B1424]/80 to-transparent"></div>
           </div>
         )}
         <div className="relative z-10 max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop space-y-6">
-          
+
           {/* Breadcrumbs */}
           <div className="flex items-center gap-1.5 text-xs text-[#EDE0C4]/60 pb-2">
             <Link to="/" className="hover:text-white">Home</Link>
@@ -311,8 +326,8 @@ export const VisaDetailPage = () => {
           {/* Hero Stats Row */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-12 border-t border-[#1A2B47]/40 mt-10">
             {visaData.heroStats?.map((stat, index) => (
-              <div 
-                key={index} 
+              <div
+                key={index}
                 className="bg-[#111E35] border border-[#1A2B47] p-4 rounded-xl flex items-center gap-3.5 shadow-sm"
               >
                 <div className="p-2.5 rounded-lg bg-[#0B1424] text-[#C9A84C]">
@@ -330,7 +345,7 @@ export const VisaDetailPage = () => {
       </section>
 
       {/* STICKY TAB NAVIGATION BAR */}
-      <div className="bg-[#0B1424] border-b border-[#1A2B47] sticky top-24 z-20 shadow-md">
+      <div className="bg-[#0B1424] border-b border-[#1A2B47] sticky top-14 z-20 shadow-md">
         <div className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop flex gap-6 overflow-x-auto whitespace-nowrap scrollbar-none h-14 items-center">
           {[
             { id: "overview", label: "Overview" },
@@ -342,9 +357,8 @@ export const VisaDetailPage = () => {
             <button
               key={tab.id}
               onClick={() => scrollToSection(tab.id)}
-              className={`h-full text-xs font-bold uppercase tracking-widest relative px-1 transition-colors hover:text-white ${
-                activeTab === tab.id ? "text-[#C9A84C]" : "text-[#EDE0C4]/60"
-              }`}
+              className={`h-full text-xs font-bold uppercase tracking-widest relative px-1 transition-colors hover:text-white ${activeTab === tab.id ? "text-[#C9A84C]" : "text-[#EDE0C4]/60"
+                }`}
             >
               <span>{tab.label}</span>
               {activeTab === tab.id && (
@@ -357,7 +371,7 @@ export const VisaDetailPage = () => {
 
       {/* CONTENT SECTIONS CONTAINER */}
       <div className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-16 space-y-24">
-        
+
         {/* SECTION 2 - OVERVIEW */}
         <section id="overview" className="space-y-4 scroll-mt-40">
           <h2 className="text-xl font-bold font-display text-[#C9A84C] uppercase tracking-wider border-b border-[#1A2B47] pb-2">
@@ -375,8 +389,8 @@ export const VisaDetailPage = () => {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl">
             {visaData.requiredDocuments?.map((doc, idx) => (
-              <div 
-                key={idx} 
+              <div
+                key={idx}
                 className="bg-[#0B1424] border border-[#1A2B47]/60 p-4 rounded-xl flex items-start gap-3"
               >
                 <div className="h-5 w-5 bg-emerald-500/10 text-emerald-400 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 border border-emerald-500/20">
@@ -460,7 +474,7 @@ export const VisaDetailPage = () => {
           {/* Mobile Card Stack View */}
           <div className="block sm:hidden space-y-4">
             {visaData.feeStructure?.map((fee, idx) => (
-              <div 
+              <div
                 key={idx}
                 className="bg-[#0B1424] border border-[#1A2B47] p-5 rounded-xl space-y-3"
               >
@@ -482,6 +496,129 @@ export const VisaDetailPage = () => {
               </div>
             ))}
           </div>
+
+          {/* Support Packages Side-by-Side Grid */}
+          {visaData.showSupportPackages && visaData.supportPackages && (
+            <div className="pt-12 space-y-8 max-w-4xl mx-auto text-left font-sans">
+              <div className="text-center space-y-2">
+                <h3 className="text-2xl font-bold font-display text-white tracking-wide">
+                  Choose the Level of Support You Need
+                </h3>
+                <p className="text-xs text-[#EDE0C4]/60">
+                  Select a support option best suited for your visa requirements.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
+                {/* Standard Package Card */}
+                {visaData.supportPackages.standard && (
+                  <div className="bg-white text-gray-900 rounded-3xl p-8 shadow-xl flex flex-col justify-between border border-gray-100 transform hover:-translate-y-1 transition-all duration-300">
+                    <div className="space-y-6">
+                      <div className="space-y-2">
+                        <h4 className="text-xl font-bold text-gray-900 leading-snug">
+                          {visaData.supportPackages.standard.title}
+                        </h4>
+                        <p className="text-xs text-gray-500 leading-relaxed">
+                          {visaData.supportPackages.standard.subtitle}
+                        </p>
+                      </div>
+
+                      <div className="py-2">
+                        <span className="text-4xl font-extrabold text-gray-900 font-mono">
+                          AED {visaData.supportPackages.standard.price}
+                        </span>
+                        <span className="text-xs text-gray-500 font-medium"> / applicant</span>
+                      </div>
+
+                      {/* Features list */}
+                      <ul className="space-y-3.5 border-t border-gray-100 pt-6">
+                        {visaData.supportPackages.standard.features?.map((feat, idx) => (
+                          <li key={idx} className="flex items-start gap-3 text-xs">
+                            {feat.included ? (
+                              <Check className="h-4.5 w-4.5 text-[#C9A84C] flex-shrink-0 mt-0.5" />
+                            ) : (
+                              <X className="h-4.5 w-4.5 text-gray-300 flex-shrink-0 mt-0.5" />
+                            )}
+                            <span className={feat.included ? "text-gray-700 font-medium" : "text-gray-400 line-through"}>
+                              {feat.text}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    <button
+                      onClick={() => handleApplyClick("standard", visaData.supportPackages.standard.price)}
+                      className="w-full mt-8 py-3.5 border-2 border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-sm"
+                    >
+                      Select Standard
+                    </button>
+                  </div>
+                )}
+
+                {/* Premium Package Card */}
+                {visaData.supportPackages.premium && (
+                  <div className="bg-[#0B1424] text-white rounded-3xl p-8 shadow-2xl flex flex-col justify-between border-2 border-[#C9A84C] relative transform hover:-translate-y-1 transition-all duration-300 overflow-hidden">
+                    {/* MOST POPULAR Badge */}
+                    {visaData.supportPackages.premium.recommended && (
+                      <div className="absolute top-4 right-4 bg-gradient-to-r from-[#C9A84C] to-[#E2BC6A] text-[#070D1A] text-[9px] font-extrabold px-3.5 py-1 rounded-full uppercase tracking-widest shadow-md">
+                        Most Popular
+                      </div>
+                    )}
+
+                    <div className="space-y-6">
+                      <div className="space-y-2 pr-16">
+                        <h4 className="text-xl font-bold text-white leading-snug">
+                          {visaData.supportPackages.premium.title}
+                        </h4>
+                        <p className="text-xs text-[#EDE0C4]/60 leading-relaxed">
+                          {visaData.supportPackages.premium.subtitle}
+                        </p>
+                      </div>
+
+                      <div className="py-2">
+                        <span className="text-4xl font-extrabold text-[#C9A84C] font-mono">
+                          AED {visaData.supportPackages.premium.price}
+                        </span>
+                        <span className="text-xs text-[#EDE0C4]/60 font-medium"> / applicant</span>
+                      </div>
+
+                      {/* Features list */}
+                      <ul className="space-y-3.5 border-t border-[#1A2B47] pt-6">
+                        {visaData.supportPackages.premium.features?.map((feat, idx) => (
+                          <li key={idx} className="flex items-start gap-3 text-xs">
+                            {feat.highlighted ? (
+                              <Sparkles className="h-4.5 w-4.5 text-[#C9A84C] flex-shrink-0 mt-0.5" />
+                            ) : feat.included ? (
+                              <Check className="h-4.5 w-4.5 text-[#C9A84C] flex-shrink-0 mt-0.5" />
+                            ) : (
+                              <X className="h-4.5 w-4.5 text-[#EDE0C4]/30 flex-shrink-0 mt-0.5" />
+                            )}
+                            <span className={
+                              feat.highlighted 
+                                ? "text-[#C9A84C] font-semibold" 
+                                : feat.included 
+                                  ? "text-[#EDE0C4]/90 font-medium" 
+                                  : "text-[#EDE0C4]/40 line-through"
+                            }>
+                              {feat.text}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    <button
+                      onClick={() => handleApplyClick("premium", visaData.supportPackages.premium.price)}
+                      className="w-full mt-8 py-3.5 bg-gradient-to-r from-[#C9A84C] to-[#E2BC6A] text-[#070D1A] hover:opacity-95 rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-md font-extrabold"
+                    >
+                      Select Premium
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </section>
 
         {/* SECTION 6 - FAQ ACCORDION */}
@@ -499,16 +636,14 @@ export const VisaDetailPage = () => {
                     className="w-full flex items-center justify-between p-5 text-left text-sm font-bold text-white focus:outline-none select-none"
                   >
                     <span>{faq.question}</span>
-                    <ChevronDown 
-                      className={`h-4.5 w-4.5 text-[#C9A84C] transition-transform duration-300 ${
-                        isOpen ? "rotate-180" : ""
-                      }`}
+                    <ChevronDown
+                      className={`h-4.5 w-4.5 text-[#C9A84C] transition-transform duration-300 ${isOpen ? "rotate-180" : ""
+                        }`}
                     />
                   </button>
-                  <div 
-                    className={`px-5 text-xs md:text-sm text-[#EDE0C4]/60 leading-relaxed overflow-hidden transition-all duration-300 ${
-                      isOpen ? "max-h-60 pb-5 opacity-100" : "max-h-0 opacity-0"
-                    }`}
+                  <div
+                    className={`px-5 text-xs md:text-sm text-[#EDE0C4]/60 leading-relaxed overflow-hidden transition-all duration-300 ${isOpen ? "max-h-60 pb-5 opacity-100" : "max-h-0 opacity-0"
+                      }`}
                   >
                     <div className="pt-2 border-t border-[#1A2B47]/20">
                       {faq.answer}
@@ -643,6 +778,43 @@ export const VisaDetailPage = () => {
             </button>
           </div>
         </form>
+      </Modal>
+
+      {/* Authentication Required Modal */}
+      <Modal
+        isOpen={isAuthRequiredModalOpen}
+        onClose={() => setIsAuthRequiredModalOpen(false)}
+        title="Authentication Required"
+        size="sm"
+      >
+        <div className="space-y-5 text-center py-4 font-sans text-xs">
+          <div className="mx-auto w-12 h-12 bg-amber-500/10 text-amber-500 rounded-full flex items-center justify-center border border-amber-500/20">
+            <AlertCircle className="w-6 h-6" />
+          </div>
+          <div className="space-y-2">
+            <h3 className="text-base font-bold text-white uppercase tracking-wider">Login Required</h3>
+            <p className="text-[#EDE0C4]/60 leading-relaxed px-4">
+              Please sign in or create a traveler account to start your visa application, upload documents, and track status.
+            </p>
+          </div>
+          <div className="flex gap-3 pt-2">
+            <button
+              onClick={() => setIsAuthRequiredModalOpen(false)}
+              className="flex-grow py-2.5 bg-[#111E35] border border-[#1A2B47] text-[#EDE0C4]/85 hover:text-white rounded-lg font-bold text-xs uppercase tracking-wider transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => {
+                setIsAuthRequiredModalOpen(false);
+                navigate("/portal/login", { state: { from: location } });
+              }}
+              className="flex-grow py-2.5 bg-gradient-to-r from-[#C9A84C] to-[#E2BC6A] text-[#070D1A] font-extrabold rounded-lg text-xs uppercase tracking-wider hover:opacity-95 transition-all shadow-md"
+            >
+              Sign In
+            </button>
+          </div>
+        </div>
       </Modal>
     </div>
   );

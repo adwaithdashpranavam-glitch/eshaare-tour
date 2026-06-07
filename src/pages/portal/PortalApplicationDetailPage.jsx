@@ -6,6 +6,7 @@ import { ArrowLeft, Clock, FileText, CheckCircle2 } from "lucide-react";
 import { VISA_REQUIREMENTS } from "../../utils/constants";
 import StatusBadge from "../../components/ui/StatusBadge";
 import DocumentChecklist from "../../components/ui/DocumentChecklist";
+import LoadingSpinner from "../../components/ui/LoadingSpinner";
 import toast from "react-hot-toast";
 
 export const PortalApplicationDetailPage = () => {
@@ -78,7 +79,7 @@ export const PortalApplicationDetailPage = () => {
   };
 
   if (loading || !caseData) {
-    return <div className="h-screen flex items-center justify-center bg-primary-container text-secondary">Loading case details...</div>;
+    return <LoadingSpinner message="Loading case details..." fullScreen={true} />;
   }
 
   return (

@@ -18,7 +18,11 @@ import {
 } from "lucide-react";
 
 export const PublicLayout = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
   const { user, userProfile } = useAuth();
+  const userName = userProfile?.name || user?.displayName || user?.email || "Customer";
+  const isPortal = location.pathname.startsWith("/portal");
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [email, setEmail] = useState("");
@@ -30,9 +34,6 @@ export const PublicLayout = () => {
   const [openSearch, setOpenSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const searchInputRef = useRef(null);
-
-  const location = useLocation();
-  const navigate = useNavigate();
 
   // Scroll handler for top header
   useEffect(() => {
@@ -506,12 +507,13 @@ export const PublicLayout = () => {
       )}
 
       {/* Main Page Layout Content */}
-      <main className={`flex-grow pb-24 md:pb-8 ${user ? "pt-24" : "pt-16"}`}>
+      <main className={isPortal ? "flex-grow pt-24" : `flex-grow pb-24 md:pb-8 ${user ? "pt-24" : "pt-16"}`}>
         <Outlet />
       </main>
 
       {/* Footer matching figma style colorings */}
-      <footer className="bg-primary-container text-on-primary-container pt-16 pb-32">
+      {!isPortal && (
+        <footer className="bg-primary-container text-on-primary-container pt-16 pb-32">
         <div className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop grid grid-cols-1 md:grid-cols-4 gap-gutter mb-12">
           {/* Brand Col */}
           <div className="flex flex-col gap-4">
@@ -615,17 +617,20 @@ export const PublicLayout = () => {
           </div>
         </div>
       </footer>
+    )}
 
       {/* WhatsApp FAB */}
-      <a
-        href="https://wa.me/971501234567"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="fixed bottom-8 right-8 w-16 h-16 bg-whatsapp-green text-white rounded-full flex items-center justify-center shadow-2xl hover:scale-110 z-[100] transition-transform animate-pulse"
-        title="Chat on WhatsApp"
-      >
-        <span className="material-symbols-outlined text-3xl">chat</span>
-      </a>
+      {!isPortal && (
+        <a
+          href="https://wa.me/971501234567"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="fixed bottom-8 right-8 w-16 h-16 bg-whatsapp-green text-white rounded-full flex items-center justify-center shadow-2xl hover:scale-110 z-[100] transition-transform animate-pulse"
+          title="Chat on WhatsApp"
+        >
+          <span className="material-symbols-outlined text-3xl">chat</span>
+        </a>
+      )}
 
       {/* FIGMA DESIGN FIXED BOTTOM NAVBAR */}
       <div className="fixed bottom-1 left-1/2 z-[9999] w-[75%] max-w-2xl -translate-x-1/2 rounded-full border border-white/10 bg-white/90 shadow-[0_8px_24px_rgba(0,0,0,0.15)] backdrop-blur-xl">

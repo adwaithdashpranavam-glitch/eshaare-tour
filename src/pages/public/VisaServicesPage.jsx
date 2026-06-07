@@ -120,12 +120,22 @@ export const VisaServicesPage = () => {
   return (
     <div className="bg-[#070D1A] min-h-screen text-[#F5EDD8] font-sans pb-24">
       {/* Page Hero Banner */}
-      <section className="relative py-24 bg-[#0B1424] border-b border-[#1A2B47] text-center">
-        <div className="max-w-container-max mx-auto px-4 space-y-4">
+      <section className="relative py-28 overflow-hidden bg-[#0B1424] border-b border-[#1A2B47] text-center">
+        {/* Background Image */}
+        <div className="absolute inset-0 z-0">
+          <img
+            src="https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1600&q=80"
+            alt="Travel Background"
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-[#070D1A]/85 backdrop-blur-[2px]"></div>
+        </div>
+
+        <div className="relative z-10 max-w-container-max mx-auto px-4 space-y-4">
           <h1 className="text-4xl md:text-5xl font-bold font-display text-white tracking-wide">
             Global Visa Assistance Services
           </h1>
-          <p className="text-sm md:text-base text-[#EDE0C4]/70 max-w-xl mx-auto leading-relaxed">
+          <p className="text-sm md:text-base text-[#EDE0C4]/80 max-w-xl mx-auto leading-relaxed">
             Fast, transparent document auditing & appointment booking assistance for Schengen Europe, United Kingdom, USA, UAE & Saudi Arabia.
           </p>
         </div>
@@ -260,12 +270,12 @@ export const VisaServicesPage = () => {
                       >
                         Learn More
                       </Link>
-                      <button
-                        onClick={() => handleApplyClick(visa)}
-                        className="w-full py-2.5 bg-gradient-to-r from-[#C9A84C] to-[#E2BC6A] text-[#070D1A] font-bold rounded-lg text-xs uppercase tracking-wider hover:opacity-95 transition-all shadow-sm"
+                      <Link
+                        to={`/visa-services/${visa.slug}`}
+                        className="w-full text-center py-2.5 bg-gradient-to-r from-[#C9A84C] to-[#E2BC6A] text-[#070D1A] font-bold rounded-lg text-xs uppercase tracking-wider hover:opacity-95 transition-all shadow-sm flex items-center justify-center"
                       >
                         Apply Now
-                      </button>
+                      </Link>
                     </div>
                   </div>
                 </div>

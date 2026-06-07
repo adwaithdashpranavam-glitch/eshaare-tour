@@ -5,13 +5,15 @@ import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 import {
   FileText, UploadCloud, Calendar, DollarSign,
-  MessageSquare, HelpCircle, ChevronRight, CheckCircle2
+  MessageSquare, HelpCircle, ChevronRight, CheckCircle2,
+  Bell, CreditCard, Settings, Compass, Briefcase
 } from "lucide-react";
 import KPICard from "../../components/ui/KPICard";
 import StatusBadge from "../../components/ui/StatusBadge";
 import { formatCurrency } from "../../utils/formatters";
 import toast from "react-hot-toast";
 import { auth } from "../../lib/firebase";
+import { getApplicationsForCustomer } from "../../lib/firestore";
 
 export const PortalDashboard = () => {
   const { userProfile } = useAuth();
@@ -19,10 +21,33 @@ export const PortalDashboard = () => {
 
   const [loading, setLoading] = useState(true);
   const [activeCases, setActiveCases] = useState([]);
-  const [pendingDocsCount, setPendingDocsCount] = useState(2);
-  const [nextAppointment, setNextAppointment] = useState("02 Jun, 10:30 AM");
+  const [draftsCount, setDraftsCount] = useState(0);
+  const [pendingDocsCount, setPendingDocsCount] = useState(0);
+  const [nextAppointment, setNextAppointment] = useState("No upcoming slots");
   const [outstandingBalance, setOutstandingBalance] = useState(0);
-  console.log("Firebase Auth:", auth);
+  const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
+
+  // Fetch drafts & unread notifications
+  useEffect(() => {
+    if (!auth.currentUser?.uid) return;
+
+    const unsubscribeApps = getApplicationsForCustomer(auth.currentUser.uid, (data) => {
+      const activeDrafts = data.filter(app => app.status === "Draft");
+      setDraftsCount(activeDrafts.length);
+    });
+
+    const notifRef = collection(db, "notifications");
+    const qNotif = query(notifRef, where("userId", "==", auth.currentUser.uid), where("read", "==", false));
+    const unsubscribeNotif = onSnapshot(qNotif, (snapshot) => {
+      setUnreadNotificationsCount(snapshot.size);
+    });
+
+    return () => {
+      unsubscribeApps();
+      unsubscribeNotif();
+    };
+  }, []);
+
   useEffect(() => {
     if (!userProfile?.email) return;
 
@@ -40,6 +65,9 @@ export const PortalDashboard = () => {
           return acc + pending;
         }, 0);
         setPendingDocsCount(totalPending);
+      } else {
+        setActiveCases([]);
+        setPendingDocsCount(0);
       }
       setLoading(false);
     }, (error) => {
@@ -72,9 +100,9 @@ export const PortalDashboard = () => {
       {/* KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
         <KPICard title="Active Cases" value={activeCases.length} icon="FileText" color="blue" />
+        <KPICard title="Draft Applications" value={draftsCount} icon="Edit3" color="gold" />
         <KPICard title="Pending Uploads" value={pendingDocsCount} icon="UploadCloud" color={pendingDocsCount > 0 ? "orange" : "green"} />
-        <KPICard title="Next Appointment" value={nextAppointment} icon="Calendar" color="gold" />
-        <KPICard title="Pending Balance" value={`${outstandingBalance} AED`} icon="Landmark" color="orange" />
+        <KPICard title="New Notifications" value={unreadNotificationsCount} icon="Bell" color={unreadNotificationsCount > 0 ? "red" : "gold"} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -114,13 +142,34 @@ export const PortalDashboard = () => {
           <div className="glass-card p-6 border border-on-primary-fixed-variant/60 space-y-4">
             <h3 className="text-sm font-semibold text-white border-b border-on-primary-fixed-variant pb-2">Quick Actions</h3>
             <div className="grid grid-cols-2 gap-3.5 text-xs text-center">
-              <button onClick={() => navigate("/portal/documents")} className="p-4 bg-primary-container hover:bg-primary-container border border-outline-variant/10 rounded hover:border-secondary/25 transition-all text-on-primary-container font-semibold space-y-2">
-                <UploadCloud className="h-5 w-5 mx-auto text-secondary" />
-                <span>Upload Documents</span>
+              <button onClick={() => navigate("/portal/applications")} className="p-4 bg-primary-container hover:bg-primary-container/80 border border-outline-variant/10 rounded hover:border-secondary/25 transition-all text-on-primary-container font-semibold space-y-2 flex flex-col justify-center items-center">
+                <FileText className="h-5 w-5 text-secondary" />
+                <span>Applications</span>
               </button>
-              <button onClick={() => navigate("/portal/messages")} className="p-4 bg-primary-container hover:bg-primary-container border border-outline-variant/10 rounded hover:border-secondary/25 transition-all text-on-primary-container font-semibold space-y-2">
-                <MessageSquare className="h-5 w-5 mx-auto text-secondary" />
+              <button onClick={() => navigate("/portal/documents")} className="p-4 bg-primary-container hover:bg-primary-container/80 border border-outline-variant/10 rounded hover:border-secondary/25 transition-all text-on-primary-container font-semibold space-y-2 flex flex-col justify-center items-center">
+                <UploadCloud className="h-5 w-5 text-secondary" />
+                <span>Documents</span>
+              </button>
+              <button onClick={() => navigate("/portal/appointments")} className="p-4 bg-primary-container hover:bg-primary-container/80 border border-outline-variant/10 rounded hover:border-secondary/25 transition-all text-on-primary-container font-semibold space-y-2 flex flex-col justify-center items-center">
+                <Calendar className="h-5 w-5 text-secondary" />
+                <span>Appointments</span>
+              </button>
+              <button onClick={() => navigate("/portal/payments")} className="p-4 bg-primary-container hover:bg-primary-container/80 border border-outline-variant/10 rounded hover:border-secondary/25 transition-all text-on-primary-container font-semibold space-y-2 flex flex-col justify-center items-center">
+                <CreditCard className="h-5 w-5 text-secondary" />
+                <span>Payments</span>
+              </button>
+              <button onClick={() => navigate("/portal/messages")} className="p-4 bg-primary-container hover:bg-primary-container/80 border border-outline-variant/10 rounded hover:border-secondary/25 transition-all text-on-primary-container font-semibold space-y-2 flex flex-col justify-center items-center">
+                <MessageSquare className="h-5 w-5 text-secondary" />
                 <span>Message Advisor</span>
+              </button>
+              <button onClick={() => navigate("/portal/notifications")} className="p-4 bg-primary-container hover:bg-primary-container/80 border border-outline-variant/10 rounded hover:border-secondary/25 transition-all text-[#EDE0C4] hover:text-white font-semibold space-y-2 flex flex-col justify-center items-center">
+                <div className="relative">
+                  <Bell className="h-5 w-5 text-secondary" />
+                  {unreadNotificationsCount > 0 && (
+                    <span className="absolute -top-1 -right-1 flex h-2 w-2 items-center justify-center rounded-full bg-red-500"></span>
+                  )}
+                </div>
+                <span>Notifications</span>
               </button>
             </div>
           </div>

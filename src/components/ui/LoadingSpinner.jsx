@@ -1,21 +1,44 @@
 import React from "react";
+import { Compass } from "lucide-react";
 
-export const LoadingSpinner = ({ message = "Loading..." }) => {
-  return (
-    <div className="flex flex-col items-center justify-center p-8 w-full min-h-[200px]">
-      <div className="relative flex items-center justify-center">
-        {/* Spinner outer */}
-        <div className="h-12 w-12 rounded-full border-4 border-secondary/20 border-t-secondary animate-spin"></div>
-        {/* Spinner inner glow */}
-        <div className="absolute h-12 w-12 rounded-full bg-secondary-container/5 blur-md"></div>
+export const LoadingSpinner = ({ message = "Loading...", fullScreen = false }) => {
+  const spinnerContent = (
+    <div className="flex flex-col items-center justify-center p-8">
+      <div className="relative flex h-16 w-16 items-center justify-center">
+        {/* Glow/Ping effect */}
+        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#c9932a] opacity-20" />
+        {/* Middle stationary circle */}
+        <span className="absolute h-10 w-10 rounded-full border-2 border-[#c9932a]/30" />
+        {/* Spinning indicator */}
+        <span
+          className="h-16 w-16 rounded-full border-2 border-t-[#D4AF37] border-r-transparent border-b-transparent border-l-transparent animate-spin"
+          style={{ animationDuration: "1.1s" }}
+        />
+        {/* Central compass icon */}
+        <Compass className="absolute h-5 w-5 text-[#D4AF37]" />
       </div>
       {message && (
-        <span className="mt-4 text-sm text-on-primary-container/60 font-sans tracking-wide animate-pulse">
+        <span className="mt-5 text-sm text-[#D4AF37] font-sans font-semibold tracking-[0.2em] uppercase text-center animate-pulse">
           {message}
         </span>
       )}
     </div>
   );
+
+  if (fullScreen) {
+    return (
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#071120] font-sans">
+        {spinnerContent}
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center justify-center w-full min-h-[200px] font-sans">
+      {spinnerContent}
+    </div>
+  );
 };
 
 export default LoadingSpinner;
+

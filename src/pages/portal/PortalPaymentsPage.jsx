@@ -5,6 +5,7 @@ import { db } from "../../lib/firebase";
 import { CreditCard, DollarSign, Download, ExternalLink } from "lucide-react";
 import StatusBadge from "../../components/ui/StatusBadge";
 import { formatCurrency, formatShortDate } from "../../utils/formatters";
+import LoadingSpinner from "../../components/ui/LoadingSpinner";
 import toast from "react-hot-toast";
 
 export const PortalPaymentsPage = () => {
@@ -63,35 +64,49 @@ export const PortalPaymentsPage = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-outline-variant/15 bg-transparent">
-            {payments.map((p) => (
-              <tr key={p.id} className="hover:bg-white/5 transition-colors">
-                <td className="px-6 py-4 font-mono font-bold text-secondary text-xs">{p.invoiceNo}</td>
-                <td className="px-6 py-4 font-semibold text-white">{p.service}</td>
-                <td className="px-6 py-4 font-mono font-semibold">{formatCurrency(p.amount)}</td>
-                <td className="px-6 py-4 text-xs font-mono">{p.method}</td>
-                <td className="px-6 py-4 text-xs font-mono">{formatShortDate(p.date || p.createdAt)}</td>
-                <td className="px-6 py-4"><StatusBadge status={p.status} /></td>
-                <td className="px-6 py-4 text-right">
-                  {p.status !== "Paid" ? (
-                    <button
-                      onClick={() => handleStripePay(p.paymentLinkUrl)}
-                      className="px-3.5 py-1.5 bg-gradient-to-r from-secondary-container to-secondary-container text-on-primary-fixed font-bold text-[10px] uppercase rounded flex items-center space-x-1 ml-auto shadow-sm"
-                    >
-                      <CreditCard className="h-3 w-3" />
-                      <span>Pay Now</span>
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => toast.success("Invoice PDF download started")}
-                      className="p-1 rounded bg-white/5 border border-on-primary-fixed-variant text-secondary hover:text-white"
-                      title="Download PDF"
-                    >
-                      <Download className="h-4 w-4" />
-                    </button>
-                  )}
+            {loading ? (
+              <tr>
+                <td colSpan={7} className="py-8">
+                  <LoadingSpinner message="Retrieving billing invoices..." />
                 </td>
               </tr>
-            ))}
+            ) : payments.length === 0 ? (
+              <tr>
+                <td colSpan={7} className="text-center py-8 text-xs text-on-primary-container/40 italic">
+                  No invoices or payments recorded.
+                </td>
+              </tr>
+            ) : (
+              payments.map((p) => (
+                <tr key={p.id} className="hover:bg-white/5 transition-colors">
+                  <td className="px-6 py-4 font-mono font-bold text-secondary text-xs">{p.invoiceNo}</td>
+                  <td className="px-6 py-4 font-semibold text-white">{p.service}</td>
+                  <td className="px-6 py-4 font-mono font-semibold">{formatCurrency(p.amount)}</td>
+                  <td className="px-6 py-4 text-xs font-mono">{p.method}</td>
+                  <td className="px-6 py-4 text-xs font-mono">{formatShortDate(p.date || p.createdAt)}</td>
+                  <td className="px-6 py-4"><StatusBadge status={p.status} /></td>
+                  <td className="px-6 py-4 text-right">
+                    {p.status !== "Paid" ? (
+                      <button
+                        onClick={() => handleStripePay(p.paymentLinkUrl)}
+                        className="px-3.5 py-1.5 bg-gradient-to-r from-secondary-container to-secondary-container text-on-primary-fixed font-bold text-[10px] uppercase rounded flex items-center space-x-1 ml-auto shadow-sm"
+                      >
+                        <CreditCard className="h-3 w-3" />
+                        <span>Pay Now</span>
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => toast.success("Invoice PDF download started")}
+                        className="p-1 rounded bg-white/5 border border-on-primary-fixed-variant text-secondary hover:text-white"
+                        title="Download PDF"
+                      >
+                        <Download className="h-4 w-4" />
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

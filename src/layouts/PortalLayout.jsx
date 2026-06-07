@@ -40,9 +40,9 @@ export const PortalLayout = () => {
   };
 
   return (
-    <div className="min-h-screen bg-primary-container text-on-primary-container flex font-sans">
+    <div className="min-h-[calc(100vh-6rem)] w-full bg-primary-container text-on-primary-container flex font-sans">
       {/* Desktop Left Sidebar */}
-      <aside className="hidden md:flex flex-col w-64 bg-primary-container border-r border-on-primary-fixed-variant/60 z-20">
+      <aside className="hidden md:flex flex-col w-64 bg-primary-container border-r border-on-primary-fixed-variant/60 z-20 shrink-0">
         <div className="h-16 flex items-center px-6 border-b border-on-primary-fixed-variant">
           <Link to="/portal/dashboard" className="flex items-center space-x-2">
             <Compass className="h-6 w-6 text-secondary animate-[spin_30s_linear_infinite]" />
@@ -92,67 +92,12 @@ export const PortalLayout = () => {
       </aside>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Header bar */}
-        <header className="h-16 bg-primary-container border-b border-on-primary-fixed-variant/60 flex items-center justify-between px-6 z-10">
-          <div className="md:hidden flex items-center space-x-2">
-            <Compass className="h-5 w-5 text-secondary" />
-            <span className="font-display font-bold text-base text-white">ESHAARE PORTAL</span>
-          </div>
-
-          <div className="hidden md:block">
-            <h2 className="text-sm font-semibold text-on-primary-container/60">
-              Welcome back, <span className="text-white font-bold">{userProfile?.name || "Client"}</span>
-            </h2>
-          </div>
-
-          <div className="flex items-center space-x-4">
-            {/* Notifications Bell */}
-            <button 
-              className="p-2 rounded-lg bg-primary-container border border-on-primary-fixed-variant text-on-primary-container/60 hover:text-white relative transition-colors"
-              onClick={() => toast("No new notifications")}
-            >
-              <Bell className="h-4.5 w-4.5" />
-              <span className="absolute top-1 right-1 h-1.5 w-1.5 rounded-full bg-secondary-container"></span>
-            </button>
-          </div>
-        </header>
-
+      <div className="flex-grow flex flex-col min-w-0">
         {/* Router Outlet view */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 pb-20 md:pb-6">
+        <main className="flex-grow overflow-y-auto p-4 md:p-6 pb-24 md:pb-6">
           <Outlet />
         </main>
       </div>
-
-      {/* Mobile Sticky Bottom Tab Bar */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-primary-container border-t border-on-primary-fixed-variant/80 md:hidden flex justify-around items-center h-16 px-2">
-        {navItems.slice(0, 5).map((item) => {
-          const TabIcon = item.icon;
-          const isActive = location.pathname === item.path;
-          return (
-            <Link
-              key={item.label}
-              to={item.path}
-              className={`flex flex-col items-center justify-center space-y-1 text-center w-12 transition-colors ${
-                isActive ? "text-secondary" : "text-on-primary-container/50"
-              }`}
-            >
-              <TabIcon className="h-4.5 w-4.5" />
-              <span className="text-[8px] font-bold tracking-tight uppercase truncate w-full">{item.label}</span>
-            </Link>
-          );
-        })}
-        {/* More Options overflow link (goes to settings) */}
-        <Link
-          to="/portal/settings"
-          className={`flex flex-col items-center justify-center space-y-1 text-center w-12 transition-colors ${
-            location.pathname === "/portal/settings" ? "text-secondary" : "text-on-primary-container/50"
-          }`}
-        >
-          <Settings className="h-4.5 w-4.5" />
-          <span className="text-[8px] font-bold tracking-tight uppercase truncate w-full">Settings</span>
-        </Link>
-      </nav>
     </div>
   );
 };

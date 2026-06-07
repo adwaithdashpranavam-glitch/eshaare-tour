@@ -3,12 +3,16 @@ import {
   onAuthStateChanged, 
   signInWithEmailAndPassword, 
   signOut,
-  createUserWithEmailAndPassword
+  createUserWithEmailAndPassword,
+  setPersistence,
+  browserLocalPersistence
 } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { Navigate, useLocation } from "react-router-dom";
 import { auth, db } from "../lib/firebase";
 import { ROLES } from "../utils/constants";
+import toast from "react-hot-toast";
+import { LoadingSpinner } from "../components/ui/LoadingSpinner";
 
 const AuthContext = createContext(null);
 
@@ -28,25 +32,63 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     setLoading(true);
     try {
+      await setPersistence(auth, browserLocalPersistence);
       const userCredential = await signInWithEmailAndPassword(auth, email.trim(), password);
       const currentUser = userCredential.user;
 
-      // Pre-fetch profile immediately to avoid race conditions in ProtectedRoute
+      const lastLoginAt = new Date();
       const userDocRef = doc(db, "users", currentUser.uid);
       const userDoc = await getDoc(userDocRef);
       
+      let profileData = {};
+      const isStaffEmail = currentUser.email?.endsWith("@eshaare.com") || currentUser.email?.endsWith("@eshaareuae.com");
       if (userDoc.exists()) {
-        setUserProfile(userDoc.data());
+        const data = userDoc.data();
+        profileData = { ...data, lastLoginAt };
+        if (isStaffEmail && data.role === ROLES.CLIENT) {
+          profileData.role = ROLES.SUPER_ADMIN;
+          await setDoc(userDocRef, { role: ROLES.SUPER_ADMIN, lastLoginAt }, { merge: true });
+        } else {
+          await setDoc(userDocRef, { lastLoginAt }, { merge: true });
+        }
       } else {
-        const isStaffEmail = currentUser.email?.endsWith("@eshaare.com") || currentUser.email?.endsWith("@eshaareuae.com");
-        setUserProfile({
+        profileData = {
           uid: currentUser.uid,
           email: currentUser.email,
           name: currentUser.displayName || (isStaffEmail ? "Staff User" : "Client User"),
-          role: isStaffEmail ? ROLES.SUPER_ADMIN : ROLES.CLIENT
-        });
+          role: isStaffEmail ? ROLES.SUPER_ADMIN : ROLES.CLIENT,
+          createdAt: new Date(),
+          lastLoginAt
+        };
+        await setDoc(userDocRef, profileData);
       }
 
+      // If they are a client/customer, update the 'customers' collection as well
+      if (profileData.role === ROLES.CLIENT) {
+        const customerRef = doc(db, "customers", currentUser.uid);
+        const customerDoc = await getDoc(customerRef);
+        let name = profileData.name;
+        if (customerDoc.exists()) {
+          const custData = customerDoc.data();
+          if (custData.name && custData.name !== "Client User") {
+            name = custData.name;
+          }
+          profileData = { ...profileData, ...custData };
+        }
+        await setDoc(customerRef, {
+          uid: currentUser.uid,
+          name: name || "Client User",
+          email: profileData.email || currentUser.email || "",
+          phone: profileData.phone || "",
+          nationality: profileData.nationality || "",
+          createdAt: profileData.createdAt || new Date(),
+          lastLoginAt,
+          status: "Active"
+        }, { merge: true });
+        profileData.name = name || "Client User";
+      }
+
+      setUserProfile(profileData);
       setUser(currentUser);
       return currentUser;
     } catch (error) {
@@ -60,17 +102,42 @@ export const AuthProvider = ({ children }) => {
   const register = async (email, password, extraData) => {
     setLoading(true);
     try {
+      await setPersistence(auth, browserLocalPersistence);
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       
-      // Save profile to Firestore
-      await setDoc(doc(db, "users", user.uid), {
+      const lastLoginAt = new Date();
+      const isStaffEmail = email.trim().endsWith("@eshaare.com") || email.trim().endsWith("@eshaareuae.com");
+      const profileData = {
         uid: user.uid,
         email: email.trim(),
-        role: ROLES.CLIENT,
+        role: isStaffEmail ? ROLES.SUPER_ADMIN : ROLES.CLIENT,
         createdAt: new Date(),
+        lastLoginAt,
+        name: extraData.name || (isStaffEmail ? "Staff User" : "Client User"),
         ...extraData
-      });
+      };
+
+      // Save profile to Firestore 'users'
+      await setDoc(doc(db, "users", user.uid), profileData);
+      
+      // Save profile to Firestore 'customers'
+      if (!isStaffEmail) {
+        await setDoc(doc(db, "customers", user.uid), {
+          uid: user.uid,
+          name: extraData.name || "Client User",
+          email: email.trim(),
+          phone: extraData.phoneNumber || "",
+          nationality: extraData.nationality || "",
+          createdAt: new Date(),
+          lastLoginAt,
+          status: "Active"
+        });
+      }
+      
+      // Set state directly immediately to prevent race condition
+      setUserProfile(profileData);
+      setUser(user);
       
       return user;
     } catch (error) {
@@ -98,27 +165,54 @@ export const AuthProvider = ({ children }) => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setLoading(true);
       if (currentUser) {
-        setUser(currentUser);
         try {
-          // Fetch additional profile from Firestore 'users' collection
           const userDocRef = doc(db, "users", currentUser.uid);
           const userDoc = await getDoc(userDocRef);
           
+          let profile = null;
+          const isStaffEmail = currentUser.email?.endsWith("@eshaare.com") || currentUser.email?.endsWith("@eshaareuae.com");
           if (userDoc.exists()) {
-            setUserProfile(userDoc.data());
+            profile = userDoc.data();
+            if (isStaffEmail && profile.role === ROLES.CLIENT) {
+              profile.role = ROLES.SUPER_ADMIN;
+              await setDoc(userDocRef, { role: ROLES.SUPER_ADMIN }, { merge: true });
+            }
           } else {
-            // Fallback: Check if they are in 'travellers' or set default client role
-            const isStaffEmail = currentUser.email?.endsWith("@eshaare.com") || currentUser.email?.endsWith("@eshaareuae.com");
-            setUserProfile({
+            profile = {
               uid: currentUser.uid,
               email: currentUser.email,
               name: currentUser.displayName || (isStaffEmail ? "Staff User" : "Client User"),
               role: isStaffEmail ? ROLES.SUPER_ADMIN : ROLES.CLIENT
-            });
+            };
           }
+
+          if (profile && profile.role === ROLES.CLIENT) {
+            const customerDoc = await getDoc(doc(db, "customers", currentUser.uid));
+            if (customerDoc.exists()) {
+              profile = { ...profile, ...customerDoc.data() };
+            }
+          }
+
+          // Enforce 15-day session check
+          if (profile && profile.lastLoginAt) {
+            const loginDate = profile.lastLoginAt.toDate ? profile.lastLoginAt.toDate() : new Date(profile.lastLoginAt);
+            const fifteenDaysAgo = new Date(Date.now() - 15 * 24 * 60 * 60 * 1000);
+            if (loginDate < fifteenDaysAgo) {
+              toast.error("Session expired (15 days max). Please log in again.");
+              await signOut(auth);
+              setUser(null);
+              setUserProfile(null);
+              setLoading(false);
+              return;
+            }
+          }
+
+          setUser(currentUser);
+          setUserProfile(profile);
         } catch (error) {
           console.error("Error fetching user profile:", error);
           const isStaffEmail = currentUser.email?.endsWith("@eshaare.com") || currentUser.email?.endsWith("@eshaareuae.com");
+          setUser(currentUser);
           setUserProfile({
             uid: currentUser.uid,
             email: currentUser.email,
@@ -154,7 +248,8 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
+      {children}
+      {loading && <LoadingSpinner message="Securing Connection..." fullScreen={true} />}
     </AuthContext.Provider>
   );
 };
@@ -165,11 +260,7 @@ export const ProtectedRoute = ({ children }) => {
   const location = useLocation();
 
   if (loading) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-primary-container">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-secondary border-t-transparent"></div>
-      </div>
-    );
+    return <LoadingSpinner message="Authenticating..." fullScreen={true} />;
   }
 
   if (!user || !isAdmin) {
@@ -182,18 +273,14 @@ export const ProtectedRoute = ({ children }) => {
 
 // Protect client portal routes (requires client auth)
 export const ClientRoute = ({ children }) => {
-  const { user, isClient, loading } = useAuth();
+  const { user, loading } = useAuth();
   const location = useLocation();
 
   if (loading) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-primary-container">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-secondary border-t-transparent"></div>
-      </div>
-    );
+    return <LoadingSpinner message="Loading client portal..." fullScreen={true} />;
   }
 
-  if (!user || !isClient) {
+  if (!user) {
     // Redirect to client login
     return <Navigate to="/portal/login" state={{ from: location }} replace />;
   }

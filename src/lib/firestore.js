@@ -263,12 +263,17 @@ export const createDocument = async (data) => {
 export const getDocuments = (travellerId, callback) => {
   try {
     const docsRef = collection(db, "documents");
-    let q = query(docsRef, orderBy("createdAt", "desc"));
+    let q = query(docsRef);
     if (travellerId) {
-      q = query(docsRef, where("travellerId", "==", travellerId), orderBy("createdAt", "desc"));
+      q = query(docsRef, where("travellerId", "==", travellerId));
     }
     return onSnapshot(q, (snapshot) => {
       const documents = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      documents.sort((a, b) => {
+        const dateA = a.createdAt?.seconds ? new Date(a.createdAt.seconds * 1000) : new Date(a.createdAt || 0);
+        const dateB = b.createdAt?.seconds ? new Date(b.createdAt.seconds * 1000) : new Date(b.createdAt || 0);
+        return dateB - dateA;
+      });
       callback(documents);
     }, (error) => {
       console.error("Documents listener error:", error);
@@ -726,7 +731,39 @@ export async function seedVisaTypes() {
 
     SEED_VISA_TYPES.forEach(item => {
       const itemRef = doc(db, "visa_types", item.slug);
+      
+      const defaultSupportPackages = {
+        showSupportPackages: item.slug === "schengen",
+        supportPackages: {
+          standard: {
+            title: item.slug === "schengen" ? "Standard Schengen Support" : `${item.name} Standard Support`,
+            subtitle: "Ideal for travelers who already have an appointment slot.",
+            price: "299",
+            features: [
+              { text: "Document Checklist", included: true },
+              { text: "Form Filling (Online)", included: true },
+              { text: "Cover Letter Drafting", included: true },
+              { text: "Slot Tracking", included: false }
+            ]
+          },
+          premium: {
+            title: item.slug === "schengen" ? "Premium Fast-Track Appointment Booking" : `${item.name} Premium Fast-Track`,
+            subtitle: "Comprehensive end-to-end management with appointment tracking.",
+            price: "549",
+            recommended: true,
+            features: [
+              { text: "All Standard Features", included: true },
+              { text: "Appointment Slot Tracking", included: true, highlighted: true },
+              { text: "Travel Insurance", included: true },
+              { text: "Flight & Hotel Vouchers", included: true },
+              { text: "In-person Document Pickup", included: true }
+            ]
+          }
+        }
+      };
+
       batch.set(itemRef, {
+        ...defaultSupportPackages,
         ...item,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -741,3 +778,171 @@ export async function seedVisaTypes() {
     handleError(error, "seedVisaTypes");
   }
 }
+
+// ==========================================
+// CLIENT APPLICATIONS & NOTIFICATIONS SERVICES
+// ==========================================
+
+import { generateCaseNo } from "../utils/helpers";
+
+export const createApplicationDraft = async (customerId, visaId, visaName, userProfile, packageType = "standard", amount = 299) => {
+  try {
+    const appRef = collection(db, "applications");
+    const docRef = await addDoc(appRef, {
+      customerId,
+      visaId,
+      visaName,
+      status: "Draft",
+      paymentStatus: "Unpaid",
+      packageType,
+      amount: Number(amount) || 0,
+      createdAt: new Date(),
+      submittedAt: null,
+      formData: {
+        name: userProfile?.name || "",
+        phone: userProfile?.phone || "",
+        email: userProfile?.email || "",
+        nationality: userProfile?.nationality || "",
+        travelDate: "",
+        message: ""
+      }
+    });
+    return docRef.id;
+  } catch (error) {
+    handleError(error, "createApplicationDraft");
+  }
+};
+
+export const getApplicationsForCustomer = (customerId, callback) => {
+  try {
+    const appRef = collection(db, "applications");
+    const q = query(appRef, where("customerId", "==", customerId));
+    return onSnapshot(q, (snapshot) => {
+      const apps = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      apps.sort((a, b) => {
+        const dateA = a.createdAt?.seconds ? new Date(a.createdAt.seconds * 1000) : new Date(a.createdAt || 0);
+        const dateB = b.createdAt?.seconds ? new Date(b.createdAt.seconds * 1000) : new Date(b.createdAt || 0);
+        return dateB - dateA;
+      });
+      callback(apps);
+    }, (error) => {
+      console.error("Applications listener error:", error);
+    });
+  } catch (error) {
+    handleError(error, "getApplicationsForCustomer");
+  }
+};
+
+export const updateApplication = async (appId, data) => {
+  try {
+    const docRef = doc(db, "applications", appId);
+    await updateDoc(docRef, {
+      ...data,
+      updatedAt: new Date()
+    });
+  } catch (error) {
+    handleError(error, "updateApplication");
+  }
+};
+
+export const submitApplication = async (appId, formData, visaName) => {
+  try {
+    const appRef = doc(db, "applications", appId);
+    await updateDoc(appRef, {
+      status: "Submitted",
+      submittedAt: new Date(),
+      formData
+    });
+
+    // Create corresponding CRM case
+    const caseNumber = await generateCaseNo();
+    const casesRef = collection(db, "visa_cases");
+    await addDoc(casesRef, {
+      caseNo: caseNumber,
+      travellerName: formData.name,
+      travellerPhone: formData.phone,
+      travellerEmail: formData.email,
+      nationality: formData.nationality || "",
+      destination: visaName,
+      visaType: visaName,
+      stage: "Docs Pending",
+      assignedOfficer: "Visa Ops Officer",
+      isDeleted: false,
+      isActive: true,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
+
+    // Create notification
+    const notificationsRef = collection(db, "notifications");
+    await addDoc(notificationsRef, {
+      userId: auth.currentUser?.uid || "",
+      title: "Application Submitted Successfully",
+      message: `Your visa application for ${visaName} has been submitted successfully (Case No: ${caseNumber}).`,
+      read: false,
+      createdAt: new Date()
+    });
+  } catch (error) {
+    handleError(error, "submitApplication");
+  }
+};
+
+export const createNotification = async (userId, title, message) => {
+  try {
+    const notifRef = collection(db, "notifications");
+    await addDoc(notifRef, {
+      userId,
+      title,
+      message,
+      read: false,
+      createdAt: new Date()
+    });
+  } catch (error) {
+    handleError(error, "createNotification");
+  }
+};
+
+export const getNotifications = (userId, callback) => {
+  try {
+    const notifRef = collection(db, "notifications");
+    const q = query(notifRef, where("userId", "==", userId));
+    return onSnapshot(q, (snapshot) => {
+      const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      list.sort((a, b) => {
+        const dateA = a.createdAt?.seconds ? new Date(a.createdAt.seconds * 1000) : new Date(a.createdAt || 0);
+        const dateB = b.createdAt?.seconds ? new Date(b.createdAt.seconds * 1000) : new Date(b.createdAt || 0);
+        return dateB - dateA;
+      });
+      callback(list);
+    }, (error) => {
+      console.error("Notifications listener error:", error);
+    });
+  } catch (error) {
+    handleError(error, "getNotifications");
+  }
+};
+
+export const markNotificationRead = async (id) => {
+  try {
+    const docRef = doc(db, "notifications", id);
+    await updateDoc(docRef, { read: true });
+  } catch (error) {
+    handleError(error, "markNotificationRead");
+  }
+};
+
+export const markAllNotificationsRead = async (userId) => {
+  try {
+    const notifRef = collection(db, "notifications");
+    const q = query(notifRef, where("userId", "==", userId), where("read", "==", false));
+    const snapshot = await getDocs(q);
+    const batch = writeBatch(db);
+    snapshot.docs.forEach(doc => {
+      batch.update(doc.ref, { read: true });
+    });
+    await batch.commit();
+  } catch (error) {
+    handleError(error, "markAllNotificationsRead");
+  }
+};
+

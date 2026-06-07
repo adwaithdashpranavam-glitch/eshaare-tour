@@ -5,7 +5,11 @@ import { Compass, UserCheck, Mail, Lock, User, Phone, Globe, LogIn } from "lucid
 import toast from "react-hot-toast";
 
 export const PortalLogin = () => {
-  const [activeTab, setActiveTab] = useState("login"); // "login" or "signup"
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { login, register } = useAuth();
+
+  const [activeTab, setActiveTab] = useState(location.state?.tab || "login"); // "login" or "signup"
 
   // Login states
   const [email, setEmail] = useState("");
@@ -20,9 +24,6 @@ export const PortalLogin = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
 
   const [loading, setLoading] = useState(false);
-  const { login, register } = useAuth();
-  const navigate = useNavigate();
-  const location = useLocation();
 
   const redirectUrl = location.state?.from?.pathname || "/portal/dashboard";
 

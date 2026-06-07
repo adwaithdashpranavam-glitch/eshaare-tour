@@ -55,6 +55,7 @@ import PortalAppointmentsPage from "./pages/portal/PortalAppointmentsPage";
 import PortalPaymentsPage from "./pages/portal/PortalPaymentsPage";
 import PortalMessagesPage from "./pages/portal/PortalMessagesPage";
 import PortalSettingsPage from "./pages/portal/PortalSettingsPage";
+import PortalNotificationsPage from "./pages/portal/PortalNotificationsPage";
 
 // Create Query Client
 const queryClient = new QueryClient({
@@ -89,6 +90,27 @@ function App() {
                 <Route path="resources" element={<ResourcesPage />} />
                 <Route path="appointment" element={<AppointmentBookingPage />} />
                 <Route path="globe" element={<GlobePage />} />
+
+                {/* CLIENT TRAVELLER PORTAL */}
+                <Route 
+                  path="portal" 
+                  element={
+                    <ClientRoute>
+                      <PortalLayout />
+                    </ClientRoute>
+                  }
+                >
+                  <Route index element={<Navigate to="/portal/dashboard" replace />} />
+                  <Route path="dashboard" element={<PortalDashboard />} />
+                  <Route path="applications" element={<PortalApplicationsPage />} />
+                  <Route path="applications/:id" element={<PortalApplicationDetailPage />} />
+                  <Route path="documents" element={<PortalDocumentsPage />} />
+                  <Route path="appointments" element={<PortalAppointmentsPage />} />
+                  <Route path="payments" element={<PortalPaymentsPage />} />
+                  <Route path="messages" element={<PortalMessagesPage />} />
+                  <Route path="settings" element={<PortalSettingsPage />} />
+                  <Route path="notifications" element={<PortalNotificationsPage />} />
+                </Route>
               </Route>
 
               {/* AUTH ROUTES */}
@@ -120,26 +142,6 @@ function App() {
                 <Route path="visa-types" element={<VisaTypesListPage />} />
                 <Route path="visa-types/new" element={<VisaTypeEditorPage />} />
                 <Route path="visa-types/:id/edit" element={<VisaTypeEditorPage />} />
-              </Route>
-
-              {/* CLIENT TRAVELLER PORTAL */}
-              <Route 
-                path="/portal" 
-                element={
-                  <ClientRoute>
-                    <PortalLayout />
-                  </ClientRoute>
-                }
-              >
-                <Route index element={<Navigate to="/portal/dashboard" replace />} />
-                <Route path="dashboard" element={<PortalDashboard />} />
-                <Route path="applications" element={<PortalApplicationsPage />} />
-                <Route path="applications/:id" element={<PortalApplicationDetailPage />} />
-                <Route path="documents" element={<PortalDocumentsPage />} />
-                <Route path="appointments" element={<PortalAppointmentsPage />} />
-                <Route path="payments" element={<PortalPaymentsPage />} />
-                <Route path="messages" element={<PortalMessagesPage />} />
-                <Route path="settings" element={<PortalSettingsPage />} />
               </Route>
 
               {/* CATCH-ALL REDIRECT */}

@@ -1,0 +1,147 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function: Check if user is signed in
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    // Helper function: Check if request belongs to owner
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+    
+    // Helper function: Check if user has an admin/staff role in /users collection
+    function isStaff() {
+      return isSignedIn() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['super_admin', 'manager', 'sales', 'visa_ops', 'finance'];
+    }
+
+    // ==========================================
+    // 1. Users Collection
+    // ==========================================
+    match /users/{userId} {
+      // Allow users to read/write their own profiles; staff can do everything
+      allow read: if isOwner(userId) || isStaff();
+      allow create: if isSignedIn(); // Allow writing initial user profile on registration
+      allow update: if isOwner(userId) || isStaff();
+      allow delete: if isStaff();
+      allow list: if isStaff();
+    }
+
+    // ==========================================
+    // 2. Customers Collection
+    // ==========================================
+    match /customers/{customerId} {
+      // Allow customers to read/write their own details; staff can do everything
+      allow read: if isOwner(customerId) || isStaff();
+      allow create: if isSignedIn(); // Allow writing initial customer doc
+      allow update: if isOwner(customerId) || isStaff();
+      allow delete: if isStaff();
+      allow list: if isStaff();
+    }
+
+    // ==========================================
+    // 3. Visa Types Collection (CMS pages)
+    // ==========================================
+    match /visa_types/{visaId} {
+      // Anyone (public) can read/view published or draft visa pages
+      allow read: if true;
+      // Signed in users (usually staff) can write/edit visa pages
+      allow write: if isSignedIn();
+    }
+
+    // ==========================================
+    // 4. Global Settings Collection
+    // ==========================================
+    match /settings/{settingId} {
+      // Anyone can read general config settings
+      allow read: if true;
+      // Only staff can update settings config
+      allow write: if isStaff();
+    }
+
+    // ==========================================
+    // 5. Leads Collection
+    // ==========================================
+    match /leads/{leadId} {
+      // Allow anyone (public web users) to create leads via contact/visa forms
+      allow create: if true;
+      // Only staff can list/read/update leads
+      allow read, write: if isStaff();
+    }
+
+    // ==========================================
+    // 6. Visa Cases Collection (CRM application progress)
+    // ==========================================
+    match /visa_cases/{caseId} {
+      // Clients can read their own cases if the email matches; staff can do everything
+      allow read: if isStaff() || (isSignedIn() && resource.data.travellerEmail.lower() == request.auth.token.email.lower());
+      allow write: if isStaff();
+    }
+
+    // ==========================================
+    // 7. Applications Collection (Portal Drafts)
+    // ==========================================
+    match /applications/{appId} {
+      // Allow clients to CRUD their own applications; staff can do everything
+      allow read, write: if isStaff() || (isSignedIn() && resource.data.customerId == request.auth.uid);
+      allow create: if isSignedIn();
+    }
+
+    // ==========================================
+    // 8. Documents Collection
+    // ==========================================
+    match /documents/{docId} {
+      // Clients can CRUD their own documents; staff can do everything
+      allow read, write: if isStaff() || (isSignedIn() && (resource == null || resource.data.travellerEmail.lower() == request.auth.token.email.lower()));
+      allow create: if isSignedIn();
+    }
+
+    // ==========================================
+    // 9. Chats Collection (Consultant Inbox Messages)
+    // ==========================================
+    match /chats/{chatId} {
+      // Read & write allowed for authenticated users (staff + clients)
+      allow read, write: if isSignedIn();
+    }
+
+    // ==========================================
+    // 10. Appointments Collection
+    // ==========================================
+    match /appointments/{appId} {
+      // Anyone can create an appointment slot (leads/guests); staff and owner can read/write
+      allow create: if true;
+      allow read, write: if isStaff() || (isSignedIn() && (resource == null || resource.data.clientUid == request.auth.uid || resource.data.email.lower() == request.auth.token.email.lower()));
+    }
+
+    // ==========================================
+    // 11. Payments Collection
+    // ==========================================
+    match /payments/{paymentId} {
+      // Clients can read their own payments; staff can read/write everything
+      allow read: if isStaff() || (isSignedIn() && resource.data.clientUid == request.auth.uid);
+      allow write: if isStaff();
+      allow create: if isSignedIn();
+    }
+
+    // ==========================================
+    // 12. Tasks Collection
+    // ==========================================
+    match /tasks/{taskId} {
+      // Internal staff workflow tasks
+      allow read, write: if isStaff();
+    }
+
+    // ==========================================
+    // 13. Notifications Collection
+    // ==========================================
+    match /notifications/{notifId} {
+      // Owners can read/write their own notifications; staff can do everything
+      allow read, write: if isStaff() || (isSignedIn() && (resource == null || resource.data.userId == request.auth.uid));
+      allow create: if isSignedIn();
+    }
+  }
+}

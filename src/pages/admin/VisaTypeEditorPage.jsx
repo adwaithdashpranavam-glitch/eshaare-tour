@@ -59,7 +59,34 @@ export const VisaTypeEditorPage = () => {
       { question: "How long does processing take?", answer: "Typically 5-15 working days depending on country." }
     ],
     metaTitle: "",
-    metaDescription: ""
+    metaDescription: "",
+    showSupportPackages: false,
+    supportPackages: {
+      standard: {
+        title: "Standard Support",
+        subtitle: "Ideal for travelers who already have an appointment slot.",
+        price: "299",
+        features: [
+          { text: "Document Checklist", included: true },
+          { text: "Form Filling (Online)", included: true },
+          { text: "Cover Letter Drafting", included: true },
+          { text: "Slot Tracking", included: false }
+        ]
+      },
+      premium: {
+        title: "Premium Fast-Track Appointment Booking",
+        subtitle: "Comprehensive end-to-end management with appointment tracking.",
+        price: "549",
+        recommended: true,
+        features: [
+          { text: "All Standard Features", included: true },
+          { text: "Appointment Slot Tracking", included: true, highlighted: true },
+          { text: "Travel Insurance", included: true },
+          { text: "Flight & Hotel Vouchers", included: true },
+          { text: "In-person Document Pickup", included: true }
+        ]
+      }
+    }
   });
 
   // Load existing data in Edit Mode
@@ -70,9 +97,40 @@ export const VisaTypeEditorPage = () => {
       try {
         const visa = await getVisaTypeBySlug(id);
         if (visa) {
+          const defaultSupportPackages = {
+            showSupportPackages: visa.showSupportPackages !== undefined ? visa.showSupportPackages : false,
+            supportPackages: {
+              standard: {
+                title: visa.supportPackages?.standard?.title || "Standard Support",
+                subtitle: visa.supportPackages?.standard?.subtitle || "Ideal for travelers who already have an appointment slot.",
+                price: visa.supportPackages?.standard?.price || "299",
+                features: visa.supportPackages?.standard?.features || [
+                  { text: "Document Checklist", included: true },
+                  { text: "Form Filling (Online)", included: true },
+                  { text: "Cover Letter Drafting", included: true },
+                  { text: "Slot Tracking", included: false }
+                ]
+              },
+              premium: {
+                title: visa.supportPackages?.premium?.title || "Premium Fast-Track Appointment Booking",
+                subtitle: visa.supportPackages?.premium?.subtitle || "Comprehensive end-to-end management with appointment tracking.",
+                price: visa.supportPackages?.premium?.price || "549",
+                recommended: visa.supportPackages?.premium?.recommended !== undefined ? visa.supportPackages?.premium.recommended : true,
+                features: visa.supportPackages?.premium?.features || [
+                  { text: "All Standard Features", included: true },
+                  { text: "Appointment Slot Tracking", included: true, highlighted: true },
+                  { text: "Travel Insurance", included: true },
+                  { text: "Flight & Hotel Vouchers", included: true },
+                  { text: "In-person Document Pickup", included: true }
+                ]
+              }
+            }
+          };
+
           setFormData({
             ...formData,
             ...visa,
+            ...defaultSupportPackages,
             // Ensure array fields exist
             heroStats: visa.heroStats || [],
             requiredDocuments: visa.requiredDocuments || [],
@@ -325,6 +383,80 @@ export const VisaTypeEditorPage = () => {
       return stat;
     });
     setFormData(prev => ({ ...prev, heroStats: nextStats }));
+  };
+
+  // Helper to update text properties of a package
+  const updatePackageField = (pkgKey, field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      supportPackages: {
+        ...prev.supportPackages,
+        [pkgKey]: {
+          ...prev.supportPackages[pkgKey],
+          [field]: value
+        }
+      }
+    }));
+  };
+
+  // Helper to add a feature to a package
+  const addPackageFeature = (pkgKey) => {
+    const defaultFeature = pkgKey === "premium" 
+      ? { text: "", included: true, highlighted: false } 
+      : { text: "", included: true };
+
+    setFormData(prev => {
+      const currentFeatures = prev.supportPackages[pkgKey].features || [];
+      return {
+        ...prev,
+        supportPackages: {
+          ...prev.supportPackages,
+          [pkgKey]: {
+            ...prev.supportPackages[pkgKey],
+            features: [...currentFeatures, defaultFeature]
+          }
+        }
+      };
+    });
+  };
+
+  // Helper to update a feature field inside a package
+  const updatePackageFeatureField = (pkgKey, idx, field, value) => {
+    setFormData(prev => {
+      const nextFeatures = prev.supportPackages[pkgKey].features.map((feat, i) => {
+        if (i === idx) {
+          return { ...feat, [field]: value };
+        }
+        return feat;
+      });
+      return {
+        ...prev,
+        supportPackages: {
+          ...prev.supportPackages,
+          [pkgKey]: {
+            ...prev.supportPackages[pkgKey],
+            features: nextFeatures
+          }
+        }
+      };
+    });
+  };
+
+  // Helper to remove a feature from a package
+  const removePackageFeature = (pkgKey, idx) => {
+    setFormData(prev => {
+      const nextFeatures = prev.supportPackages[pkgKey].features.filter((_, i) => i !== idx);
+      return {
+        ...prev,
+        supportPackages: {
+          ...prev.supportPackages,
+          [pkgKey]: {
+            ...prev.supportPackages[pkgKey],
+            features: nextFeatures
+          }
+        }
+      };
+    });
   };
 
   // Form Save Action
@@ -930,6 +1062,235 @@ export const VisaTypeEditorPage = () => {
                     </div>
                   </div>
                 ))}
+              </div>
+            )}
+          </div>
+
+          {/* Card: Support Packages Configuration */}
+          <div className="bg-primary-container/40 border border-on-primary-fixed-variant rounded-card p-6 border-l-4 border-l-secondary space-y-4">
+            <div className="flex justify-between items-center">
+              <div>
+                <h2 className="text-base font-bold text-white tracking-wide">Support Level Packages</h2>
+                <p className="text-[10px] text-on-primary-container/50">Configure Standard & Premium support package offerings on the details page</p>
+              </div>
+              <div className="flex items-center space-x-2">
+                <button
+                  type="button"
+                  onClick={() => setFormData(prev => ({ ...prev, showSupportPackages: !prev.showSupportPackages }))}
+                  className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-200 focus:outline-none ${
+                    formData.showSupportPackages ? "bg-success-green" : "bg-on-primary-fixed-variant"
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform duration-200 ${
+                      formData.showSupportPackages ? "translate-x-4.5" : "translate-x-1"
+                    }`}
+                  />
+                </button>
+                <span className={`text-[10px] font-bold uppercase tracking-wider ${formData.showSupportPackages ? "text-success-green" : "text-on-primary-container/40"}`}>
+                  {formData.showSupportPackages ? "Enabled" : "Disabled"}
+                </span>
+              </div>
+            </div>
+
+            {formData.showSupportPackages && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-on-primary-fixed-variant/40">
+                {/* Standard Package */}
+                <div className="bg-primary-container/20 p-4 rounded-xl border border-on-primary-fixed-variant/60 space-y-4">
+                  <h3 className="text-xs font-bold text-secondary uppercase tracking-widest border-b border-on-primary-fixed-variant/40 pb-2">
+                    Standard Package
+                  </h3>
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-[9px] font-bold uppercase text-on-primary-container/60 mb-1">Package Title</label>
+                      <input
+                        type="text"
+                        required
+                        value={formData.supportPackages.standard.title}
+                        onChange={(e) => updatePackageField("standard", "title", e.target.value)}
+                        className="w-full bg-primary-container border border-on-primary-fixed-variant px-2.5 py-1 text-xs text-white rounded focus:border-secondary focus:outline-none"
+                        placeholder="e.g. Standard Support"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[9px] font-bold uppercase text-on-primary-container/60 mb-1">Subtitle / description</label>
+                      <input
+                        type="text"
+                        required
+                        value={formData.supportPackages.standard.subtitle}
+                        onChange={(e) => updatePackageField("standard", "subtitle", e.target.value)}
+                        className="w-full bg-primary-container border border-on-primary-fixed-variant px-2.5 py-1 text-xs text-white rounded focus:border-secondary focus:outline-none"
+                        placeholder="e.g. Ideal for travelers who already have an appointment slot."
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[9px] font-bold uppercase text-on-primary-container/60 mb-1">Price (AED)</label>
+                      <input
+                        type="text"
+                        required
+                        value={formData.supportPackages.standard.price}
+                        onChange={(e) => updatePackageField("standard", "price", e.target.value)}
+                        className="w-full bg-primary-container border border-on-primary-fixed-variant px-2.5 py-1 text-xs text-white rounded focus:border-secondary focus:outline-none font-mono"
+                        placeholder="e.g. 299"
+                      />
+                    </div>
+                    
+                    {/* Standard Features Checklist */}
+                    <div className="space-y-2 pt-2 border-t border-on-primary-fixed-variant/40">
+                      <div className="flex justify-between items-center">
+                        <label className="text-[9px] font-bold uppercase text-[#EDE0C4]/50">Features Checklist</label>
+                        <button
+                          type="button"
+                          onClick={() => addPackageFeature("standard")}
+                          className="px-2 py-0.5 border border-on-primary-fixed-variant text-[9px] font-semibold text-secondary hover:text-white rounded transition-colors"
+                        >
+                          + Add Item
+                        </button>
+                      </div>
+                      <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                        {formData.supportPackages.standard.features.map((feat, idx) => (
+                          <div key={idx} className="flex items-center space-x-2 bg-primary-container/40 p-1.5 rounded border border-on-primary-fixed-variant/40">
+                            <input
+                              type="checkbox"
+                              checked={feat.included}
+                              onChange={(e) => updatePackageFeatureField("standard", idx, "included", e.target.checked)}
+                              className="rounded border-[#1A2B47] text-secondary focus:ring-secondary/50 bg-[#111E35] h-3.5 w-3.5"
+                              title="Is Included"
+                            />
+                            <input
+                              type="text"
+                              required
+                              value={feat.text}
+                              onChange={(e) => updatePackageFeatureField("standard", idx, "text", e.target.value)}
+                              className="flex-1 bg-transparent border-none p-0 text-[11px] text-white focus:ring-0 focus:outline-none"
+                              placeholder="Feature text..."
+                            />
+                            <button
+                              type="button"
+                              onClick={() => removePackageFeature("standard", idx)}
+                              className="text-on-primary-container/40 hover:text-error-red p-0.5"
+                              title="Delete Feature"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Premium Package */}
+                <div className="bg-primary-container/20 p-4 rounded-xl border border-on-primary-fixed-variant/60 space-y-4 relative">
+                  <h3 className="text-xs font-bold text-secondary uppercase tracking-widest border-b border-on-primary-fixed-variant/40 pb-2 flex justify-between items-center">
+                    <span>Premium Package</span>
+                    
+                    {/* Recommended / Most Popular toggle */}
+                    <div className="flex items-center space-x-1.5">
+                      <span className="text-[8px] font-bold text-on-primary-container/60 uppercase">Recommended:</span>
+                      <button
+                        type="button"
+                        onClick={() => updatePackageField("premium", "recommended", !formData.supportPackages.premium.recommended)}
+                        className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors duration-200 focus:outline-none ${
+                          formData.supportPackages.premium.recommended ? "bg-amber-500" : "bg-on-primary-fixed-variant"
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-2.5 w-2.5 transform rounded-full bg-white transition-transform duration-200 ${
+                            formData.supportPackages.premium.recommended ? "translate-x-3" : "translate-x-0.5"
+                          }`}
+                        />
+                      </button>
+                    </div>
+                  </h3>
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-[9px] font-bold uppercase text-on-primary-container/60 mb-1">Package Title</label>
+                      <input
+                        type="text"
+                        required
+                        value={formData.supportPackages.premium.title}
+                        onChange={(e) => updatePackageField("premium", "title", e.target.value)}
+                        className="w-full bg-primary-container border border-on-primary-fixed-variant px-2.5 py-1 text-xs text-white rounded focus:border-secondary focus:outline-none"
+                        placeholder="e.g. Premium Support"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[9px] font-bold uppercase text-on-primary-container/60 mb-1">Subtitle / description</label>
+                      <input
+                        type="text"
+                        required
+                        value={formData.supportPackages.premium.subtitle}
+                        onChange={(e) => updatePackageField("premium", "subtitle", e.target.value)}
+                        className="w-full bg-primary-container border border-on-primary-fixed-variant px-2.5 py-1 text-xs text-white rounded focus:border-secondary focus:outline-none"
+                        placeholder="e.g. Comprehensive end-to-end management."
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[9px] font-bold uppercase text-on-primary-container/60 mb-1">Price (AED)</label>
+                      <input
+                        type="text"
+                        required
+                        value={formData.supportPackages.premium.price}
+                        onChange={(e) => updatePackageField("premium", "price", e.target.value)}
+                        className="w-full bg-primary-container border border-on-primary-fixed-variant px-2.5 py-1 text-xs text-white rounded focus:border-secondary focus:outline-none font-mono"
+                        placeholder="e.g. 549"
+                      />
+                    </div>
+                    
+                    {/* Premium Features Checklist */}
+                    <div className="space-y-2 pt-2 border-t border-on-primary-fixed-variant/40">
+                      <div className="flex justify-between items-center">
+                        <label className="text-[9px] font-bold uppercase text-[#EDE0C4]/50">Features Checklist</label>
+                        <button
+                          type="button"
+                          onClick={() => addPackageFeature("premium")}
+                          className="px-2 py-0.5 border border-on-primary-fixed-variant text-[9px] font-semibold text-secondary hover:text-white rounded transition-colors"
+                        >
+                          + Add Item
+                        </button>
+                      </div>
+                      <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                        {formData.supportPackages.premium.features.map((feat, idx) => (
+                          <div key={idx} className="flex items-center space-x-2 bg-primary-container/40 p-1.5 rounded border border-on-primary-fixed-variant/40">
+                            <input
+                              type="checkbox"
+                              checked={feat.included}
+                              onChange={(e) => updatePackageFeatureField("premium", idx, "included", e.target.checked)}
+                              className="rounded border-[#1A2B47] text-secondary focus:ring-secondary/50 bg-[#111E35] h-3.5 w-3.5"
+                              title="Is Included"
+                            />
+                            <input
+                              type="text"
+                              required
+                              value={feat.text}
+                              onChange={(e) => updatePackageFeatureField("premium", idx, "text", e.target.value)}
+                              className="flex-1 bg-transparent border-none p-0 text-[11px] text-white focus:ring-0 focus:outline-none"
+                              placeholder="Feature text..."
+                            />
+                            {/* Highlighted checkbox (Gold Star icon toggle) */}
+                            <button
+                              type="button"
+                              onClick={() => updatePackageFeatureField("premium", idx, "highlighted", !feat.highlighted)}
+                              className={`p-0.5 rounded text-[10px] ${feat.highlighted ? "text-amber-500 hover:text-amber-600" : "text-on-primary-container/30 hover:text-[#EDE0C4]/70"}`}
+                              title={feat.highlighted ? "Highlighted (Gold Star Active)" : "Click to highlight gold star"}
+                            >
+                              ★
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => removePackageFeature("premium", idx)}
+                              className="text-on-primary-container/40 hover:text-error-red p-0.5"
+                              title="Delete Feature"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
           </div>

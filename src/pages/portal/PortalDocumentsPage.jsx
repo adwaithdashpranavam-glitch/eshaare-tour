@@ -6,6 +6,7 @@ import { FolderOpen, Plus, Download, Eye, Clock } from "lucide-react";
 import StatusBadge from "../../components/ui/StatusBadge";
 import PortalUploadModal from "../../components/ui/PortalUploadModal";
 import { formatShortDate } from "../../utils/formatters";
+import LoadingSpinner from "../../components/ui/LoadingSpinner";
 import toast from "react-hot-toast";
 
 export const PortalDocumentsPage = () => {
@@ -55,43 +56,46 @@ export const PortalDocumentsPage = () => {
         </button>
       </div>
 
-      {/* Docs Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        {docs.map((doc) => (
-          <div key={doc.id} className="glass-card p-6 border border-on-primary-fixed-variant/60 flex flex-col justify-between space-y-4">
-            <div className="flex items-center space-x-3">
-              <div className="p-2.5 rounded bg-white/5 border border-on-primary-fixed-variant text-secondary">
-                <FolderOpen className="h-5 w-5" />
-              </div>
-              <div className="truncate">
-                <h4 className="font-semibold text-white truncate max-w-[180px]">{doc.name}</h4>
-                <span className="text-[10px] text-on-primary-container/40 uppercase tracking-widest">{doc.type}</span>
-              </div>
-            </div>
-
-            <div className="pt-4 border-t border-on-primary-fixed-variant flex justify-between items-center text-xs">
-              <span className="text-on-primary-container/40 font-mono">Uploaded: {formatShortDate(doc.date || doc.createdAt)}</span>
-              <div className="flex items-center space-x-2">
-                <StatusBadge status={doc.status} />
-                {doc.fileUrl && (
-                  <a
-                    href={doc.fileUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="p-1 rounded bg-white/5 text-secondary hover:text-white"
-                  >
-                    <Eye className="h-4 w-4" />
-                  </a>
-                )}
-              </div>
-            </div>
+        {loading ? (
+          <div className="col-span-2 py-12">
+            <LoadingSpinner message="Retrieving documents..." />
           </div>
-        ))}
-
-        {docs.length === 0 && !loading && (
+        ) : docs.length === 0 ? (
           <div className="col-span-2 text-center py-12 text-xs text-on-primary-container/40 italic">
             No document attachments found. Click Upload File above to add one.
           </div>
+        ) : (
+          docs.map((doc) => (
+            <div key={doc.id} className="glass-card p-6 border border-on-primary-fixed-variant/60 flex flex-col justify-between space-y-4">
+              <div className="flex items-center space-x-3">
+                <div className="p-2.5 rounded bg-white/5 border border-on-primary-fixed-variant text-secondary">
+                  <FolderOpen className="h-5 w-5" />
+                </div>
+                <div className="truncate">
+                  <h4 className="font-semibold text-white truncate max-w-[180px]">{doc.name}</h4>
+                  <span className="text-[10px] text-on-primary-container/40 uppercase tracking-widest">{doc.type}</span>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-on-primary-fixed-variant flex justify-between items-center text-xs">
+                <span className="text-on-primary-container/40 font-mono">Uploaded: {formatShortDate(doc.date || doc.createdAt)}</span>
+                <div className="flex items-center space-x-2">
+                  <StatusBadge status={doc.status} />
+                  {doc.fileUrl && (
+                    <a
+                      href={doc.fileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-1 rounded bg-white/5 text-secondary hover:text-white"
+                    >
+                      <Eye className="h-4 w-4" />
+                    </a>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))
         )}
       </div>
 
