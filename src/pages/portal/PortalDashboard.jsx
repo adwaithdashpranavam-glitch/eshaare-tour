@@ -99,7 +99,7 @@ export const PortalDashboard = () => {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-        <KPICard title="Active Cases" value={activeCases.length} icon="FileText" color="blue" />
+        <KPICard title="Active Cases" value={activeCases.length} icon="FileText" color="green" />
         <KPICard title="Draft Applications" value={draftsCount} icon="Edit3" color="gold" />
         <KPICard title="Pending Uploads" value={pendingDocsCount} icon="UploadCloud" color={pendingDocsCount > 0 ? "orange" : "green"} />
         <KPICard title="New Notifications" value={unreadNotificationsCount} icon="Bell" color={unreadNotificationsCount > 0 ? "red" : "gold"} />

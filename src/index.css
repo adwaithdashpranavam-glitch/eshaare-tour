@@ -17,7 +17,7 @@
 
 /* Premium diffused shadow — used on all white cards */
 .premium-shadow {
-  box-shadow: 0 20px 40px rgba(10, 25, 47, 0.05);
+  box-shadow: 0 20px 40px rgba(29, 80, 58, 0.05);
 }
 
 /* Glass card — used in hero floating badges, overlays */
@@ -30,7 +30,7 @@
 
 /* Bottom nav for mobile portal/admin */
 .bottom-nav-glass {
-  background: rgba(10, 25, 47, 0.85);
+  background: rgba(29, 80, 58, 0.85);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border-top: 1px solid rgba(255, 218, 184, 0.2);
@@ -55,7 +55,7 @@ button:focus, a:focus, input:focus, select:focus, textarea:focus {
 
 /* Hero gradient */
 .hero-gradient {
-  background: linear-gradient(rgba(13, 28, 50, 0.75), rgba(13, 28, 50, 0.9)),
+  background: linear-gradient(rgba(29, 80, 58, 0.75), rgba(29, 80, 58, 0.9)),
     url('https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=1600&q=80') center/cover;
 }
 
@@ -95,6 +95,6 @@ button:focus, a:focus, input:focus, select:focus, textarea:focus {
 }
 
 .dark .glass-card {
-  background: rgba(13, 28, 50, 0.6);
+  background: rgba(29, 80, 58, 0.6);
   border-color: rgba(255, 255, 255, 0.08);
 }

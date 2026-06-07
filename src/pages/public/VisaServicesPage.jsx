@@ -118,7 +118,7 @@ export const VisaServicesPage = () => {
   };
 
   return (
-    <div className="bg-[#3F3A34] min-h-screen text-[#F5F1E8] font-sans pb-24">
+    <div className="bg-[#16652A] min-h-screen text-[#F5F1E8] font-sans pb-24">
       {/* Page Hero Banner */}
       <section className="relative py-28 overflow-hidden bg-[#2B2723] border-b border-[#4D4740] text-center">
         {/* Background Image */}
@@ -128,7 +128,7 @@ export const VisaServicesPage = () => {
             alt="Travel Background"
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-[#3F3A34]/85 backdrop-blur-[2px]"></div>
+          <div className="absolute inset-0 bg-[#16652A]/85 backdrop-blur-[2px]"></div>
         </div>
 
         <div className="relative z-10 max-w-container-max mx-auto px-4 space-y-4">
@@ -175,7 +175,7 @@ export const VisaServicesPage = () => {
             <p className="text-sm text-[#F5F1E8]/60">Unable to load visa services. Please refresh the page.</p>
             <button
               onClick={() => setRetryTrigger((prev) => prev + 1)}
-              className="px-6 py-2.5 bg-gradient-to-r from-[#7A8F6B] to-[#627555] text-[#3F3A34] font-bold rounded-lg hover:opacity-95 transition-all text-xs uppercase tracking-wider"
+              className="px-6 py-2.5 bg-gradient-to-r from-[#7A8F6B] to-[#627555] text-[#16652A] font-bold rounded-lg hover:opacity-95 transition-all text-xs uppercase tracking-wider"
             >
               Retry Loading
             </button>
@@ -272,7 +272,7 @@ export const VisaServicesPage = () => {
                       </Link>
                       <Link
                         to={`/visa-services/${visa.slug}`}
-                        className="w-full text-center py-2.5 bg-gradient-to-r from-[#7A8F6B] to-[#627555] text-[#3F3A34] font-bold rounded-lg text-xs uppercase tracking-wider hover:opacity-95 transition-all shadow-sm flex items-center justify-center"
+                        className="w-full text-center py-2.5 bg-gradient-to-r from-[#7A8F6B] to-[#627555] text-[#16652A] font-bold rounded-lg text-xs uppercase tracking-wider hover:opacity-95 transition-all shadow-sm flex items-center justify-center"
                       >
                         Apply Now
                       </Link>
@@ -380,7 +380,7 @@ export const VisaServicesPage = () => {
             <button
               type="submit"
               disabled={submitting}
-              className="flex-1 py-2.5 bg-gradient-to-r from-[#7A8F6B] to-[#627555] text-[#3F3A34] font-bold rounded text-xs uppercase tracking-wider shadow-sm disabled:opacity-50"
+              className="flex-1 py-2.5 bg-gradient-to-r from-[#7A8F6B] to-[#627555] text-[#16652A] font-bold rounded text-xs uppercase tracking-wider shadow-sm disabled:opacity-50"
             >
               {submitting ? "Submitting..." : "Submit Enquiry"}
             </button>

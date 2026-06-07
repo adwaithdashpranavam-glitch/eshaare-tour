@@ -110,7 +110,7 @@ export const PortalApplicationsPage = () => {
   const handleSubmitApplication = async (e) => {
     e.preventDefault();
     if (!selectedDraft) return;
-    
+
     if (!formData.name || !formData.phone || !formData.email) {
       toast.error("Please fill in name, phone, and email.");
       return;
@@ -132,7 +132,7 @@ export const PortalApplicationsPage = () => {
 
   return (
     <div className="space-y-10 font-sans pb-16">
-      
+
       {/* Header */}
       <div>
         <h1 className="text-2xl font-display font-bold text-white tracking-wide">My Applications</h1>
@@ -324,7 +324,7 @@ export const PortalApplicationsPage = () => {
             <button
               type="submit"
               disabled={submitting}
-              className="flex-1 py-2.5 bg-gradient-to-r from-[#7A8F6B] to-[#627555] text-[#3F3A34] font-extrabold rounded text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-50"
+              className="flex-1 py-2.5 bg-gradient-to-r from-[#7A8F6B] to-[#627555] text-[#16652A] font-extrabold rounded text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-50"
             >
               <Send className="h-4 w-4" />
               <span>Submit Application</span>

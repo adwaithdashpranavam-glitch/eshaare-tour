@@ -540,7 +540,7 @@ export default function GlobePage() {
 
   return (
     <section
-      className="relative h-screen w-full overflow-hidden bg-[#3F3A34]"
+      className="relative h-screen w-full overflow-hidden bg-[#16652A]"
       aria-label="Interactive world travel map"
     >
       {/* Globe Loading Overlay */}
@@ -550,7 +550,7 @@ export default function GlobePage() {
             initial={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.8, ease: "easeInOut" }}
-            className="absolute inset-0 z-50 flex items-center justify-center bg-[#3F3A34]"
+            className="absolute inset-0 z-50 flex items-center justify-center bg-[#16652A]"
           >
             <div className="flex flex-col items-center gap-5">
               {/* Animated orbit rings */}
@@ -768,7 +768,7 @@ export default function GlobePage() {
                   className="h-full w-full object-cover"
                 />
                 {/* Gradient overlays */}
-                <div className="absolute inset-0 bg-gradient-to-t from-[#3F3A34] via-black/30 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#16652A] via-black/30 to-transparent" />
                 <div className="absolute inset-0 bg-gradient-to-r from-black/30 to-transparent" />
 
                 {/* Back button — floated over image */}

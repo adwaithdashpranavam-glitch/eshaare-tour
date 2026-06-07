@@ -82,13 +82,13 @@ export const PortalLogin = () => {
   };
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#3F3A34] px-6 py-12 font-sans relative overflow-hidden">
+    <main className="flex min-h-screen items-center justify-center bg-[#16652A] px-6 py-12 font-sans relative overflow-hidden">
       {/* Background radial glow */}
       <div className="absolute -top-40 -left-40 h-96 w-96 bg-[#7A8F6B]/5 blur-3xl rounded-full"></div>
       <div className="absolute -bottom-40 -right-40 h-96 w-96 bg-[#7A8F6B]/5 blur-3xl rounded-full"></div>
 
       <div className="w-full max-w-md rounded-3xl border border-white/10 bg-white/5 p-8 shadow-2xl relative z-10 space-y-6">
-        
+
         {/* Header */}
         <div className="text-center space-y-3">
           <div className="flex justify-center">
@@ -108,21 +108,19 @@ export const PortalLogin = () => {
         <div className="flex rounded-xl bg-black/40 p-1 border border-white/5">
           <button
             onClick={() => setActiveTab("login")}
-            className={`flex-1 rounded-lg py-2 text-xs font-semibold uppercase tracking-wider transition-all ${
-              activeTab === "login"
-                ? "bg-[#7A8F6B] text-white shadow-md"
-                : "text-gray-400 hover:text-white"
-            }`}
+            className={`flex-1 rounded-lg py-2 text-xs font-semibold uppercase tracking-wider transition-all ${activeTab === "login"
+              ? "bg-[#7A8F6B] text-white shadow-md"
+              : "text-gray-400 hover:text-white"
+              }`}
           >
             Login
           </button>
           <button
             onClick={() => setActiveTab("signup")}
-            className={`flex-1 rounded-lg py-2 text-xs font-semibold uppercase tracking-wider transition-all ${
-              activeTab === "signup"
-                ? "bg-[#7A8F6B] text-white shadow-md"
-                : "text-gray-400 hover:text-white"
-            }`}
+            className={`flex-1 rounded-lg py-2 text-xs font-semibold uppercase tracking-wider transition-all ${activeTab === "signup"
+              ? "bg-[#7A8F6B] text-white shadow-md"
+              : "text-gray-400 hover:text-white"
+              }`}
           >
             Sign Up
           </button>

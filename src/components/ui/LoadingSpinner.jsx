@@ -27,7 +27,7 @@ export const LoadingSpinner = ({ message = "Loading...", fullScreen = false }) =
 
   if (fullScreen) {
     return (
-      <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#3F3A34] font-sans">
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#16652A] font-sans">
         {spinnerContent}
       </div>
     );

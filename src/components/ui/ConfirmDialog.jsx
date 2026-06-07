@@ -13,7 +13,7 @@ export const ConfirmDialog = ({
   const buttonStyles = {
     danger: "bg-danger hover:bg-danger/80 text-white shadow-[0_0_10px_rgba(226,75,74,0.2)]",
     warning: "bg-warning hover:bg-warning/80 text-white shadow-[0_0_10px_rgba(186,117,23,0.2)]",
-    info: "bg-info hover:bg-info/80 text-white shadow-[0_0_10px_rgba(55,140,221,0.2)]"
+    info: "bg-info hover:bg-info/80 text-white shadow-[0_0_10px_rgba(29, 80, 58, 0.2)]"
   };
 
   const actionButtonClass = buttonStyles[variant] || buttonStyles.warning;

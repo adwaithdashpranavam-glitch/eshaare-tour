@@ -229,7 +229,7 @@ export const PublicLayout = () => {
 
       {/* Welcome Banner if authenticated */}
       {user && (
-        <div className="fixed top-0 left-0 w-full z-50 h-8 bg-gradient-to-r from-[#2B2723] via-[#3F3A34] to-[#2B2723] text-gray-300 text-xs px-4 xl:px-8 flex items-center justify-between border-b border-amber-500/10 font-medium tracking-wide shadow-sm">
+        <div className="fixed top-0 left-0 w-full z-50 h-8 bg-gradient-to-r from-[#2B2723] via-[#16652A] to-[#2B2723] text-gray-300 text-xs px-4 xl:px-8 flex items-center justify-between border-b border-amber-500/10 font-medium tracking-wide shadow-sm">
           <div className="flex items-center gap-1.5">
             <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
             <span>
@@ -244,11 +244,10 @@ export const PublicLayout = () => {
 
       {/* Sticky Top Navbar */}
       <header
-        className={`fixed left-0 w-full z-50 transition-all duration-300 ${
-          scrolled
-            ? "bg-white/95 backdrop-blur-md shadow-md border-b border-gray-100"
-            : "bg-white/90 backdrop-blur-xl shadow-md border-b border-gray-100"
-        } ${user ? "top-8" : "top-0"}`}
+        className={`fixed left-0 w-full z-50 transition-all duration-300 ${scrolled
+          ? "bg-white/95 backdrop-blur-md shadow-md border-b border-gray-100"
+          : "bg-white/90 backdrop-blur-xl shadow-md border-b border-gray-100"
+          } ${user ? "top-8" : "top-0"}`}
       >
 
         <div className="max-w-[95rem] mx-auto px-4 xl:px-6 h-16 flex items-center justify-between">
@@ -267,13 +266,13 @@ export const PublicLayout = () => {
 
             <Link to="/" className="flex items-center gap-2 group shrink-0">
               <div className="relative">
-                <MapPin className="h-5 w-5 text-[#3F3A34]" />
-                <div className="absolute -top-1 -right-2 w-2 h-2 bg-[#3F3A34] rounded-full animate-pulse" />
+                <MapPin className="h-5 w-5 text-[#16652A]" />
+                <div className="absolute -top-1 -right-2 w-2 h-2 bg-[#16652A] rounded-full animate-pulse" />
               </div>
               <div>
                 <h1 className="text-xl font-bold tracking-tight leading-none">
                   <span className="text-[#16652A]">ESHAARE</span>
-                  <span className="text-[#3F3A34] ml-1">TOUR</span>
+                  <span className="text-[#16652A] ml-1">TOUR</span>
                 </h1>
                 <p className="text-[10px] tracking-wider text-gray-800 font-semibold mt-1">
                   TOURS & EVENTS
@@ -514,110 +513,110 @@ export const PublicLayout = () => {
       {/* Footer matching figma style colorings */}
       {!isPortal && (
         <footer className="bg-primary-container text-on-primary-container pt-16 pb-32">
-        <div className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop grid grid-cols-1 md:grid-cols-4 gap-gutter mb-12">
-          {/* Brand Col */}
-          <div className="flex flex-col gap-4">
-            <Link to="/" className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-white text-3xl font-bold">location_on</span>
-              <span className="font-headline-md font-bold text-white tracking-tight">
-                ESHAAR TOUR
-              </span>
-            </Link>
-            <p className="text-body-sm leading-relaxed text-on-primary-container/80">
-              Premium visa processing assistance & curated luxury tour packages for UAE residents. Your gateway to global travel.
-            </p>
+          <div className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop grid grid-cols-1 md:grid-cols-4 gap-gutter mb-12">
+            {/* Brand Col */}
+            <div className="flex flex-col gap-4">
+              <Link to="/" className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-white text-3xl font-bold">location_on</span>
+                <span className="font-headline-md font-bold text-white tracking-tight">
+                  ESHAAR TOUR
+                </span>
+              </Link>
+              <p className="text-body-sm leading-relaxed text-on-primary-container/80">
+                Premium visa processing assistance & curated luxury tour packages for UAE residents. Your gateway to global travel.
+              </p>
+            </div>
+
+            {/* Quick Links */}
+            <div className="flex flex-col gap-4">
+              <h4 className="text-white font-headline-md text-body-lg font-semibold">Services</h4>
+              <ul className="flex flex-col gap-2.5 text-body-sm">
+                <li>
+                  <Link to="/visa-services" className="text-on-primary-container/80 hover:text-secondary-fixed transition-colors">
+                    Visa Services
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/packages" className="text-on-primary-container/80 hover:text-[#16652A] transition-colors">
+                    Tour Packages
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/destinations" className="text-on-primary-container/80 hover:text-[#16652A] transition-colors">
+                    Destinations
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/resources" className="text-on-primary-container/80 hover:text-[#16652A] transition-colors">
+                    Documentation Guide
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            {/* Support Links */}
+            <div className="flex flex-col gap-4">
+              <h4 className="text-white font-headline-md text-body-lg font-semibold">Support</h4>
+              <ul className="flex flex-col gap-2.5 text-body-sm">
+                <li>
+                  <Link to="/track" className="text-on-primary-container/80 hover:text-[#16652A] transition-colors">
+                    Track Application
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/contact" className="text-on-primary-container/80 hover:text-[#16652A] transition-colors">
+                    Contact Support
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/login" className="text-on-primary-container/80 hover:text-[#16652A] transition-colors">
+                    Staff Login
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/portal/login" className="text-on-primary-container/80 hover:text-[#16652A] transition-colors">
+                    Client Portal
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            {/* Newsletter */}
+            <div className="flex flex-col gap-4">
+              <h4 className="text-white font-headline-md text-body-lg font-semibold">Newsletter</h4>
+              <p className="text-body-sm leading-relaxed text-on-primary-container/80">
+                Subscribe to get the latest visa news updates and luxury tour package offers.
+              </p>
+              <form onSubmit={handleNewsletterSubmit} className="flex gap-2">
+                <input
+                  type="email"
+                  required
+                  className="flex-grow px-3 py-2 bg-surface-container-lowest text-on-surface placeholder:text-on-surface-variant/50 text-body-sm rounded-lg border border-outline-variant/10 focus:outline-none"
+                  placeholder="Your email address"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+                <button
+                  type="submit"
+                  className="bg-[#16652A] text-white px-4 py-2 rounded-lg font-label-md hover:bg-[#0e4a1e] transition-colors flex items-center justify-center"
+                >
+                  <span className="material-symbols-outlined text-lg">send</span>
+                </button>
+              </form>
+            </div>
           </div>
 
-          {/* Quick Links */}
-          <div className="flex flex-col gap-4">
-            <h4 className="text-white font-headline-md text-body-lg font-semibold">Services</h4>
-            <ul className="flex flex-col gap-2.5 text-body-sm">
-              <li>
-                <Link to="/visa-services" className="text-on-primary-container/80 hover:text-secondary-fixed transition-colors">
-                  Visa Services
-                </Link>
-              </li>
-              <li>
-                <Link to="/packages" className="text-on-primary-container/80 hover:text-[#16652A] transition-colors">
-                  Tour Packages
-                </Link>
-              </li>
-              <li>
-                <Link to="/destinations" className="text-on-primary-container/80 hover:text-[#16652A] transition-colors">
-                  Destinations
-                </Link>
-              </li>
-              <li>
-                <Link to="/resources" className="text-on-primary-container/80 hover:text-[#16652A] transition-colors">
-                  Documentation Guide
-                </Link>
-              </li>
-            </ul>
+          {/* Bottom Bar */}
+          <div className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between text-body-sm text-on-primary-container/60">
+            <p>Â© {new Date().getFullYear()} Eshaare Tours UAE. All rights reserved.</p>
+            <div className="flex gap-6 mt-4 md:mt-0">
+              <a href="https://instagram.com" target="_blank" rel="noreferrer" className="hover:text-secondary-fixed transition-colors">Instagram</a>
+              <a href="https://wa.me/971501234567" target="_blank" rel="noreferrer" className="hover:text-secondary-fixed transition-colors">WhatsApp</a>
+              <a href="https://facebook.com" target="_blank" rel="noreferrer" className="hover:text-secondary-fixed transition-colors">Facebook</a>
+            </div>
           </div>
-
-          {/* Support Links */}
-          <div className="flex flex-col gap-4">
-            <h4 className="text-white font-headline-md text-body-lg font-semibold">Support</h4>
-            <ul className="flex flex-col gap-2.5 text-body-sm">
-              <li>
-                <Link to="/track" className="text-on-primary-container/80 hover:text-[#16652A] transition-colors">
-                  Track Application
-                </Link>
-              </li>
-              <li>
-                <Link to="/contact" className="text-on-primary-container/80 hover:text-[#16652A] transition-colors">
-                  Contact Support
-                </Link>
-              </li>
-              <li>
-                <Link to="/login" className="text-on-primary-container/80 hover:text-[#16652A] transition-colors">
-                  Staff Login
-                </Link>
-              </li>
-              <li>
-                <Link to="/portal/login" className="text-on-primary-container/80 hover:text-[#16652A] transition-colors">
-                  Client Portal
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Newsletter */}
-          <div className="flex flex-col gap-4">
-            <h4 className="text-white font-headline-md text-body-lg font-semibold">Newsletter</h4>
-            <p className="text-body-sm leading-relaxed text-on-primary-container/80">
-              Subscribe to get the latest visa news updates and luxury tour package offers.
-            </p>
-            <form onSubmit={handleNewsletterSubmit} className="flex gap-2">
-              <input
-                type="email"
-                required
-                className="flex-grow px-3 py-2 bg-surface-container-lowest text-on-surface placeholder:text-on-surface-variant/50 text-body-sm rounded-lg border border-outline-variant/10 focus:outline-none"
-                placeholder="Your email address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-              <button
-                type="submit"
-                className="bg-[#16652A] text-white px-4 py-2 rounded-lg font-label-md hover:bg-[#0e4a1e] transition-colors flex items-center justify-center"
-              >
-                <span className="material-symbols-outlined text-lg">send</span>
-              </button>
-            </form>
-          </div>
-        </div>
-
-        {/* Bottom Bar */}
-        <div className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between text-body-sm text-on-primary-container/60">
-          <p>Â© {new Date().getFullYear()} Eshaare Tours UAE. All rights reserved.</p>
-          <div className="flex gap-6 mt-4 md:mt-0">
-            <a href="https://instagram.com" target="_blank" rel="noreferrer" className="hover:text-secondary-fixed transition-colors">Instagram</a>
-            <a href="https://wa.me/971501234567" target="_blank" rel="noreferrer" className="hover:text-secondary-fixed transition-colors">WhatsApp</a>
-            <a href="https://facebook.com" target="_blank" rel="noreferrer" className="hover:text-secondary-fixed transition-colors">Facebook</a>
-          </div>
-        </div>
-      </footer>
-    )}
+        </footer>
+      )}
 
       {/* WhatsApp FAB */}
       {!isPortal && (

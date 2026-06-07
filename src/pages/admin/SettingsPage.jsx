@@ -8,7 +8,7 @@ import toast from "react-hot-toast";
 
 export const SettingsPage = () => {
   const [subTab, setSubTab] = useState("general");
-  
+
   // General settings state
   const [generalSettings, setGeneralSettings] = useState({
     agencyName: "ESHAARE Travel & Tourism LLC",
@@ -24,7 +24,7 @@ export const SettingsPage = () => {
   ]);
 
   const [newFee, setNewFee] = useState({ type: "Schengen", dest: "", govFee: "", serviceFee: "", days: "" });
-  
+
   const [isSeeded, setIsSeeded] = useState(false);
   const [seeding, setSeeding] = useState(false);
 
@@ -109,8 +109,8 @@ export const SettingsPage = () => {
     try {
       const payload = {};
       feeMaster.forEach(fee => {
-        const normKey = Object.keys(VISA_REQUIREMENTS).find(k => 
-          fee.type?.toLowerCase().includes(k.toLowerCase()) || 
+        const normKey = Object.keys(VISA_REQUIREMENTS).find(k =>
+          fee.type?.toLowerCase().includes(k.toLowerCase()) ||
           fee.dest?.toLowerCase().includes(k.toLowerCase())
         ) || "Schengen";
         const requiredDocs = VISA_REQUIREMENTS[normKey] || [];
@@ -149,7 +149,7 @@ export const SettingsPage = () => {
 
   return (
     <div className="space-y-6 font-sans">
-      
+
       {/* Header */}
       <div>
         <h1 className="text-2xl font-display font-bold text-white tracking-wide">System Settings</h1>
@@ -167,11 +167,10 @@ export const SettingsPage = () => {
             <button
               key={item.id}
               onClick={() => setSubTab(item.id)}
-              className={`w-full text-left px-4 py-2.5 rounded-lg text-xs font-semibold uppercase tracking-wider transition-colors ${
-                subTab === item.id 
-                  ? "bg-secondary-container/10 text-secondary border-l-2 border-secondary pl-3.5" 
+              className={`w-full text-left px-4 py-2.5 rounded-lg text-xs font-semibold uppercase tracking-wider transition-colors ${subTab === item.id
+                  ? "bg-secondary-container/10 text-secondary border-l-2 border-secondary pl-3.5"
                   : "text-on-primary-container/60 hover:text-white"
-              }`}
+                }`}
             >
               {item.label}
             </button>
@@ -180,27 +179,27 @@ export const SettingsPage = () => {
 
         {/* Right Form Fields */}
         <div className="lg:col-span-9 space-y-6">
-          
+
           {subTab === "general" && (
             <div className="glass-card p-6 border border-on-primary-fixed-variant/60 space-y-6 font-sans text-xs">
               <h3 className="text-base font-semibold text-white border-b border-on-primary-fixed-variant pb-2">Business Profile</h3>
-              
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex flex-col space-y-1">
                   <span className="text-[10px] text-on-primary-container/40 uppercase">Agency Name</span>
-                  <input 
-                    type="text" 
-                    className="bg-primary-container border border-on-primary-fixed-variant p-2 rounded focus:outline-none text-white text-xs" 
-                    value={generalSettings.agencyName} 
+                  <input
+                    type="text"
+                    className="bg-primary-container border border-on-primary-fixed-variant p-2 rounded focus:outline-none text-white text-xs"
+                    value={generalSettings.agencyName}
                     onChange={(e) => setGeneralSettings({ ...generalSettings, agencyName: e.target.value })}
                   />
                 </div>
                 <div className="flex flex-col space-y-1">
                   <span className="text-[10px] text-on-primary-container/40 uppercase">WhatsApp Helpdesk</span>
-                  <input 
-                    type="text" 
-                    className="bg-primary-container border border-on-primary-fixed-variant p-2 rounded focus:outline-none text-white text-xs" 
-                    value={generalSettings.whatsappHelpdesk} 
+                  <input
+                    type="text"
+                    className="bg-primary-container border border-on-primary-fixed-variant p-2 rounded focus:outline-none text-white text-xs"
+                    value={generalSettings.whatsappHelpdesk}
                     onChange={(e) => setGeneralSettings({ ...generalSettings, whatsappHelpdesk: e.target.value })}
                   />
                 </div>
@@ -225,7 +224,7 @@ export const SettingsPage = () => {
                 <p className="text-on-primary-container/70 leading-relaxed text-xs">
                   Populate your visa pages database with the 5 default visa types (Schengen, UK, USA, UAE, Saudi Arabia). Run this once when setting up the system for the first time.
                 </p>
-                
+
                 {/* Warning box */}
                 <div className="p-3 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-lg text-xs leading-relaxed flex items-start gap-2">
                   <span className="flex-shrink-0 mt-0.5">⚠️</span>
@@ -260,7 +259,7 @@ export const SettingsPage = () => {
           {subTab === "feemaster" && (
             <div className="glass-card p-6 border border-on-primary-fixed-variant/60 space-y-6 font-sans text-xs">
               <h3 className="text-base font-semibold text-white border-b border-on-primary-fixed-variant pb-2">Visa Fee Master Listing</h3>
-              
+
               {/* Fee Master Table */}
               <div className="overflow-x-auto border border-on-primary-fixed-variant rounded">
                 <table className="min-w-full text-left divide-y divide-outline-variant/15 text-[11px]">

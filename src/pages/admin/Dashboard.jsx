@@ -3,21 +3,21 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { db } from "../../lib/firebase";
 import { collection, onSnapshot, query, where, orderBy, limit, getCountFromServer } from "firebase/firestore";
-import { 
-  Users, FileText, CalendarCheck, AlertTriangle, 
+import {
+  Users, FileText, CalendarCheck, AlertTriangle,
   TrendingUp, BarChart3, AlertCircle, ArrowUpRight,
   Package, Building, Tag, ShieldAlert
 } from "lucide-react";
 import { LoadingSpinner } from "../../components/ui/LoadingSpinner";
 import { formatCurrency, formatDate } from "../../utils/formatters";
-import { 
-  LineChart, Line, XAxis, YAxis, 
-  CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell 
+import {
+  LineChart, Line, XAxis, YAxis,
+  CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell
 } from "recharts";
 
 export const Dashboard = () => {
   const [loading, setLoading] = useState(true);
-  
+
   // Real-time snapshot KPIs
   const [kpis, setKpis] = useState({
     newLeads: 0,
@@ -165,7 +165,7 @@ export const Dashboard = () => {
           ...prev,
           newLeads: newToday
         }));
-        
+
         const sortedLeads = leads
           .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0))
           .slice(0, 5);
@@ -193,7 +193,7 @@ export const Dashboard = () => {
           pendingDocs: pending
         }));
       }
-    }, () => {});
+    }, () => { });
 
     return () => {
       unsubscribeLeads();
@@ -207,7 +207,7 @@ export const Dashboard = () => {
 
   return (
     <div className="space-y-8 font-sans">
-      
+
       {/* Header Info */}
       <div>
         <h1 className="text-3xl font-bold text-white">
@@ -225,7 +225,7 @@ export const Dashboard = () => {
             <AlertCircle className="h-5 w-5 flex-shrink-0 animate-bounce" />
             <span className="font-semibold">Attention: 1 Visa Case has passed its decision expected date with no outcome updated.</span>
           </div>
-          <Link 
+          <Link
             to="/admin/cases"
             className="text-xs font-bold underline uppercase tracking-wider hover:text-danger/80 transition-colors"
           >
@@ -266,7 +266,7 @@ export const Dashboard = () => {
             </div>
             <h2 className="mt-3 text-4xl font-bold text-[#7A8F6B]">{stats.totalVisas}</h2>
           </div>
-          <p className="mt-4 text-xs text-blue-400 font-medium">{stats.totalAppointments} Consultation Bookings</p>
+          <p className="mt-4 text-xs text-emerald-400 font-medium">{stats.totalAppointments} Consultation Bookings</p>
         </div>
 
         <div className="rounded-3xl bg-white/5 p-6 border border-white/10 hover:border-white/20 transition-all flex flex-col justify-between">
@@ -295,11 +295,11 @@ export const Dashboard = () => {
           <div>
             <div className="flex items-center justify-between">
               <p className="text-gray-400 text-sm font-semibold uppercase tracking-wider">Hotels</p>
-              <Building className="h-5 w-5 text-blue-400" />
+              <Building className="h-5 w-5 text-emerald-400" />
             </div>
-            <h2 className="mt-3 text-4xl font-bold text-blue-400">{stats.totalHotels}</h2>
+            <h2 className="mt-3 text-4xl font-bold text-emerald-400">{stats.totalHotels}</h2>
           </div>
-          <p className="mt-4 text-xs text-blue-300 font-medium">Stays registered</p>
+          <p className="mt-4 text-xs text-emerald-300 font-medium">Stays registered</p>
         </div>
 
         <div className="rounded-3xl bg-white/5 p-6 border border-white/10 hover:border-white/20 transition-all flex flex-col justify-between">
@@ -327,7 +327,7 @@ export const Dashboard = () => {
           </Link>
           <Link
             to="/admin/hotels"
-            className="rounded-2xl bg-blue-600 p-5 text-white font-semibold transition hover:opacity-90 flex items-center justify-between shadow-lg"
+            className="rounded-2xl bg-[#1D503A] p-5 text-white font-semibold transition hover:opacity-90 flex items-center justify-between shadow-lg"
           >
             <span>Hotels Manager</span>
             <span className="text-xs bg-black/20 px-2 py-0.5 rounded">{stats.totalHotels}</span>
@@ -360,7 +360,7 @@ export const Dashboard = () => {
                 <CartesianGrid strokeDasharray="3 3" stroke="#4D4740" />
                 <XAxis dataKey="date" stroke="#9ca3af" style={{ fontSize: 10 }} />
                 <YAxis stroke="#9ca3af" style={{ fontSize: 10 }} />
-                <Tooltip contentStyle={{ backgroundColor: "#3F3A34", borderColor: "#4D4740", borderRadius: "12px", color: "#fff" }} labelStyle={{ color: "#fff" }} />
+                <Tooltip contentStyle={{ backgroundColor: "#16652A", borderColor: "#4D4740", borderRadius: "12px", color: "#fff" }} labelStyle={{ color: "#fff" }} />
                 <Line type="monotone" dataKey="amt" stroke="#7A8F6B" strokeWidth={3} activeDot={{ r: 8 }} />
               </LineChart>
             </ResponsiveContainer>
@@ -384,7 +384,7 @@ export const Dashboard = () => {
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={{ backgroundColor: "#3F3A34", borderColor: "#4D4740", borderRadius: "12px" }} />
+                <Tooltip contentStyle={{ backgroundColor: "#16652A", borderColor: "#4D4740", borderRadius: "12px" }} />
               </PieChart>
             </ResponsiveContainer>
           </div>
