@@ -195,13 +195,13 @@ function WeatherStat({
   return (
     <div className="flex flex-col gap-1.5 rounded-xl border border-white/[0.07] bg-white/[0.04] p-3 backdrop-blur-sm transition-colors hover:bg-white/[0.07]">
       <div className="flex items-center gap-1.5">
-        <span className="text-[#EAC784]/70">{icon}</span>
+        <span className="text-[#7A8F6B]/70">{icon}</span>
         <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-white/35">
           {label}
         </span>
       </div>
       <p
-        className={`text-xl font-bold leading-none ${accent ? "text-[#EAC784]" : "text-white"}`}
+        className={`text-xl font-bold leading-none ${accent ? "text-[#7A8F6B]" : "text-white"}`}
       >
         {value}
       </p>
@@ -221,10 +221,10 @@ function WeatherWidget({
     <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4">
       {/* Header */}
       <div className="mb-4 flex items-center gap-2">
-        <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-[#EAC784]/10">
-          <Cloud size={12} className="text-[#EAC784]" />
+        <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-[#7A8F6B]/10">
+          <Cloud size={12} className="text-[#7A8F6B]" />
         </div>
-        <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#EAC784]">
+        <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#7A8F6B]">
           Live Conditions
         </span>
         {/* Live indicator */}
@@ -238,7 +238,7 @@ function WeatherWidget({
 
       {loading ? (
         <div className="flex items-center gap-3 py-4">
-          <Loader2 size={16} className="animate-spin text-[#EAC784]" />
+          <Loader2 size={16} className="animate-spin text-[#7A8F6B]" />
           <span className="text-xs text-white/40">
             Fetching local conditions…
           </span>
@@ -282,7 +282,7 @@ function WeatherWidget({
 // ─── Destination Card ────────────────────────────────────────────────────────
 function DestCard({ dest }) {
   return (
-    <div className="group relative overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.03] transition-all duration-300 hover:border-[#EAC784]/25 hover:bg-white/[0.06]">
+    <div className="group relative overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.03] transition-all duration-300 hover:border-[#7A8F6B]/25 hover:bg-white/[0.06]">
       {/* Image */}
       <div className="relative h-40 overflow-hidden rounded-t-2xl">
         <img
@@ -304,7 +304,7 @@ function DestCard({ dest }) {
         <h3 className="text-sm font-semibold text-white/90">{dest.name}</h3>
         <ChevronRight
           size={14}
-          className="text-white/20 transition-colors group-hover:text-[#EAC784]"
+          className="text-white/20 transition-colors group-hover:text-[#7A8F6B]"
         />
       </div>
     </div>
@@ -316,7 +316,7 @@ function Divider() {
   return (
     <div className="my-4 flex items-center gap-3">
       <span className="h-px flex-1 bg-white/[0.07]" />
-      <span className="h-1 w-1 rounded-full bg-[#EAC784]/40" />
+      <span className="h-1 w-1 rounded-full bg-[#7A8F6B]/40" />
       <span className="h-px flex-1 bg-white/[0.07]" />
     </div>
   );
@@ -523,7 +523,7 @@ export default function GlobePage() {
         })),
         ...POIs.map((p) => ({
           ...p,
-          color: "#EAC784",
+          color: "#7A8F6B",
           size: 0.22,
           isPOI: true,
         })),
@@ -540,7 +540,7 @@ export default function GlobePage() {
 
   return (
     <section
-      className="relative h-screen w-full overflow-hidden bg-[#2C2712]"
+      className="relative h-screen w-full overflow-hidden bg-[#3F3A34]"
       aria-label="Interactive world travel map"
     >
       {/* Globe Loading Overlay */}
@@ -550,21 +550,21 @@ export default function GlobePage() {
             initial={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.8, ease: "easeInOut" }}
-            className="absolute inset-0 z-50 flex items-center justify-center bg-[#2C2712]"
+            className="absolute inset-0 z-50 flex items-center justify-center bg-[#3F3A34]"
           >
             <div className="flex flex-col items-center gap-5">
               {/* Animated orbit rings */}
               <div className="relative flex h-16 w-16 items-center justify-center">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#EDB868] opacity-20" />
-                <span className="absolute h-10 w-10 rounded-full border-2 border-[#EDB868]/30" />
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#627555] opacity-20" />
+                <span className="absolute h-10 w-10 rounded-full border-2 border-[#627555]/30" />
                 <span
-                  className="h-16 w-16 rounded-full border-2 border-t-[#EAC784] border-r-transparent border-b-transparent border-l-transparent animate-spin"
+                  className="h-16 w-16 rounded-full border-2 border-t-[#7A8F6B] border-r-transparent border-b-transparent border-l-transparent animate-spin"
                   style={{ animationDuration: "1.1s" }}
                 />
-                <Compass className="absolute h-5 w-5 text-[#EAC784]" />
+                <Compass className="absolute h-5 w-5 text-[#7A8F6B]" />
               </div>
               <div className="text-center">
-                <p className="text-sm font-semibold tracking-[0.2em] uppercase text-[#EAC784]">
+                <p className="text-sm font-semibold tracking-[0.2em] uppercase text-[#7A8F6B]">
                   Loading Earth
                 </p>
                 <p className="mt-1 text-xs text-white/35 tracking-widest uppercase">
@@ -668,7 +668,7 @@ export default function GlobePage() {
                 <button
                   onClick={handleClose}
                   aria-label="Close panel and return to globe"
-                  className="group mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.15em] text-white/50 transition hover:border-white/20 hover:bg-white/[0.08] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#EAC784]"
+                  className="group mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.15em] text-white/50 transition hover:border-white/20 hover:bg-white/[0.08] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#7A8F6B]"
                 >
                   <ArrowLeft size={10} className="transition group-hover:-translate-x-0.5" />
                   Back to Earth
@@ -678,8 +678,8 @@ export default function GlobePage() {
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <div className="mb-1 flex items-center gap-2">
-                      <MapPin size={12} className="text-[#EAC784]" />
-                      <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#EAC784]/80">
+                      <MapPin size={12} className="text-[#7A8F6B]" />
+                      <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#7A8F6B]/80">
                         Destination
                       </span>
                     </div>
@@ -692,10 +692,10 @@ export default function GlobePage() {
                   </div>
                   {/* Pulse marker */}
                   <span
-                    className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#EAC784]/30 bg-[#EAC784]/10"
+                    className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#7A8F6B]/30 bg-[#7A8F6B]/10"
                     aria-hidden
                   >
-                    <span className="h-2 w-2 rounded-full bg-[#EAC784] animate-pulse" />
+                    <span className="h-2 w-2 rounded-full bg-[#7A8F6B] animate-pulse" />
                   </span>
                 </div>
               </div>
@@ -710,12 +710,12 @@ export default function GlobePage() {
                 {/* Destinations heading */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Sparkles size={13} className="text-[#EAC784]" />
+                    <Sparkles size={13} className="text-[#7A8F6B]" />
                     <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/60">
                       Top Destinations
                     </span>
                   </div>
-                  <span className="rounded-full bg-[#EAC784]/10 px-2 py-0.5 text-[9px] font-bold text-[#EAC784]">
+                  <span className="rounded-full bg-[#7A8F6B]/10 px-2 py-0.5 text-[9px] font-bold text-[#7A8F6B]">
                     {selectedCountry.destinations.length} spots
                   </span>
                 </div>
@@ -733,7 +733,7 @@ export default function GlobePage() {
             <div className="shrink-0 border-t border-white/[0.06] bg-black/40 px-6 py-4 backdrop-blur-xl">
               <Link
                 to="/packages"
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#c9832a] via-[#EAC784] to-[#e8c96a] py-4 text-sm font-bold text-black shadow-lg shadow-[#EAC784]/10 transition-all duration-200 hover:scale-[1.02] hover:shadow-[#EAC784]/25 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#EAC784]"
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#7A8F6B] via-[#7A8F6B] to-[#B4C5A8] py-4 text-sm font-bold text-black shadow-lg shadow-[#7A8F6B]/10 transition-all duration-200 hover:scale-[1.02] hover:shadow-[#7A8F6B]/25 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#7A8F6B]"
               >
                 <Sparkles size={14} />
                 View All Packages
@@ -768,21 +768,21 @@ export default function GlobePage() {
                   className="h-full w-full object-cover"
                 />
                 {/* Gradient overlays */}
-                <div className="absolute inset-0 bg-gradient-to-t from-[#2C2712] via-black/30 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#3F3A34] via-black/30 to-transparent" />
                 <div className="absolute inset-0 bg-gradient-to-r from-black/30 to-transparent" />
 
                 {/* Back button — floated over image */}
                 <button
                   onClick={handleClose}
                   aria-label="Close panel and return to globe"
-                  className="group absolute left-5 top-5 inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-black/50 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.15em] text-white/70 backdrop-blur-md transition hover:bg-black/70 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#EAC784]"
+                  className="group absolute left-5 top-5 inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-black/50 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.15em] text-white/70 backdrop-blur-md transition hover:bg-black/70 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#7A8F6B]"
                 >
                   <ArrowLeft size={10} className="transition group-hover:-translate-x-0.5" />
                   Back
                 </button>
 
                 {/* Country badge */}
-                <span className="absolute right-5 top-5 rounded-full border border-[#EAC784]/30 bg-black/50 px-3 py-1 text-[9px] font-bold uppercase tracking-[0.15em] text-[#EAC784] backdrop-blur-md">
+                <span className="absolute right-5 top-5 rounded-full border border-[#7A8F6B]/30 bg-black/50 px-3 py-1 text-[9px] font-bold uppercase tracking-[0.15em] text-[#7A8F6B] backdrop-blur-md">
                   {selectedPOI.country} · Hotspot
                 </span>
 
@@ -799,8 +799,8 @@ export default function GlobePage() {
                 {/* About */}
                 <div>
                   <div className="mb-3 flex items-center gap-2">
-                    <Compass size={12} className="text-[#EAC784]" />
-                    <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#EAC784]/80">
+                    <Compass size={12} className="text-[#7A8F6B]" />
+                    <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#7A8F6B]/80">
                       About This Landmark
                     </span>
                   </div>
@@ -820,7 +820,7 @@ export default function GlobePage() {
             <div className="shrink-0 border-t border-white/[0.06] bg-black/40 px-6 py-4 backdrop-blur-xl">
               <Link
                 to="/packages"
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#c9832a] via-[#EAC784] to-[#e8c96a] py-4 text-sm font-bold text-black shadow-lg shadow-[#EAC784]/10 transition-all duration-200 hover:scale-[1.02] hover:shadow-[#EAC784]/25 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#EAC784]"
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#7A8F6B] via-[#7A8F6B] to-[#B4C5A8] py-4 text-sm font-bold text-black shadow-lg shadow-[#7A8F6B]/10 transition-all duration-200 hover:scale-[1.02] hover:shadow-[#7A8F6B]/25 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#7A8F6B]"
               >
                 <Sparkles size={14} />
                 Explore Tour Packages
@@ -835,7 +835,7 @@ export default function GlobePage() {
                     1500
                   );
                 }}
-                className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-xl border border-white/[0.08] bg-white/[0.03] py-3 text-xs font-semibold text-white/50 transition hover:bg-white/[0.07] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#EAC784]"
+                className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-xl border border-white/[0.08] bg-white/[0.03] py-3 text-xs font-semibold text-white/50 transition hover:bg-white/[0.07] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#7A8F6B]"
               >
                 <Compass size={11} />
                 Zoom Out to Globe

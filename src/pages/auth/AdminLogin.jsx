@@ -44,7 +44,7 @@ export const AdminLogin = () => {
   };
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#2C2712] px-6 font-sans">
+    <main className="flex min-h-screen items-center justify-center bg-[#3F3A34] px-6 font-sans">
       <div className="w-full max-w-md rounded-3xl border border-white/10 bg-white/5 p-8 shadow-2xl">
         <h1 className="text-3xl font-bold text-white">Admin Login</h1>
         <p className="mt-2 text-gray-400">Sign in to Tourism CRM</p>
@@ -60,7 +60,7 @@ export const AdminLogin = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-white outline-none focus:border-[#e68932]/50 transition-colors text-sm"
+              className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-white outline-none focus:border-[#7A8F6B]/50 transition-colors text-sm"
             />
           </div>
 
@@ -74,14 +74,14 @@ export const AdminLogin = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-white outline-none focus:border-[#e68932]/50 transition-colors text-sm"
+              className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-white outline-none focus:border-[#7A8F6B]/50 transition-colors text-sm"
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-xl bg-[#e68932] py-3.5 font-semibold text-white hover:bg-[#cf7726] transition-colors disabled:opacity-50 text-sm mt-2"
+            className="w-full rounded-xl bg-[#7A8F6B] py-3.5 font-semibold text-white hover:bg-[#627555] transition-colors disabled:opacity-50 text-sm mt-2"
           >
             {loading ? "Signing In..." : "Login"}
           </button>

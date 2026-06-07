@@ -163,7 +163,7 @@ export const PortalApplicationsPage = () => {
                   </div>
                   <button
                     onClick={() => handleOpenEdit(d)}
-                    className="p-2 bg-[#231F0D] border border-[#453E1D] text-secondary hover:text-white rounded-lg flex items-center justify-center transition-colors"
+                    className="p-2 bg-[#2B2723] border border-[#4D4740] text-secondary hover:text-white rounded-lg flex items-center justify-center transition-colors"
                     title="Continue Application"
                   >
                     <Edit3 className="h-4.5 w-4.5" />
@@ -174,7 +174,7 @@ export const PortalApplicationsPage = () => {
                   <span>Created: {formatShortDate(d.createdAt?.toDate ? d.createdAt.toDate() : d.createdAt)}</span>
                   <button
                     onClick={() => handleOpenEdit(d)}
-                    className="text-secondary hover:text-[#EEDADA] font-bold uppercase tracking-wider text-[10px] flex items-center space-x-1"
+                    className="text-secondary hover:text-[#F5F1E8] font-bold uppercase tracking-wider text-[10px] flex items-center space-x-1"
                   >
                     <span>Continue Application</span>
                     <ChevronRight className="h-3.5 w-3.5" />
@@ -215,7 +215,7 @@ export const PortalApplicationsPage = () => {
                   <span>Submitted: {formatShortDate(c.createdAt?.toDate ? c.createdAt.toDate() : c.createdAt)}</span>
                   <Link
                     to={`/portal/applications/${c.id}`}
-                    className="text-secondary hover:text-[#EEDADA] font-bold uppercase tracking-wider text-[10px] flex items-center space-x-1"
+                    className="text-secondary hover:text-[#F5F1E8] font-bold uppercase tracking-wider text-[10px] flex items-center space-x-1"
                   >
                     <span>Track Details</span>
                     <ChevronRight className="h-3.5 w-3.5" />
@@ -237,11 +237,11 @@ export const PortalApplicationsPage = () => {
         <form onSubmit={handleSubmitApplication} className="space-y-4 font-sans text-xs">
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col space-y-1.5">
-              <label className="text-[10px] font-bold text-[#EEDADA]/40 uppercase tracking-wider">Full Name *</label>
+              <label className="text-[10px] font-bold text-[#F5F1E8]/40 uppercase tracking-wider">Full Name *</label>
               <input
                 type="text"
                 required
-                className="px-3.5 py-2.5 bg-[#231F0D] border border-[#453E1D] text-white placeholder-[#EEDADA]/20 rounded focus:outline-none focus:border-[#EAC784] text-xs"
+                className="px-3.5 py-2.5 bg-[#2B2723] border border-[#4D4740] text-white placeholder-[#F5F1E8]/20 rounded focus:outline-none focus:border-[#7A8F6B] text-xs"
                 placeholder="Jane Doe"
                 name="name"
                 value={formData.name}
@@ -249,11 +249,11 @@ export const PortalApplicationsPage = () => {
               />
             </div>
             <div className="flex flex-col space-y-1.5">
-              <label className="text-[10px] font-bold text-[#EEDADA]/40 uppercase tracking-wider">WhatsApp Phone *</label>
+              <label className="text-[10px] font-bold text-[#F5F1E8]/40 uppercase tracking-wider">WhatsApp Phone *</label>
               <input
                 type="tel"
                 required
-                className="px-3.5 py-2.5 bg-[#231F0D] border border-[#453E1D] text-white placeholder-[#EEDADA]/20 rounded focus:outline-none focus:border-[#EAC784] text-xs"
+                className="px-3.5 py-2.5 bg-[#2B2723] border border-[#4D4740] text-white placeholder-[#F5F1E8]/20 rounded focus:outline-none focus:border-[#7A8F6B] text-xs"
                 placeholder="e.g. +971 50 123 4567"
                 name="phone"
                 value={formData.phone}
@@ -264,11 +264,11 @@ export const PortalApplicationsPage = () => {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col space-y-1.5">
-              <label className="text-[10px] font-bold text-[#EEDADA]/40 uppercase tracking-wider">Email Address *</label>
+              <label className="text-[10px] font-bold text-[#F5F1E8]/40 uppercase tracking-wider">Email Address *</label>
               <input
                 type="email"
                 required
-                className="px-3.5 py-2.5 bg-[#231F0D] border border-[#453E1D] text-white placeholder-[#EEDADA]/20 rounded focus:outline-none focus:border-[#EAC784] text-xs"
+                className="px-3.5 py-2.5 bg-[#2B2723] border border-[#4D4740] text-white placeholder-[#F5F1E8]/20 rounded focus:outline-none focus:border-[#7A8F6B] text-xs"
                 placeholder="jane@example.com"
                 name="email"
                 value={formData.email}
@@ -276,10 +276,10 @@ export const PortalApplicationsPage = () => {
               />
             </div>
             <div className="flex flex-col space-y-1.5">
-              <label className="text-[10px] font-bold text-[#EEDADA]/40 uppercase tracking-wider">Nationality</label>
+              <label className="text-[10px] font-bold text-[#F5F1E8]/40 uppercase tracking-wider">Nationality</label>
               <input
                 type="text"
-                className="px-3.5 py-2.5 bg-[#231F0D] border border-[#453E1D] text-white placeholder-[#EEDADA]/20 rounded focus:outline-none focus:border-[#EAC784] text-xs"
+                className="px-3.5 py-2.5 bg-[#2B2723] border border-[#4D4740] text-white placeholder-[#F5F1E8]/20 rounded focus:outline-none focus:border-[#7A8F6B] text-xs"
                 placeholder="e.g. Indian, GCC Resident"
                 name="nationality"
                 value={formData.nationality}
@@ -289,10 +289,10 @@ export const PortalApplicationsPage = () => {
           </div>
 
           <div className="flex flex-col space-y-1.5">
-            <label className="text-[10px] font-bold text-[#EEDADA]/40 uppercase tracking-wider">Travel Start Date</label>
+            <label className="text-[10px] font-bold text-[#F5F1E8]/40 uppercase tracking-wider">Travel Start Date</label>
             <input
               type="date"
-              className="px-3.5 py-2.5 bg-[#231F0D] border border-[#453E1D] text-white rounded focus:outline-none focus:border-[#EAC784] text-xs"
+              className="px-3.5 py-2.5 bg-[#2B2723] border border-[#4D4740] text-white rounded focus:outline-none focus:border-[#7A8F6B] text-xs"
               name="travelDate"
               value={formData.travelDate}
               onChange={handleInputChange}
@@ -300,10 +300,10 @@ export const PortalApplicationsPage = () => {
           </div>
 
           <div className="flex flex-col space-y-1.5">
-            <label className="text-[10px] font-bold text-[#EEDADA]/40 uppercase tracking-wider">Message / Specific Requests</label>
+            <label className="text-[10px] font-bold text-[#F5F1E8]/40 uppercase tracking-wider">Message / Specific Requests</label>
             <textarea
               rows={3}
-              className="px-3.5 py-2.5 bg-[#231F0D] border border-[#453E1D] text-white placeholder-[#EEDADA]/20 rounded focus:outline-none focus:border-[#EAC784] text-xs"
+              className="px-3.5 py-2.5 bg-[#2B2723] border border-[#4D4740] text-white placeholder-[#F5F1E8]/20 rounded focus:outline-none focus:border-[#7A8F6B] text-xs"
               placeholder="e.g. Urgently need booking, GCC residence visa holder details..."
               name="message"
               value={formData.message}
@@ -311,12 +311,12 @@ export const PortalApplicationsPage = () => {
             />
           </div>
 
-          <div className="flex space-x-3 pt-4 border-t border-[#453E1D]">
+          <div className="flex space-x-3 pt-4 border-t border-[#4D4740]">
             <button
               type="button"
               onClick={handleSaveDraft}
               disabled={submitting}
-              className="flex-1 py-2.5 bg-[#231F0D] border border-[#453E1D] text-[#EEDADA]/80 hover:text-white font-bold rounded text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 disabled:opacity-50"
+              className="flex-1 py-2.5 bg-[#2B2723] border border-[#4D4740] text-[#F5F1E8]/80 hover:text-white font-bold rounded text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 disabled:opacity-50"
             >
               <Save className="h-4 w-4" />
               <span>Save Draft</span>
@@ -324,7 +324,7 @@ export const PortalApplicationsPage = () => {
             <button
               type="submit"
               disabled={submitting}
-              className="flex-1 py-2.5 bg-gradient-to-r from-[#EAC784] to-[#EDB868] text-[#2C2712] font-extrabold rounded text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-50"
+              className="flex-1 py-2.5 bg-gradient-to-r from-[#7A8F6B] to-[#627555] text-[#3F3A34] font-extrabold rounded text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-50"
             >
               <Send className="h-4 w-4" />
               <span>Submit Application</span>

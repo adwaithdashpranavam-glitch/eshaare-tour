@@ -48,8 +48,8 @@ export const Dashboard = () => {
   // Funnel & Chart Data
   const funnelData = [
     { name: "New", count: 32, fill: "#378ADD" },
-    { name: "Contacted", count: 24, fill: "#EDB868" },
-    { name: "Qualified", count: 18, fill: "#EAC784" },
+    { name: "Contacted", count: 24, fill: "#627555" },
+    { name: "Qualified", count: 18, fill: "#7A8F6B" },
     { name: "Won", count: 12, fill: "#1D9E75" }
   ];
 
@@ -62,10 +62,10 @@ export const Dashboard = () => {
   ];
 
   const casesPieData = [
-    { name: "Docs Pending", value: 5, color: "#EDB868" },
+    { name: "Docs Pending", value: 5, color: "#627555" },
     { name: "Verification", value: 4, color: "#378ADD" },
-    { name: "Submitted", value: 12, color: "#EAC784" },
-    { name: "Awaiting Decision", value: 3, color: "#EDB868" }
+    { name: "Submitted", value: 12, color: "#7A8F6B" },
+    { name: "Awaiting Decision", value: 3, color: "#627555" }
   ];
 
   const [recentLeads, setRecentLeads] = useState([
@@ -262,9 +262,9 @@ export const Dashboard = () => {
           <div>
             <div className="flex items-center justify-between">
               <p className="text-gray-400 text-sm font-semibold uppercase tracking-wider">Visas & Appts</p>
-              <FileText className="h-5 w-5 text-[#e68932]" />
+              <FileText className="h-5 w-5 text-[#7A8F6B]" />
             </div>
-            <h2 className="mt-3 text-4xl font-bold text-[#e68932]">{stats.totalVisas}</h2>
+            <h2 className="mt-3 text-4xl font-bold text-[#7A8F6B]">{stats.totalVisas}</h2>
           </div>
           <p className="mt-4 text-xs text-blue-400 font-medium">{stats.totalAppointments} Consultation Bookings</p>
         </div>
@@ -320,7 +320,7 @@ export const Dashboard = () => {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           <Link
             to="/admin/packages"
-            className="rounded-2xl bg-[#e68932] p-5 text-white font-semibold transition hover:opacity-90 flex items-center justify-between shadow-lg"
+            className="rounded-2xl bg-[#7A8F6B] p-5 text-white font-semibold transition hover:opacity-90 flex items-center justify-between shadow-lg"
           >
             <span>Packages Manager</span>
             <span className="text-xs bg-black/20 px-2 py-0.5 rounded">{stats.totalPackages}</span>
@@ -357,11 +357,11 @@ export const Dashboard = () => {
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={revenueData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#453E1D" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#4D4740" />
                 <XAxis dataKey="date" stroke="#9ca3af" style={{ fontSize: 10 }} />
                 <YAxis stroke="#9ca3af" style={{ fontSize: 10 }} />
-                <Tooltip contentStyle={{ backgroundColor: "#2C2712", borderColor: "#453E1D", borderRadius: "12px", color: "#fff" }} labelStyle={{ color: "#fff" }} />
-                <Line type="monotone" dataKey="amt" stroke="#EAC784" strokeWidth={3} activeDot={{ r: 8 }} />
+                <Tooltip contentStyle={{ backgroundColor: "#3F3A34", borderColor: "#4D4740", borderRadius: "12px", color: "#fff" }} labelStyle={{ color: "#fff" }} />
+                <Line type="monotone" dataKey="amt" stroke="#7A8F6B" strokeWidth={3} activeDot={{ r: 8 }} />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -384,7 +384,7 @@ export const Dashboard = () => {
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={{ backgroundColor: "#2C2712", borderColor: "#453E1D", borderRadius: "12px" }} />
+                <Tooltip contentStyle={{ backgroundColor: "#3F3A34", borderColor: "#4D4740", borderRadius: "12px" }} />
               </PieChart>
             </ResponsiveContainer>
           </div>
@@ -416,7 +416,7 @@ export const Dashboard = () => {
                   <h4 className="text-xs font-bold text-white">{app.clientName}</h4>
                   <span className="text-[10px] text-gray-400 uppercase font-medium">{app.type}</span>
                 </div>
-                <span className="text-xs font-mono font-bold text-[#e68932]">{app.time}</span>
+                <span className="text-xs font-mono font-bold text-[#7A8F6B]">{app.time}</span>
               </div>
             ))}
           </div>
@@ -450,7 +450,7 @@ export const Dashboard = () => {
                   <h4 className="text-xs font-bold text-white">{lead.contactName}</h4>
                   <span className="text-[10px] text-gray-400 uppercase font-medium">Source: {lead.source}</span>
                 </div>
-                <span className="px-2 py-0.5 rounded-full bg-[#e68932]/10 border border-[#e68932]/25 text-[9px] font-bold text-[#e68932] uppercase">
+                <span className="px-2 py-0.5 rounded-full bg-[#7A8F6B]/10 border border-[#7A8F6B]/25 text-[9px] font-bold text-[#7A8F6B] uppercase">
                   {lead.stage}
                 </span>
               </div>

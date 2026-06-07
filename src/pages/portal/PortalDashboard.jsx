@@ -162,7 +162,7 @@ export const PortalDashboard = () => {
                 <MessageSquare className="h-5 w-5 text-secondary" />
                 <span>Message Advisor</span>
               </button>
-              <button onClick={() => navigate("/portal/notifications")} className="p-4 bg-primary-container hover:bg-primary-container/80 border border-outline-variant/10 rounded hover:border-secondary/25 transition-all text-[#EEDADA] hover:text-white font-semibold space-y-2 flex flex-col justify-center items-center">
+              <button onClick={() => navigate("/portal/notifications")} className="p-4 bg-primary-container hover:bg-primary-container/80 border border-outline-variant/10 rounded hover:border-secondary/25 transition-all text-[#F5F1E8] hover:text-white font-semibold space-y-2 flex flex-col justify-center items-center">
                 <div className="relative">
                   <Bell className="h-5 w-5 text-secondary" />
                   {unreadNotificationsCount > 0 && (
