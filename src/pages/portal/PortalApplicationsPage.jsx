@@ -324,7 +324,7 @@ export const PortalApplicationsPage = () => {
             <button
               type="submit"
               disabled={submitting}
-              className="flex-1 py-2.5 bg-gradient-to-r from-[#7A8F6B] to-[#627555] text-[#16652A] font-extrabold rounded text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-50"
+              className="flex-1 py-2.5 bg-gradient-to-r from-[#7A8F6B] to-[#627555] text-[#1D503A] font-extrabold rounded text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-50"
             >
               <Send className="h-4 w-4" />
               <span>Submit Application</span>

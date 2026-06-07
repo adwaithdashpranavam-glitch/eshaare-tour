@@ -7,7 +7,7 @@ module.exports = {
       colors: {
         "primary": "#000000",
         "on-primary": "#ffffff",
-        "primary-container": "#16652A",
+        "primary-container": "#1D503A",
         "on-primary-container": "#EAE3D5",
         "primary-fixed": "#D4E9E0",
         "primary-fixed-dim": "#B4C5BE",

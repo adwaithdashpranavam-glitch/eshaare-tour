@@ -360,7 +360,7 @@ export const Dashboard = () => {
                 <CartesianGrid strokeDasharray="3 3" stroke="#4D4740" />
                 <XAxis dataKey="date" stroke="#9ca3af" style={{ fontSize: 10 }} />
                 <YAxis stroke="#9ca3af" style={{ fontSize: 10 }} />
-                <Tooltip contentStyle={{ backgroundColor: "#16652A", borderColor: "#4D4740", borderRadius: "12px", color: "#fff" }} labelStyle={{ color: "#fff" }} />
+                <Tooltip contentStyle={{ backgroundColor: "#1D503A", borderColor: "#4D4740", borderRadius: "12px", color: "#fff" }} labelStyle={{ color: "#fff" }} />
                 <Line type="monotone" dataKey="amt" stroke="#7A8F6B" strokeWidth={3} activeDot={{ r: 8 }} />
               </LineChart>
             </ResponsiveContainer>
@@ -384,7 +384,7 @@ export const Dashboard = () => {
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={{ backgroundColor: "#16652A", borderColor: "#4D4740", borderRadius: "12px" }} />
+                <Tooltip contentStyle={{ backgroundColor: "#1D503A", borderColor: "#4D4740", borderRadius: "12px" }} />
               </PieChart>
             </ResponsiveContainer>
           </div>

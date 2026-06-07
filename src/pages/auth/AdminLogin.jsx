@@ -44,7 +44,7 @@ export const AdminLogin = () => {
   };
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#16652A] px-6 font-sans">
+    <main className="flex min-h-screen items-center justify-center bg-[#1D503A] px-6 font-sans">
       <div className="w-full max-w-md rounded-3xl border border-white/10 bg-white/5 p-8 shadow-2xl">
         <h1 className="text-3xl font-bold text-white">Admin Login</h1>
         <p className="mt-2 text-gray-400">Sign in to Tourism CRM</p>

@@ -82,7 +82,7 @@ export const PortalLogin = () => {
   };
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#16652A] px-6 py-12 font-sans relative overflow-hidden">
+    <main className="flex min-h-screen items-center justify-center bg-[#1D503A] px-6 py-12 font-sans relative overflow-hidden">
       {/* Background radial glow */}
       <div className="absolute -top-40 -left-40 h-96 w-96 bg-[#7A8F6B]/5 blur-3xl rounded-full"></div>
       <div className="absolute -bottom-40 -right-40 h-96 w-96 bg-[#7A8F6B]/5 blur-3xl rounded-full"></div>

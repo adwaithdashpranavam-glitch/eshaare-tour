@@ -202,7 +202,7 @@ export const VisaDetailPage = () => {
   if (loading) {
     /* Full Page Skeleton Loader */
     return (
-      <div className="bg-[#16652A] min-h-screen text-[#F5F1E8] font-sans">
+      <div className="bg-[#1D503A] min-h-screen text-[#F5F1E8] font-sans">
         {/* Skeleton Hero */}
         <section className="py-24 bg-[#2B2723] border-b border-[#4D4740] animate-pulse">
           <div className="max-w-container-max mx-auto px-4 space-y-6">
@@ -233,7 +233,7 @@ export const VisaDetailPage = () => {
 
   if (showNotFound) {
     return (
-      <div className="bg-[#16652A] min-h-screen text-[#F5F1E8] flex flex-col justify-center items-center py-24 text-center px-4 font-sans">
+      <div className="bg-[#1D503A] min-h-screen text-[#F5F1E8] flex flex-col justify-center items-center py-24 text-center px-4 font-sans">
         <div className="max-w-md space-y-6">
           <AlertCircle className="h-20 w-20 text-[#E24B4A] mx-auto animate-bounce" />
           <h1 className="text-3xl font-bold font-display text-white">Visa Type Not Found</h1>
@@ -249,7 +249,7 @@ export const VisaDetailPage = () => {
             </Link>
             <Link
               to="/contact"
-              className="px-6 py-3 bg-[#7A8F6B] text-[#16652A] rounded-xl text-xs font-bold uppercase tracking-wider hover:opacity-90 transition-opacity"
+              className="px-6 py-3 bg-[#7A8F6B] text-[#1D503A] rounded-xl text-xs font-bold uppercase tracking-wider hover:opacity-90 transition-opacity"
             >
               Contact Us
             </Link>
@@ -260,7 +260,7 @@ export const VisaDetailPage = () => {
   }
 
   return (
-    <div className="bg-[#16652A] min-h-screen text-[#F5F1E8] font-sans pb-24 relative">
+    <div className="bg-[#1D503A] min-h-screen text-[#F5F1E8] font-sans pb-24 relative">
 
       {/* Draft Mode Banner (Visible to Admin only) */}
       {isDraft && isAdmin && (
@@ -271,7 +271,7 @@ export const VisaDetailPage = () => {
           </div>
           <button
             onClick={handlePublishNow}
-            className="px-4 py-1.5 bg-[#7A8F6B] text-[#16652A] font-bold rounded hover:opacity-95 transition-opacity"
+            className="px-4 py-1.5 bg-[#7A8F6B] text-[#1D503A] font-bold rounded hover:opacity-95 transition-opacity"
           >
             Publish Now
           </button>
@@ -311,7 +311,7 @@ export const VisaDetailPage = () => {
           <div className="flex gap-4 pt-2">
             <button
               onClick={handleApplyClick}
-              className="px-8 py-3.5 bg-[#7A8F6B] text-[#16652A] font-bold rounded-xl text-xs uppercase tracking-wider hover:opacity-95 hover:shadow-[0_0_15px_rgba(201,168,76,0.3)] transition-all"
+              className="px-8 py-3.5 bg-[#7A8F6B] text-[#1D503A] font-bold rounded-xl text-xs uppercase tracking-wider hover:opacity-95 hover:shadow-[0_0_15px_rgba(201,168,76,0.3)] transition-all"
             >
               Start Application
             </button>
@@ -460,7 +460,7 @@ export const VisaDetailPage = () => {
                     <td className="p-4 text-right">
                       <button
                         onClick={handleApplyClick}
-                        className="px-4 py-1.5 bg-gradient-to-r from-[#7A8F6B] to-[#627555] text-[#16652A] font-bold rounded text-xs uppercase tracking-wider"
+                        className="px-4 py-1.5 bg-gradient-to-r from-[#7A8F6B] to-[#627555] text-[#1D503A] font-bold rounded text-xs uppercase tracking-wider"
                       >
                         Apply Now
                       </button>
@@ -489,7 +489,7 @@ export const VisaDetailPage = () => {
                 </div>
                 <button
                   onClick={handleApplyClick}
-                  className="w-full py-2 bg-gradient-to-r from-[#7A8F6B] to-[#627555] text-[#16652A] font-bold rounded-lg text-xs uppercase tracking-wider pt-2 mt-1"
+                  className="w-full py-2 bg-gradient-to-r from-[#7A8F6B] to-[#627555] text-[#1D503A] font-bold rounded-lg text-xs uppercase tracking-wider pt-2 mt-1"
                 >
                   Apply Now
                 </button>
@@ -561,7 +561,7 @@ export const VisaDetailPage = () => {
                   <div className="bg-[#2B2723] text-white rounded-3xl p-8 shadow-2xl flex flex-col justify-between border-2 border-[#7A8F6B] relative transform hover:-translate-y-1 transition-all duration-300 overflow-hidden">
                     {/* MOST POPULAR Badge */}
                     {visaData.supportPackages.premium.recommended && (
-                      <div className="absolute top-4 right-4 bg-gradient-to-r from-[#7A8F6B] to-[#627555] text-[#16652A] text-[9px] font-extrabold px-3.5 py-1 rounded-full uppercase tracking-widest shadow-md">
+                      <div className="absolute top-4 right-4 bg-gradient-to-r from-[#7A8F6B] to-[#627555] text-[#1D503A] text-[9px] font-extrabold px-3.5 py-1 rounded-full uppercase tracking-widest shadow-md">
                         Most Popular
                       </div>
                     )}
@@ -610,7 +610,7 @@ export const VisaDetailPage = () => {
 
                     <button
                       onClick={() => handleApplyClick("premium", visaData.supportPackages.premium.price)}
-                      className="w-full mt-8 py-3.5 bg-gradient-to-r from-[#7A8F6B] to-[#627555] text-[#16652A] hover:opacity-95 rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-md font-extrabold"
+                      className="w-full mt-8 py-3.5 bg-gradient-to-r from-[#7A8F6B] to-[#627555] text-[#1D503A] hover:opacity-95 rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-md font-extrabold"
                     >
                       Select Premium
                     </button>
@@ -667,7 +667,7 @@ export const VisaDetailPage = () => {
             </p>
             <button
               onClick={handleApplyClick}
-              className="px-8 py-3.5 bg-gradient-to-r from-[#7A8F6B] to-[#627555] text-[#16652A] font-bold rounded-xl text-xs uppercase tracking-wider hover:opacity-95 transition-all shadow-md inline-flex items-center gap-1.5"
+              className="px-8 py-3.5 bg-gradient-to-r from-[#7A8F6B] to-[#627555] text-[#1D503A] font-bold rounded-xl text-xs uppercase tracking-wider hover:opacity-95 transition-all shadow-md inline-flex items-center gap-1.5"
             >
               <Phone className="h-4 w-4" />
               <span>Start Application Now</span>
@@ -772,7 +772,7 @@ export const VisaDetailPage = () => {
             <button
               type="submit"
               disabled={submitting}
-              className="flex-1 py-2.5 bg-gradient-to-r from-[#7A8F6B] to-[#627555] text-[#16652A] font-bold rounded text-xs uppercase tracking-wider shadow-sm disabled:opacity-50"
+              className="flex-1 py-2.5 bg-gradient-to-r from-[#7A8F6B] to-[#627555] text-[#1D503A] font-bold rounded text-xs uppercase tracking-wider shadow-sm disabled:opacity-50"
             >
               {submitting ? "Submitting..." : "Submit Enquiry"}
             </button>
@@ -809,7 +809,7 @@ export const VisaDetailPage = () => {
                 setIsAuthRequiredModalOpen(false);
                 navigate("/portal/login", { state: { from: location } });
               }}
-              className="flex-grow py-2.5 bg-gradient-to-r from-[#7A8F6B] to-[#627555] text-[#16652A] font-extrabold rounded-lg text-xs uppercase tracking-wider hover:opacity-95 transition-all shadow-md"
+              className="flex-grow py-2.5 bg-gradient-to-r from-[#7A8F6B] to-[#627555] text-[#1D503A] font-extrabold rounded-lg text-xs uppercase tracking-wider hover:opacity-95 transition-all shadow-md"
             >
               Sign In
             </button>

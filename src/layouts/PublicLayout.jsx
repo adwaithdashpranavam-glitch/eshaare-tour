@@ -229,12 +229,12 @@ export const PublicLayout = () => {
 
       {/* Welcome Banner if authenticated */}
       {user && (
-        <div className="fixed top-0 left-0 w-full z-50 h-8 bg-gradient-to-r from-[#2B2723] via-[#16652A] to-[#2B2723] text-gray-300 text-xs px-4 xl:px-8 flex items-center justify-between border-b border-amber-500/10 font-medium tracking-wide shadow-sm">
+        <div className="fixed top-0 left-0 w-full z-50 h-8 bg-gradient-to-r from-[#2B2723] via-[#1D503A] to-[#2B2723] text-gray-300 text-xs px-4 xl:px-8 flex items-center justify-between border-b border-amber-500/10 font-medium tracking-wide shadow-sm">
           <div className="flex items-center gap-1.5">
             <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
             <span>
               Welcome,{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#16652A] to-amber-300 font-extrabold uppercase tracking-wider">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#1D503A] to-amber-300 font-extrabold uppercase tracking-wider">
                 {userName}
               </span>
             </span>
@@ -266,13 +266,13 @@ export const PublicLayout = () => {
 
             <Link to="/" className="flex items-center gap-2 group shrink-0">
               <div className="relative">
-                <MapPin className="h-5 w-5 text-[#16652A]" />
-                <div className="absolute -top-1 -right-2 w-2 h-2 bg-[#16652A] rounded-full animate-pulse" />
+                <MapPin className="h-5 w-5 text-[#1D503A]" />
+                <div className="absolute -top-1 -right-2 w-2 h-2 bg-[#1D503A] rounded-full animate-pulse" />
               </div>
               <div>
                 <h1 className="text-xl font-bold tracking-tight leading-none">
-                  <span className="text-[#16652A]">ESHAARE</span>
-                  <span className="text-[#16652A] ml-1">TOUR</span>
+                  <span className="text-[#1D503A]">ESHAARE</span>
+                  <span className="text-[#1D503A] ml-1">TOUR</span>
                 </h1>
                 <p className="text-[10px] tracking-wider text-gray-800 font-semibold mt-1">
                   TOURS & EVENTS
@@ -287,7 +287,7 @@ export const PublicLayout = () => {
               <div key={navItem.title} className="relative group/main py-8">
                 {navItem.subcategories ? (
                   <>
-                    <button className="text-gray-800 group-hover/main:text-[#16652A] transition text-[10px] xl:text-sm font-semibold uppercase tracking-wide flex items-center gap-1 cursor-pointer">
+                    <button className="text-gray-800 group-hover/main:text-[#1D503A] transition text-[10px] xl:text-sm font-semibold uppercase tracking-wide flex items-center gap-1 cursor-pointer">
                       {navItem.title}
                       <ChevronDown className="w-3.5 h-3.5" />
                     </button>
@@ -299,10 +299,10 @@ export const PublicLayout = () => {
                             <>
                               <Link
                                 to={toSlug(sub.title)}
-                                className="px-5 py-3 hover:bg-orange-50/50 hover:text-[#16652A] flex items-center justify-between text-sm font-medium text-gray-700 transition-colors"
+                                className="px-5 py-3 hover:bg-orange-50/50 hover:text-[#1D503A] flex items-center justify-between text-sm font-medium text-gray-700 transition-colors"
                               >
                                 {sub.title}
-                                <ChevronRight className="w-4 h-4 text-gray-400 group-hover/sub:text-[#16652A]" />
+                                <ChevronRight className="w-4 h-4 text-gray-400 group-hover/sub:text-[#1D503A]" />
                               </Link>
 
                               <div className="absolute top-0 left-full -ml-1 w-60 bg-white border border-gray-100 shadow-xl rounded-xl opacity-0 invisible group-hover/sub:opacity-100 group-hover/sub:visible transition-all duration-300 py-2">
@@ -310,7 +310,7 @@ export const PublicLayout = () => {
                                   <Link
                                     key={link}
                                     to={toSlug(link)}
-                                    className="block px-5 py-2.5 hover:bg-orange-50/50 hover:text-[#16652A] text-sm text-gray-600 transition-colors"
+                                    className="block px-5 py-2.5 hover:bg-orange-50/50 hover:text-[#1D503A] text-sm text-gray-600 transition-colors"
                                   >
                                     {link}
                                   </Link>
@@ -320,7 +320,7 @@ export const PublicLayout = () => {
                           ) : (
                             <Link
                               to={toSlug(sub.title)}
-                              className="block px-5 py-3 hover:bg-orange-50/50 hover:text-[#16652A] text-sm font-medium text-gray-700 transition-colors"
+                              className="block px-5 py-3 hover:bg-orange-50/50 hover:text-[#1D503A] text-sm font-medium text-gray-700 transition-colors"
                             >
                               {sub.title}
                             </Link>
@@ -332,7 +332,7 @@ export const PublicLayout = () => {
                 ) : (
                   <Link
                     to={navItem.path}
-                    className="text-gray-800 hover:text-[#16652A] transition text-[10px] xl:text-sm font-semibold uppercase tracking-wide flex items-center gap-1"
+                    className="text-gray-800 hover:text-[#1D503A] transition text-[10px] xl:text-sm font-semibold uppercase tracking-wide flex items-center gap-1"
                   >
                     {navItem.title}
                   </Link>
@@ -346,7 +346,7 @@ export const PublicLayout = () => {
             {!user ? (
               <Link
                 to="/portal/login"
-                className="h-9 border border-[#16652A] hover:bg-[#16652A]/10 text-gray-800 px-6 rounded-full font-semibold text-sm flex items-center justify-center transition-all duration-300"
+                className="h-9 border border-[#1D503A] hover:bg-[#1D503A]/10 text-gray-800 px-6 rounded-full font-semibold text-sm flex items-center justify-center transition-all duration-300"
               >
                 Login
               </Link>
@@ -361,7 +361,7 @@ export const PublicLayout = () => {
 
             <Link
               to="/appointment"
-              className="group relative flex items-center gap-2 h-9 bg-[#16652A] border border-[#16652A] text-white px-5 rounded-full font-semibold text-sm hover:bg-[#0e4a1e] transition-all duration-300 overflow-hidden shadow-md"
+              className="group relative flex items-center gap-2 h-9 bg-[#1D503A] border border-[#1D503A] text-white px-5 rounded-full font-semibold text-sm hover:bg-[#0e4a1e] transition-all duration-300 overflow-hidden shadow-md"
             >
               <Phone className="h-4 w-4" />
               <span>Enquire Now</span>
@@ -370,7 +370,7 @@ export const PublicLayout = () => {
             {/* Profile Avatar / ES monogram */}
             <Link
               to="/portal"
-              className="h-11 w-11 rounded-full border border-gray-200 shadow-sm bg-orange-50 flex items-center justify-center font-bold text-xs text-[#16652A] hover:bg-orange-100/50 transition-colors"
+              className="h-11 w-11 rounded-full border border-gray-200 shadow-sm bg-orange-50 flex items-center justify-center font-bold text-xs text-[#1D503A] hover:bg-orange-100/50 transition-colors"
               title="User Portal"
             >
               ES
@@ -401,7 +401,7 @@ export const PublicLayout = () => {
                   <>
                     <button
                       onClick={() => toggleMobileNav(navItem.title)}
-                      className="w-full py-4 flex items-center justify-between text-sm font-bold text-gray-800 hover:text-[#16652A]"
+                      className="w-full py-4 flex items-center justify-between text-sm font-bold text-gray-800 hover:text-[#1D503A]"
                     >
                       <span>{navItem.title}</span>
                       <ChevronDown
@@ -422,7 +422,7 @@ export const PublicLayout = () => {
                                       mobileSubExpanded === sub.title ? null : sub.title
                                     )
                                   }
-                                  className="w-full py-2.5 flex items-center justify-between text-sm font-semibold text-gray-700 hover:text-[#16652A]"
+                                  className="w-full py-2.5 flex items-center justify-between text-sm font-semibold text-gray-700 hover:text-[#1D503A]"
                                 >
                                   <span>{sub.title}</span>
                                   <ChevronDown
@@ -438,7 +438,7 @@ export const PublicLayout = () => {
                                         key={link}
                                         to={toSlug(link)}
                                         onClick={() => setMobileMenuOpen(false)}
-                                        className="py-2 text-[13px] text-gray-600 hover:text-[#16652A] block"
+                                        className="py-2 text-[13px] text-gray-600 hover:text-[#1D503A] block"
                                       >
                                         {link}
                                       </Link>
@@ -450,7 +450,7 @@ export const PublicLayout = () => {
                               <Link
                                 to={toSlug(sub.title)}
                                 onClick={() => setMobileMenuOpen(false)}
-                                className="block py-2.5 text-sm font-semibold text-gray-700 hover:text-[#16652A]"
+                                className="block py-2.5 text-sm font-semibold text-gray-700 hover:text-[#1D503A]"
                               >
                                 {sub.title}
                               </Link>
@@ -464,7 +464,7 @@ export const PublicLayout = () => {
                   <Link
                     to={navItem.path}
                     onClick={() => setMobileMenuOpen(false)}
-                    className="block py-4 text-sm font-bold text-gray-800 hover:text-[#16652A]"
+                    className="block py-4 text-sm font-bold text-gray-800 hover:text-[#1D503A]"
                   >
                     {navItem.title}
                   </Link>
@@ -477,7 +477,7 @@ export const PublicLayout = () => {
               {!user ? (
                 <Link
                   to="/portal/login"
-                  className="border border-[#16652A] text-gray-800 py-3 rounded-full text-center font-semibold text-sm hover:bg-orange-50/50"
+                  className="border border-[#1D503A] text-gray-800 py-3 rounded-full text-center font-semibold text-sm hover:bg-orange-50/50"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Login
@@ -494,7 +494,7 @@ export const PublicLayout = () => {
 
               <Link
                 to="/appointment"
-                className="bg-[#16652A] text-white py-3 rounded-full text-center font-semibold text-sm shadow-md hover:bg-[#0e4a1e]"
+                className="bg-[#1D503A] text-white py-3 rounded-full text-center font-semibold text-sm shadow-md hover:bg-[#0e4a1e]"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Enquire Now
@@ -537,17 +537,17 @@ export const PublicLayout = () => {
                   </Link>
                 </li>
                 <li>
-                  <Link to="/packages" className="text-on-primary-container/80 hover:text-[#16652A] transition-colors">
+                  <Link to="/packages" className="text-on-primary-container/80 hover:text-[#1D503A] transition-colors">
                     Tour Packages
                   </Link>
                 </li>
                 <li>
-                  <Link to="/destinations" className="text-on-primary-container/80 hover:text-[#16652A] transition-colors">
+                  <Link to="/destinations" className="text-on-primary-container/80 hover:text-[#1D503A] transition-colors">
                     Destinations
                   </Link>
                 </li>
                 <li>
-                  <Link to="/resources" className="text-on-primary-container/80 hover:text-[#16652A] transition-colors">
+                  <Link to="/resources" className="text-on-primary-container/80 hover:text-[#1D503A] transition-colors">
                     Documentation Guide
                   </Link>
                 </li>
@@ -559,22 +559,22 @@ export const PublicLayout = () => {
               <h4 className="text-white font-headline-md text-body-lg font-semibold">Support</h4>
               <ul className="flex flex-col gap-2.5 text-body-sm">
                 <li>
-                  <Link to="/track" className="text-on-primary-container/80 hover:text-[#16652A] transition-colors">
+                  <Link to="/track" className="text-on-primary-container/80 hover:text-[#1D503A] transition-colors">
                     Track Application
                   </Link>
                 </li>
                 <li>
-                  <Link to="/contact" className="text-on-primary-container/80 hover:text-[#16652A] transition-colors">
+                  <Link to="/contact" className="text-on-primary-container/80 hover:text-[#1D503A] transition-colors">
                     Contact Support
                   </Link>
                 </li>
                 <li>
-                  <Link to="/login" className="text-on-primary-container/80 hover:text-[#16652A] transition-colors">
+                  <Link to="/login" className="text-on-primary-container/80 hover:text-[#1D503A] transition-colors">
                     Staff Login
                   </Link>
                 </li>
                 <li>
-                  <Link to="/portal/login" className="text-on-primary-container/80 hover:text-[#16652A] transition-colors">
+                  <Link to="/portal/login" className="text-on-primary-container/80 hover:text-[#1D503A] transition-colors">
                     Client Portal
                   </Link>
                 </li>
@@ -598,7 +598,7 @@ export const PublicLayout = () => {
                 />
                 <button
                   type="submit"
-                  className="bg-[#16652A] text-white px-4 py-2 rounded-lg font-label-md hover:bg-[#0e4a1e] transition-colors flex items-center justify-center"
+                  className="bg-[#1D503A] text-white px-4 py-2 rounded-lg font-label-md hover:bg-[#0e4a1e] transition-colors flex items-center justify-center"
                 >
                   <span className="material-symbols-outlined text-lg">send</span>
                 </button>
@@ -638,7 +638,7 @@ export const PublicLayout = () => {
           {/* GLOBE */}
           <Link
             to="/globe"
-            className="flex flex-col items-center justify-center gap-1 text-xs text-gray-700 transition hover:text-[#16652A]"
+            className="flex flex-col items-center justify-center gap-1 text-xs text-gray-700 transition hover:text-[#1D503A]"
           >
             <Globe size={17} />
             <span>Globe</span>
@@ -647,7 +647,7 @@ export const PublicLayout = () => {
           {/* HOME */}
           <Link
             to="/"
-            className="flex flex-col items-center justify-center gap-1 text-xs text-gray-700 transition hover:text-[#16652A]"
+            className="flex flex-col items-center justify-center gap-1 text-xs text-gray-700 transition hover:text-[#1D503A]"
           >
             <Home size={17} />
             <span>Home</span>
@@ -656,7 +656,7 @@ export const PublicLayout = () => {
           {/* SEARCH */}
           <button
             onClick={() => setOpenSearch(true)}
-            className="-mt-8 mx-auto flex h-12 w-12 flex-col items-center justify-center rounded-full bg-[#16652A] text-white shadow-[0_8px_20px_rgba(230,137,50,0.35)] transition hover:scale-105"
+            className="-mt-8 mx-auto flex h-12 w-12 flex-col items-center justify-center rounded-full bg-[#1D503A] text-white shadow-[0_8px_20px_rgba(230,137,50,0.35)] transition hover:scale-105"
           >
             <Search size={16} />
             <span className="mt-1 text-[9px] font-medium">Search</span>
@@ -665,7 +665,7 @@ export const PublicLayout = () => {
           {/* EVENTS */}
           <Link
             to="/packages"
-            className="flex flex-col items-center justify-center gap-1 text-xs text-gray-700 transition hover:text-[#16652A]"
+            className="flex flex-col items-center justify-center gap-1 text-xs text-gray-700 transition hover:text-[#1D503A]"
           >
             <CalendarDays size={17} />
             <span>Events</span>
@@ -674,7 +674,7 @@ export const PublicLayout = () => {
           {/* ACCOUNT */}
           <Link
             to={user ? "/portal" : "/portal/login"}
-            className="flex flex-col items-center justify-center gap-1 text-xs text-gray-700 transition hover:text-[#16652A]"
+            className="flex flex-col items-center justify-center gap-1 text-xs text-gray-700 transition hover:text-[#1D503A]"
           >
             <User size={17} />
             <span>Account</span>
@@ -698,7 +698,7 @@ export const PublicLayout = () => {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full px-6 text-lg text-black outline-none bg-white h-full"
               />
-              <button className="mr-2 flex h-12 w-12 items-center justify-center rounded-full bg-[#16652A] text-white shrink-0 hover:bg-[#0e4a1e] transition-colors">
+              <button className="mr-2 flex h-12 w-12 items-center justify-center rounded-full bg-[#1D503A] text-white shrink-0 hover:bg-[#0e4a1e] transition-colors">
                 <Search size={21} />
               </button>
             </div>
@@ -719,7 +719,7 @@ export const PublicLayout = () => {
                       className="flex items-center justify-between p-3 rounded-lg hover:bg-orange-50/50 cursor-pointer transition-colors border border-transparent hover:border-orange-100/10"
                     >
                       <div className="flex items-center gap-3">
-                        <span className="text-[#16652A]">
+                        <span className="text-[#1D503A]">
                           {result.type === "Visa" ? <Globe size={18} /> : result.type === "Package" ? <CalendarDays size={18} /> : <User size={18} />}
                         </span>
                         <div>
@@ -727,7 +727,7 @@ export const PublicLayout = () => {
                           <p className="text-[11px] text-gray-500 mt-0.5">{result.type}</p>
                         </div>
                       </div>
-                      <ChevronRight className="w-4 h-4 text-[#16652A]" />
+                      <ChevronRight className="w-4 h-4 text-[#1D503A]" />
                     </div>
                   ))
                 ) : (
