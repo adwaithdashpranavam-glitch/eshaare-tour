@@ -229,7 +229,7 @@ export const PublicLayout = () => {
 
       {/* Welcome Banner if authenticated */}
       {user && (
-        <div className="fixed top-0 left-0 w-full z-50 h-8 bg-gradient-to-r from-[#060e1a] via-[#0b1626] to-[#060e1a] text-gray-300 text-xs px-4 xl:px-8 flex items-center justify-between border-b border-amber-500/10 font-medium tracking-wide shadow-sm">
+        <div className="fixed top-0 left-0 w-full z-50 h-8 bg-gradient-to-r from-[#1C190B] via-[#2C2712] to-[#1C190B] text-gray-300 text-xs px-4 xl:px-8 flex items-center justify-between border-b border-amber-500/10 font-medium tracking-wide shadow-sm">
           <div className="flex items-center gap-1.5">
             <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
             <span>

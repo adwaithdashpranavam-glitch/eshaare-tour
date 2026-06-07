@@ -17,23 +17,23 @@
 
 /* Premium diffused shadow — used on all white cards */
 .premium-shadow {
-  box-shadow: 0 20px 40px rgba(10, 25, 47, 0.05);
+  box-shadow: 0 20px 40px rgba(44, 39, 18, 0.1);
 }
 
 /* Glass card — used in hero floating badges, overlays */
 .glass-card {
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(44, 39, 18, 0.4);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(234, 199, 132, 0.15);
 }
 
 /* Bottom nav for mobile portal/admin */
 .bottom-nav-glass {
-  background: rgba(10, 25, 47, 0.85);
+  background: rgba(44, 39, 18, 0.85);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border-top: 1px solid rgba(255, 218, 184, 0.2);
+  border-top: 1px solid rgba(234, 199, 132, 0.2);
 }
 
 /* Material Symbols config */
@@ -55,7 +55,7 @@ button:focus, a:focus, input:focus, select:focus, textarea:focus {
 
 /* Hero gradient */
 .hero-gradient {
-  background: linear-gradient(rgba(13, 28, 50, 0.75), rgba(13, 28, 50, 0.9)),
+  background: linear-gradient(rgba(44, 39, 18, 0.75), rgba(44, 39, 18, 0.9)),
     url('https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=1600&q=80') center/cover;
 }
 
@@ -65,8 +65,8 @@ button:focus, a:focus, input:focus, select:focus, textarea:focus {
 }
 
 .gold-hover:hover {
-  box-shadow: 0 10px 20px rgba(115, 92, 0, 0.08);
-  border-color: rgba(115, 92, 0, 0.3) !important;
+  box-shadow: 0 10px 20px rgba(234, 199, 132, 0.1);
+  border-color: rgba(234, 199, 132, 0.3) !important;
   transform: translateY(-2px);
 }
 
@@ -77,16 +77,16 @@ button:focus, a:focus, input:focus, select:focus, textarea:focus {
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: #231f0e;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #453e1d;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #eac784;
 }
 
 /* Admin and portal custom classes that enforce dark mode override */
@@ -95,6 +95,6 @@ button:focus, a:focus, input:focus, select:focus, textarea:focus {
 }
 
 .dark .glass-card {
-  background: rgba(13, 28, 50, 0.6);
+  background: rgba(44, 39, 18, 0.6);
   border-color: rgba(255, 255, 255, 0.08);
 }

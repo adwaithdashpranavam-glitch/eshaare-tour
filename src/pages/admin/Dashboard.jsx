@@ -48,8 +48,8 @@ export const Dashboard = () => {
   // Funnel & Chart Data
   const funnelData = [
     { name: "New", count: 32, fill: "#378ADD" },
-    { name: "Contacted", count: 24, fill: "#E2BC6A" },
-    { name: "Qualified", count: 18, fill: "#C9A84C" },
+    { name: "Contacted", count: 24, fill: "#EDB868" },
+    { name: "Qualified", count: 18, fill: "#EAC784" },
     { name: "Won", count: 12, fill: "#1D9E75" }
   ];
 
@@ -62,10 +62,10 @@ export const Dashboard = () => {
   ];
 
   const casesPieData = [
-    { name: "Docs Pending", value: 5, color: "#BA7517" },
+    { name: "Docs Pending", value: 5, color: "#EDB868" },
     { name: "Verification", value: 4, color: "#378ADD" },
-    { name: "Submitted", value: 12, color: "#C9A84C" },
-    { name: "Awaiting Decision", value: 3, color: "#E2BC6A" }
+    { name: "Submitted", value: 12, color: "#EAC784" },
+    { name: "Awaiting Decision", value: 3, color: "#EDB868" }
   ];
 
   const [recentLeads, setRecentLeads] = useState([
@@ -357,11 +357,11 @@ export const Dashboard = () => {
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={revenueData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1A2B47" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#453E1D" />
                 <XAxis dataKey="date" stroke="#9ca3af" style={{ fontSize: 10 }} />
                 <YAxis stroke="#9ca3af" style={{ fontSize: 10 }} />
-                <Tooltip contentStyle={{ backgroundColor: "#071120", borderColor: "#1A2B47", borderRadius: "12px", color: "#fff" }} labelStyle={{ color: "#fff" }} />
-                <Line type="monotone" dataKey="amt" stroke="#C9A84C" strokeWidth={3} activeDot={{ r: 8 }} />
+                <Tooltip contentStyle={{ backgroundColor: "#2C2712", borderColor: "#453E1D", borderRadius: "12px", color: "#fff" }} labelStyle={{ color: "#fff" }} />
+                <Line type="monotone" dataKey="amt" stroke="#EAC784" strokeWidth={3} activeDot={{ r: 8 }} />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -384,7 +384,7 @@ export const Dashboard = () => {
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={{ backgroundColor: "#071120", borderColor: "#1A2B47", borderRadius: "12px" }} />
+                <Tooltip contentStyle={{ backgroundColor: "#2C2712", borderColor: "#453E1D", borderRadius: "12px" }} />
               </PieChart>
             </ResponsiveContainer>
           </div>

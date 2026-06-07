@@ -22,7 +22,7 @@ export const ReportsPage = () => {
     { name: "WhatsApp", count: 48, fill: "#1D9E75" },
     { name: "Website", count: 32, fill: "#378ADD" },
     { name: "Instagram", count: 24, fill: "#E24B4A" },
-    { name: "Referrals", count: 18, fill: "#C9A84C" }
+    { name: "Referrals", count: 18, fill: "#EAC784" }
   ];
 
   const handleExportCSV = () => {
@@ -80,15 +80,15 @@ export const ReportsPage = () => {
                 <AreaChart data={revenueTrend}>
                   <defs>
                     <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#C9A84C" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="#C9A84C" stopOpacity={0}/>
+                      <stop offset="5%" stopColor="#EAC784" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#EAC784" stopOpacity={0}/>
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#1A2B47" />
-                  <XAxis dataKey="name" stroke="#F5EDD8" style={{ fontSize: 10 }} />
-                  <YAxis stroke="#F5EDD8" style={{ fontSize: 10 }} />
-                  <Tooltip contentStyle={{ backgroundColor: "#0B1424", borderColor: "#1A2B47" }} />
-                  <Area type="monotone" dataKey="revenue" stroke="#C9A84C" fillOpacity={1} fill="url(#colorRev)" strokeWidth={2.5} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#453E1D" />
+                  <XAxis dataKey="name" stroke="#EEDADA" style={{ fontSize: 10 }} />
+                  <YAxis stroke="#EEDADA" style={{ fontSize: 10 }} />
+                  <Tooltip contentStyle={{ backgroundColor: "#1C190B", borderColor: "#453E1D" }} />
+                  <Area type="monotone" dataKey="revenue" stroke="#EAC784" fillOpacity={1} fill="url(#colorRev)" strokeWidth={2.5} />
                   <Area type="monotone" dataKey="profit" stroke="#1D9E75" fillOpacity={0} strokeWidth={2} />
                 </AreaChart>
               </ResponsiveContainer>
@@ -101,11 +101,11 @@ export const ReportsPage = () => {
             <div className="h-60 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={sourceData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#1A2B47" />
-                  <XAxis dataKey="name" stroke="#F5EDD8" style={{ fontSize: 10 }} />
-                  <YAxis stroke="#F5EDD8" style={{ fontSize: 10 }} />
-                  <Tooltip contentStyle={{ backgroundColor: "#0B1424", borderColor: "#1A2B47" }} />
-                  <Bar dataKey="count" fill="#C9A84C" radius={[4, 4, 0, 0]}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#453E1D" />
+                  <XAxis dataKey="name" stroke="#EEDADA" style={{ fontSize: 10 }} />
+                  <YAxis stroke="#EEDADA" style={{ fontSize: 10 }} />
+                  <Tooltip contentStyle={{ backgroundColor: "#1C190B", borderColor: "#453E1D" }} />
+                  <Bar dataKey="count" fill="#EAC784" radius={[4, 4, 0, 0]}>
                     {sourceData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.fill} />
                     ))}

@@ -58,7 +58,7 @@ export const PortalNotificationsPage = () => {
         {notifications.length > 0 && (
           <button
             onClick={handleMarkAllRead}
-            className="self-start sm:self-center px-4 py-2 border border-[#1A2B47] hover:border-secondary hover:text-secondary text-[#EDE0C4]/80 font-bold text-xs uppercase tracking-wider rounded-lg flex items-center gap-1.5 transition-colors"
+            className="self-start sm:self-center px-4 py-2 border border-[#453E1D] hover:border-secondary hover:text-secondary text-[#EEDADA]/80 font-bold text-xs uppercase tracking-wider rounded-lg flex items-center gap-1.5 transition-colors"
           >
             <MailOpen className="h-4 w-4" />
             <span>Mark all read</span>
@@ -90,7 +90,7 @@ export const PortalNotificationsPage = () => {
               >
                 <div className={`p-2.5 rounded-lg shrink-0 ${
                   notif.read
-                    ? "bg-[#111E35] text-on-primary-container/40"
+                    ? "bg-[#231F0D] text-on-primary-container/40"
                     : "bg-secondary-container/10 text-secondary"
                 }`}>
                   <Bell className="h-5 w-5" />
@@ -98,7 +98,7 @@ export const PortalNotificationsPage = () => {
                 
                 <div className="flex-1 min-w-0 space-y-1">
                   <div className="flex justify-between items-start gap-2">
-                    <h4 className={`text-sm font-semibold truncate ${notif.read ? "text-[#EDE0C4]/80" : "text-white"}`}>
+                    <h4 className={`text-sm font-semibold truncate ${notif.read ? "text-[#EEDADA]/80" : "text-white"}`}>
                       {notif.title}
                     </h4>
                     <span className="text-[10px] text-on-primary-container/40 whitespace-nowrap font-mono">

@@ -120,7 +120,7 @@ export const VisaDetailPage = () => {
       setIsAuthRequiredModalOpen(true);
       return;
     }
-    
+
     const loadingToast = toast.loading("Creating application draft...");
     try {
       const draftId = await createApplicationDraft(
@@ -202,26 +202,26 @@ export const VisaDetailPage = () => {
   if (loading) {
     /* Full Page Skeleton Loader */
     return (
-      <div className="bg-[#070D1A] min-h-screen text-[#F5EDD8] font-sans">
+      <div className="bg-[#2C2712] min-h-screen text-[#EEDADA] font-sans">
         {/* Skeleton Hero */}
-        <section className="py-24 bg-[#0B1424] border-b border-[#1A2B47] animate-pulse">
+        <section className="py-24 bg-[#1C190B] border-b border-[#453E1D] animate-pulse">
           <div className="max-w-container-max mx-auto px-4 space-y-6">
-            <div className="h-10 bg-[#1A2B47] rounded w-1/3"></div>
-            <div className="h-5 bg-[#1A2B47] rounded w-2/3"></div>
+            <div className="h-10 bg-[#453E1D] rounded w-1/3"></div>
+            <div className="h-5 bg-[#453E1D] rounded w-2/3"></div>
             <div className="flex gap-4 pt-4">
-              <div className="h-12 bg-[#1A2B47] rounded w-32"></div>
-              <div className="h-12 bg-[#1A2B47] rounded w-32"></div>
+              <div className="h-12 bg-[#453E1D] rounded w-32"></div>
+              <div className="h-12 bg-[#453E1D] rounded w-32"></div>
             </div>
             {/* Stats row */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-10 border-t border-[#1A2B47]/40">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-10 border-t border-[#453E1D]/40">
               {[...Array(4)].map((_, i) => (
-                <div key={i} className="h-16 bg-[#1A2B47] rounded"></div>
+                <div key={i} className="h-16 bg-[#453E1D] rounded"></div>
               ))}
             </div>
           </div>
         </section>
         {/* Tab bar skeleton */}
-        <div className="bg-[#0B1424] h-14 border-b border-[#1A2B47]"></div>
+        <div className="bg-[#1C190B] h-14 border-b border-[#453E1D]"></div>
       </div>
     );
   }
@@ -233,23 +233,23 @@ export const VisaDetailPage = () => {
 
   if (showNotFound) {
     return (
-      <div className="bg-[#070D1A] min-h-screen text-[#F5EDD8] flex flex-col justify-center items-center py-24 text-center px-4 font-sans">
+      <div className="bg-[#2C2712] min-h-screen text-[#EEDADA] flex flex-col justify-center items-center py-24 text-center px-4 font-sans">
         <div className="max-w-md space-y-6">
           <AlertCircle className="h-20 w-20 text-[#E24B4A] mx-auto animate-bounce" />
           <h1 className="text-3xl font-bold font-display text-white">Visa Type Not Found</h1>
-          <p className="text-sm text-[#EDE0C4]/60 leading-relaxed">
+          <p className="text-sm text-[#EEDADA]/60 leading-relaxed">
             The page you're looking for doesn't exist or may have been un-published. Please check the URL or view our full services list.
           </p>
           <div className="flex justify-center gap-4">
             <Link
               to="/visa-services"
-              className="px-6 py-3 border border-[#1A2B47] text-white hover:border-[#C9A84C] hover:text-[#C9A84C] rounded-xl text-xs font-bold uppercase tracking-wider transition-colors"
+              className="px-6 py-3 border border-[#453E1D] text-white hover:border-[#EAC784] hover:text-[#EAC784] rounded-xl text-xs font-bold uppercase tracking-wider transition-colors"
             >
               View Services
             </Link>
             <Link
               to="/contact"
-              className="px-6 py-3 bg-[#C9A84C] text-[#070D1A] rounded-xl text-xs font-bold uppercase tracking-wider hover:opacity-90 transition-opacity"
+              className="px-6 py-3 bg-[#EAC784] text-[#2C2712] rounded-xl text-xs font-bold uppercase tracking-wider hover:opacity-90 transition-opacity"
             >
               Contact Us
             </Link>
@@ -260,7 +260,7 @@ export const VisaDetailPage = () => {
   }
 
   return (
-    <div className="bg-[#070D1A] min-h-screen text-[#F5EDD8] font-sans pb-24 relative">
+    <div className="bg-[#2C2712] min-h-screen text-[#EEDADA] font-sans pb-24 relative">
 
       {/* Draft Mode Banner (Visible to Admin only) */}
       {isDraft && isAdmin && (
@@ -271,7 +271,7 @@ export const VisaDetailPage = () => {
           </div>
           <button
             onClick={handlePublishNow}
-            className="px-4 py-1.5 bg-[#C9A84C] text-[#070D1A] font-bold rounded hover:opacity-95 transition-opacity"
+            className="px-4 py-1.5 bg-[#EAC784] text-[#2C2712] font-bold rounded hover:opacity-95 transition-opacity"
           >
             Publish Now
           </button>
@@ -279,7 +279,7 @@ export const VisaDetailPage = () => {
       )}
 
       {/* HERO SECTION */}
-      <section className="relative py-20 overflow-hidden border-b border-[#1A2B47]">
+      <section className="relative py-20 overflow-hidden border-b border-[#453E1D]">
         {visaData.imageUrl && (
           <div className="absolute inset-0 z-0">
             <img
@@ -287,55 +287,55 @@ export const VisaDetailPage = () => {
               alt={visaData.name}
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-[#0B1424]/95 via-[#0B1424]/80 to-transparent"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-[#1C190B]/95 via-[#1C190B]/80 to-transparent"></div>
           </div>
         )}
         <div className="relative z-10 max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop space-y-6">
 
           {/* Breadcrumbs */}
-          <div className="flex items-center gap-1.5 text-xs text-[#EDE0C4]/60 pb-2">
+          <div className="flex items-center gap-1.5 text-xs text-[#EEDADA]/60 pb-2">
             <Link to="/" className="hover:text-white">Home</Link>
             <span className="material-symbols-outlined text-xs">chevron_right</span>
             <Link to="/visa-services" className="hover:text-white">Visa Services</Link>
             <span className="material-symbols-outlined text-xs">chevron_right</span>
-            <span className="text-[#C9A84C] font-medium">{visaData.name}</span>
+            <span className="text-[#EAC784] font-medium">{visaData.name}</span>
           </div>
 
           <h1 className="text-4xl md:text-5xl font-bold font-display text-white tracking-wide leading-tight max-w-2xl">
             {visaData.name}
           </h1>
-          <p className="text-base text-[#EDE0C4]/70 max-w-xl leading-relaxed">
+          <p className="text-base text-[#EEDADA]/70 max-w-xl leading-relaxed">
             {visaData.tagline}
           </p>
 
           <div className="flex gap-4 pt-2">
             <button
               onClick={handleApplyClick}
-              className="px-8 py-3.5 bg-[#C9A84C] text-[#070D1A] font-bold rounded-xl text-xs uppercase tracking-wider hover:opacity-95 hover:shadow-[0_0_15px_rgba(201,168,76,0.3)] transition-all"
+              className="px-8 py-3.5 bg-[#EAC784] text-[#2C2712] font-bold rounded-xl text-xs uppercase tracking-wider hover:opacity-95 hover:shadow-[0_0_15px_rgba(201,168,76,0.3)] transition-all"
             >
               Start Application
             </button>
             <button
               onClick={() => scrollToSection("documents")}
-              className="px-8 py-3.5 border border-[#1A2B47] text-white hover:border-[#C9A84C] hover:text-[#C9A84C] rounded-xl text-xs font-bold uppercase tracking-wider transition-colors"
+              className="px-8 py-3.5 border border-[#453E1D] text-white hover:border-[#EAC784] hover:text-[#EAC784] rounded-xl text-xs font-bold uppercase tracking-wider transition-colors"
             >
               View Requirements
             </button>
           </div>
 
           {/* Hero Stats Row */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-12 border-t border-[#1A2B47]/40 mt-10">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-12 border-t border-[#453E1D]/40 mt-10">
             {visaData.heroStats?.map((stat, index) => (
               <div
                 key={index}
-                className="bg-[#111E35] border border-[#1A2B47] p-4 rounded-xl flex items-center gap-3.5 shadow-sm"
+                className="bg-[#231F0D] border border-[#453E1D] p-4 rounded-xl flex items-center gap-3.5 shadow-sm"
               >
-                <div className="p-2.5 rounded-lg bg-[#0B1424] text-[#C9A84C]">
+                <div className="p-2.5 rounded-lg bg-[#1C190B] text-[#EAC784]">
                   <StatIcon name={stat.icon} className="h-5 w-5" />
                 </div>
                 <div>
                   <div className="text-lg font-bold text-white font-mono leading-tight">{stat.value}</div>
-                  <span className="text-[10px] text-[#EDE0C4]/45 font-bold uppercase tracking-wider">{stat.label}</span>
+                  <span className="text-[10px] text-[#EEDADA]/45 font-bold uppercase tracking-wider">{stat.label}</span>
                 </div>
               </div>
             ))}
@@ -345,7 +345,7 @@ export const VisaDetailPage = () => {
       </section>
 
       {/* STICKY TAB NAVIGATION BAR */}
-      <div className="bg-[#0B1424] border-b border-[#1A2B47] sticky top-14 z-20 shadow-md">
+      <div className="bg-[#1C190B] border-b border-[#453E1D] sticky top-14 z-20 shadow-md">
         <div className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop flex gap-6 overflow-x-auto whitespace-nowrap scrollbar-none h-14 items-center">
           {[
             { id: "overview", label: "Overview" },
@@ -357,12 +357,12 @@ export const VisaDetailPage = () => {
             <button
               key={tab.id}
               onClick={() => scrollToSection(tab.id)}
-              className={`h-full text-xs font-bold uppercase tracking-widest relative px-1 transition-colors hover:text-white ${activeTab === tab.id ? "text-[#C9A84C]" : "text-[#EDE0C4]/60"
+              className={`h-full text-xs font-bold uppercase tracking-widest relative px-1 transition-colors hover:text-white ${activeTab === tab.id ? "text-[#EAC784]" : "text-[#EEDADA]/60"
                 }`}
             >
               <span>{tab.label}</span>
               {activeTab === tab.id && (
-                <span className="absolute bottom-0 left-0 right-0 h-[3px] bg-[#C9A84C] rounded-t-full"></span>
+                <span className="absolute bottom-0 left-0 right-0 h-[3px] bg-[#EAC784] rounded-t-full"></span>
               )}
             </button>
           ))}
@@ -374,29 +374,29 @@ export const VisaDetailPage = () => {
 
         {/* SECTION 2 - OVERVIEW */}
         <section id="overview" className="space-y-4 scroll-mt-40">
-          <h2 className="text-xl font-bold font-display text-[#C9A84C] uppercase tracking-wider border-b border-[#1A2B47] pb-2">
+          <h2 className="text-xl font-bold font-display text-[#EAC784] uppercase tracking-wider border-b border-[#453E1D] pb-2">
             Overview
           </h2>
-          <p className="text-sm md:text-base text-[#EDE0C4]/80 leading-relaxed max-w-4xl">
+          <p className="text-sm md:text-base text-[#EEDADA]/80 leading-relaxed max-w-4xl">
             {visaData.overviewText}
           </p>
         </section>
 
         {/* SECTION 3 - REQUIRED DOCUMENTS */}
         <section id="documents" className="space-y-6 scroll-mt-40">
-          <h2 className="text-xl font-bold font-display text-[#C9A84C] uppercase tracking-wider border-b border-[#1A2B47] pb-2">
+          <h2 className="text-xl font-bold font-display text-[#EAC784] uppercase tracking-wider border-b border-[#453E1D] pb-2">
             Required Documents Checklist
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl">
             {visaData.requiredDocuments?.map((doc, idx) => (
               <div
                 key={idx}
-                className="bg-[#0B1424] border border-[#1A2B47]/60 p-4 rounded-xl flex items-start gap-3"
+                className="bg-[#1C190B] border border-[#453E1D]/60 p-4 rounded-xl flex items-start gap-3"
               >
                 <div className="h-5 w-5 bg-emerald-500/10 text-emerald-400 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 border border-emerald-500/20">
                   <Check className="h-3 w-3" />
                 </div>
-                <span className="text-xs md:text-sm text-[#EDE0C4]/80 leading-relaxed">
+                <span className="text-xs md:text-sm text-[#EEDADA]/80 leading-relaxed">
                   {doc}
                 </span>
               </div>
@@ -406,18 +406,18 @@ export const VisaDetailPage = () => {
 
         {/* SECTION 4 - HOW ESHAARE PROCESSES YOUR VISA */}
         <section id="process" className="space-y-10 scroll-mt-40">
-          <h2 className="text-xl font-bold font-display text-[#C9A84C] uppercase tracking-wider border-b border-[#1A2B47] pb-2">
+          <h2 className="text-xl font-bold font-display text-[#EAC784] uppercase tracking-wider border-b border-[#453E1D] pb-2">
             How Eshaare Processes Your Visa
           </h2>
 
           <div className="relative max-w-3xl pl-4 md:pl-10 space-y-12">
             {/* Connecting line on desktop */}
-            <div className="absolute left-[20px] md:left-[43px] top-4 bottom-4 w-[2px] bg-[#C9A84C]/25 hidden sm:block"></div>
+            <div className="absolute left-[20px] md:left-[43px] top-4 bottom-4 w-[2px] bg-[#EAC784]/25 hidden sm:block"></div>
 
             {visaData.processSteps?.map((step, idx) => (
               <div key={idx} className="relative flex flex-col sm:flex-row gap-4 md:gap-8 items-start">
                 {/* Step Circle */}
-                <div className="h-10 w-10 md:h-12 md:w-12 bg-[#0B1424] border-2 border-[#C9A84C] text-[#C9A84C] font-bold font-display text-lg md:text-xl rounded-full flex items-center justify-center flex-shrink-0 relative z-10">
+                <div className="h-10 w-10 md:h-12 md:w-12 bg-[#1C190B] border-2 border-[#EAC784] text-[#EAC784] font-bold font-display text-lg md:text-xl rounded-full flex items-center justify-center flex-shrink-0 relative z-10">
                   {step.stepNumber || idx + 1}
                 </div>
 
@@ -425,7 +425,7 @@ export const VisaDetailPage = () => {
                   <h4 className="text-base md:text-lg font-semibold text-white">
                     {step.title}
                   </h4>
-                  <p className="text-xs md:text-sm text-[#EDE0C4]/60 leading-relaxed">
+                  <p className="text-xs md:text-sm text-[#EEDADA]/60 leading-relaxed">
                     {step.description}
                   </p>
                 </div>
@@ -436,31 +436,31 @@ export const VisaDetailPage = () => {
 
         {/* SECTION 5 - FEE TABLE */}
         <section id="fees" className="space-y-6 scroll-mt-40">
-          <h2 className="text-xl font-bold font-display text-[#C9A84C] uppercase tracking-wider border-b border-[#1A2B47] pb-2">
+          <h2 className="text-xl font-bold font-display text-[#EAC784] uppercase tracking-wider border-b border-[#453E1D] pb-2">
             Fee & Pricing Table
           </h2>
 
           {/* Desktop Table View */}
-          <div className="hidden sm:block overflow-x-auto border border-[#1A2B47] rounded-xl shadow-lg bg-[#0B1424]">
-            <table className="w-full text-left border-collapse text-xs md:text-sm text-[#EDE0C4]/80">
+          <div className="hidden sm:block overflow-x-auto border border-[#453E1D] rounded-xl shadow-lg bg-[#1C190B]">
+            <table className="w-full text-left border-collapse text-xs md:text-sm text-[#EEDADA]/80">
               <thead>
-                <tr className="bg-[#111E35] border-b border-[#1A2B47] text-[#EDE0C4]/50 font-bold uppercase tracking-wider text-[10px]">
+                <tr className="bg-[#231F0D] border-b border-[#453E1D] text-[#EEDADA]/50 font-bold uppercase tracking-wider text-[10px]">
                   <th className="p-4">Applicant Type</th>
                   <th className="p-4">Embassy Fee</th>
                   <th className="p-4">Service Fee</th>
                   <th className="p-4 text-right">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#1A2B47]/60">
+              <tbody className="divide-y divide-[#453E1D]/60">
                 {visaData.feeStructure?.map((fee, idx) => (
                   <tr key={idx} className="hover:bg-white/5 transition-colors">
                     <td className="p-4 font-semibold text-white">{fee.applicantType}</td>
                     <td className="p-4 font-mono">{fee.embassyFee}</td>
-                    <td className="p-4 font-mono text-[#C9A84C] font-bold">{fee.serviceFee}</td>
+                    <td className="p-4 font-mono text-[#EAC784] font-bold">{fee.serviceFee}</td>
                     <td className="p-4 text-right">
                       <button
                         onClick={handleApplyClick}
-                        className="px-4 py-1.5 bg-gradient-to-r from-[#C9A84C] to-[#E2BC6A] text-[#070D1A] font-bold rounded text-xs uppercase tracking-wider"
+                        className="px-4 py-1.5 bg-gradient-to-r from-[#EAC784] to-[#EDB868] text-[#2C2712] font-bold rounded text-xs uppercase tracking-wider"
                       >
                         Apply Now
                       </button>
@@ -476,20 +476,20 @@ export const VisaDetailPage = () => {
             {visaData.feeStructure?.map((fee, idx) => (
               <div
                 key={idx}
-                className="bg-[#0B1424] border border-[#1A2B47] p-5 rounded-xl space-y-3"
+                className="bg-[#1C190B] border border-[#453E1D] p-5 rounded-xl space-y-3"
               >
-                <h4 className="text-sm font-bold text-white border-b border-[#1A2B47]/50 pb-2">{fee.applicantType}</h4>
-                <div className="flex justify-between text-xs text-[#EDE0C4]/70">
+                <h4 className="text-sm font-bold text-white border-b border-[#453E1D]/50 pb-2">{fee.applicantType}</h4>
+                <div className="flex justify-between text-xs text-[#EEDADA]/70">
                   <span>Embassy Fee:</span>
                   <span className="font-mono font-semibold text-white">{fee.embassyFee}</span>
                 </div>
-                <div className="flex justify-between text-xs text-[#EDE0C4]/70">
+                <div className="flex justify-between text-xs text-[#EEDADA]/70">
                   <span>Service Fee:</span>
-                  <span className="font-mono font-bold text-[#C9A84C]">{fee.serviceFee}</span>
+                  <span className="font-mono font-bold text-[#EAC784]">{fee.serviceFee}</span>
                 </div>
                 <button
                   onClick={handleApplyClick}
-                  className="w-full py-2 bg-gradient-to-r from-[#C9A84C] to-[#E2BC6A] text-[#070D1A] font-bold rounded-lg text-xs uppercase tracking-wider pt-2 mt-1"
+                  className="w-full py-2 bg-gradient-to-r from-[#EAC784] to-[#EDB868] text-[#2C2712] font-bold rounded-lg text-xs uppercase tracking-wider pt-2 mt-1"
                 >
                   Apply Now
                 </button>
@@ -504,7 +504,7 @@ export const VisaDetailPage = () => {
                 <h3 className="text-2xl font-bold font-display text-white tracking-wide">
                   Choose the Level of Support You Need
                 </h3>
-                <p className="text-xs text-[#EDE0C4]/60">
+                <p className="text-xs text-[#EEDADA]/60">
                   Select a support option best suited for your visa requirements.
                 </p>
               </div>
@@ -535,7 +535,7 @@ export const VisaDetailPage = () => {
                         {visaData.supportPackages.standard.features?.map((feat, idx) => (
                           <li key={idx} className="flex items-start gap-3 text-xs">
                             {feat.included ? (
-                              <Check className="h-4.5 w-4.5 text-[#C9A84C] flex-shrink-0 mt-0.5" />
+                              <Check className="h-4.5 w-4.5 text-[#EAC784] flex-shrink-0 mt-0.5" />
                             ) : (
                               <X className="h-4.5 w-4.5 text-gray-300 flex-shrink-0 mt-0.5" />
                             )}
@@ -558,10 +558,10 @@ export const VisaDetailPage = () => {
 
                 {/* Premium Package Card */}
                 {visaData.supportPackages.premium && (
-                  <div className="bg-[#0B1424] text-white rounded-3xl p-8 shadow-2xl flex flex-col justify-between border-2 border-[#C9A84C] relative transform hover:-translate-y-1 transition-all duration-300 overflow-hidden">
+                  <div className="bg-[#1C190B] text-white rounded-3xl p-8 shadow-2xl flex flex-col justify-between border-2 border-[#EAC784] relative transform hover:-translate-y-1 transition-all duration-300 overflow-hidden">
                     {/* MOST POPULAR Badge */}
                     {visaData.supportPackages.premium.recommended && (
-                      <div className="absolute top-4 right-4 bg-gradient-to-r from-[#C9A84C] to-[#E2BC6A] text-[#070D1A] text-[9px] font-extrabold px-3.5 py-1 rounded-full uppercase tracking-widest shadow-md">
+                      <div className="absolute top-4 right-4 bg-gradient-to-r from-[#EAC784] to-[#EDB868] text-[#2C2712] text-[9px] font-extrabold px-3.5 py-1 rounded-full uppercase tracking-widest shadow-md">
                         Most Popular
                       </div>
                     )}
@@ -571,35 +571,35 @@ export const VisaDetailPage = () => {
                         <h4 className="text-xl font-bold text-white leading-snug">
                           {visaData.supportPackages.premium.title}
                         </h4>
-                        <p className="text-xs text-[#EDE0C4]/60 leading-relaxed">
+                        <p className="text-xs text-[#EEDADA]/60 leading-relaxed">
                           {visaData.supportPackages.premium.subtitle}
                         </p>
                       </div>
 
                       <div className="py-2">
-                        <span className="text-4xl font-extrabold text-[#C9A84C] font-mono">
+                        <span className="text-4xl font-extrabold text-[#EAC784] font-mono">
                           AED {visaData.supportPackages.premium.price}
                         </span>
-                        <span className="text-xs text-[#EDE0C4]/60 font-medium"> / applicant</span>
+                        <span className="text-xs text-[#EEDADA]/60 font-medium"> / applicant</span>
                       </div>
 
                       {/* Features list */}
-                      <ul className="space-y-3.5 border-t border-[#1A2B47] pt-6">
+                      <ul className="space-y-3.5 border-t border-[#453E1D] pt-6">
                         {visaData.supportPackages.premium.features?.map((feat, idx) => (
                           <li key={idx} className="flex items-start gap-3 text-xs">
                             {feat.highlighted ? (
-                              <Sparkles className="h-4.5 w-4.5 text-[#C9A84C] flex-shrink-0 mt-0.5" />
+                              <Sparkles className="h-4.5 w-4.5 text-[#EAC784] flex-shrink-0 mt-0.5" />
                             ) : feat.included ? (
-                              <Check className="h-4.5 w-4.5 text-[#C9A84C] flex-shrink-0 mt-0.5" />
+                              <Check className="h-4.5 w-4.5 text-[#EAC784] flex-shrink-0 mt-0.5" />
                             ) : (
-                              <X className="h-4.5 w-4.5 text-[#EDE0C4]/30 flex-shrink-0 mt-0.5" />
+                              <X className="h-4.5 w-4.5 text-[#EEDADA]/30 flex-shrink-0 mt-0.5" />
                             )}
                             <span className={
-                              feat.highlighted 
-                                ? "text-[#C9A84C] font-semibold" 
-                                : feat.included 
-                                  ? "text-[#EDE0C4]/90 font-medium" 
-                                  : "text-[#EDE0C4]/40 line-through"
+                              feat.highlighted
+                                ? "text-[#EAC784] font-semibold"
+                                : feat.included
+                                  ? "text-[#EEDADA]/90 font-medium"
+                                  : "text-[#EEDADA]/40 line-through"
                             }>
                               {feat.text}
                             </span>
@@ -610,7 +610,7 @@ export const VisaDetailPage = () => {
 
                     <button
                       onClick={() => handleApplyClick("premium", visaData.supportPackages.premium.price)}
-                      className="w-full mt-8 py-3.5 bg-gradient-to-r from-[#C9A84C] to-[#E2BC6A] text-[#070D1A] hover:opacity-95 rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-md font-extrabold"
+                      className="w-full mt-8 py-3.5 bg-gradient-to-r from-[#EAC784] to-[#EDB868] text-[#2C2712] hover:opacity-95 rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-md font-extrabold"
                     >
                       Select Premium
                     </button>
@@ -623,10 +623,10 @@ export const VisaDetailPage = () => {
 
         {/* SECTION 6 - FAQ ACCORDION */}
         <section id="faq" className="space-y-6 scroll-mt-40 max-w-4xl">
-          <h2 className="text-xl font-bold font-display text-[#C9A84C] uppercase tracking-wider border-b border-[#1A2B47] pb-2">
+          <h2 className="text-xl font-bold font-display text-[#EAC784] uppercase tracking-wider border-b border-[#453E1D] pb-2">
             Frequently Asked Questions
           </h2>
-          <div className="border border-[#1A2B47] rounded-xl overflow-hidden divide-y divide-[#1A2B47] bg-[#0B1424]">
+          <div className="border border-[#453E1D] rounded-xl overflow-hidden divide-y divide-[#453E1D] bg-[#1C190B]">
             {visaData.faqs?.map((faq, idx) => {
               const isOpen = !!openFaqs[idx];
               return (
@@ -637,15 +637,15 @@ export const VisaDetailPage = () => {
                   >
                     <span>{faq.question}</span>
                     <ChevronDown
-                      className={`h-4.5 w-4.5 text-[#C9A84C] transition-transform duration-300 ${isOpen ? "rotate-180" : ""
+                      className={`h-4.5 w-4.5 text-[#EAC784] transition-transform duration-300 ${isOpen ? "rotate-180" : ""
                         }`}
                     />
                   </button>
                   <div
-                    className={`px-5 text-xs md:text-sm text-[#EDE0C4]/60 leading-relaxed overflow-hidden transition-all duration-300 ${isOpen ? "max-h-60 pb-5 opacity-100" : "max-h-0 opacity-0"
+                    className={`px-5 text-xs md:text-sm text-[#EEDADA]/60 leading-relaxed overflow-hidden transition-all duration-300 ${isOpen ? "max-h-60 pb-5 opacity-100" : "max-h-0 opacity-0"
                       }`}
                   >
-                    <div className="pt-2 border-t border-[#1A2B47]/20">
+                    <div className="pt-2 border-t border-[#453E1D]/20">
                       {faq.answer}
                     </div>
                   </div>
@@ -656,18 +656,18 @@ export const VisaDetailPage = () => {
         </section>
 
         {/* SECTION 7 - CTA BAND */}
-        <section className="bg-[#0B1424] border border-[#1A2B47] rounded-3xl p-8 md:p-12 text-center space-y-6 relative overflow-hidden">
-          <div className="absolute -top-24 -right-24 w-64 h-64 bg-[#C9A84C]/5 rounded-full blur-3xl"></div>
+        <section className="bg-[#1C190B] border border-[#453E1D] rounded-3xl p-8 md:p-12 text-center space-y-6 relative overflow-hidden">
+          <div className="absolute -top-24 -right-24 w-64 h-64 bg-[#EAC784]/5 rounded-full blur-3xl"></div>
           <div className="max-w-xl mx-auto space-y-4 relative z-10">
             <h2 className="text-2xl md:text-3xl font-bold font-display text-white">
               Ready to apply for your {visaData.name}?
             </h2>
-            <p className="text-xs md:text-sm text-[#EDE0C4]/60 leading-relaxed">
+            <p className="text-xs md:text-sm text-[#EEDADA]/60 leading-relaxed">
               Start your visa application today. Our experienced document compliance team will guide you through VFS slot schedules, NOC forms, and interview prep.
             </p>
             <button
               onClick={handleApplyClick}
-              className="px-8 py-3.5 bg-gradient-to-r from-[#C9A84C] to-[#E2BC6A] text-[#070D1A] font-bold rounded-xl text-xs uppercase tracking-wider hover:opacity-95 transition-all shadow-md inline-flex items-center gap-1.5"
+              className="px-8 py-3.5 bg-gradient-to-r from-[#EAC784] to-[#EDB868] text-[#2C2712] font-bold rounded-xl text-xs uppercase tracking-wider hover:opacity-95 transition-all shadow-md inline-flex items-center gap-1.5"
             >
               <Phone className="h-4 w-4" />
               <span>Start Application Now</span>
@@ -687,11 +687,11 @@ export const VisaDetailPage = () => {
         <form onSubmit={handleFormSubmit} className="space-y-4 font-sans text-xs">
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col space-y-1.5">
-              <label className="text-[10px] font-bold text-[#EDE0C4]/40 uppercase tracking-wider">Full Name *</label>
+              <label className="text-[10px] font-bold text-[#EEDADA]/40 uppercase tracking-wider">Full Name *</label>
               <input
                 type="text"
                 required
-                className="px-3.5 py-2.5 bg-[#111E35] border border-[#1A2B47] text-white placeholder-[#EDE0C4]/20 rounded focus:outline-none focus:border-[#C9A84C] text-xs"
+                className="px-3.5 py-2.5 bg-[#231F0D] border border-[#453E1D] text-white placeholder-[#EEDADA]/20 rounded focus:outline-none focus:border-[#EAC784] text-xs"
                 placeholder="Jane Doe"
                 name="name"
                 value={formData.name}
@@ -699,11 +699,11 @@ export const VisaDetailPage = () => {
               />
             </div>
             <div className="flex flex-col space-y-1.5">
-              <label className="text-[10px] font-bold text-[#EDE0C4]/40 uppercase tracking-wider">WhatsApp Phone *</label>
+              <label className="text-[10px] font-bold text-[#EEDADA]/40 uppercase tracking-wider">WhatsApp Phone *</label>
               <input
                 type="tel"
                 required
-                className="px-3.5 py-2.5 bg-[#111E35] border border-[#1A2B47] text-white placeholder-[#EDE0C4]/20 rounded focus:outline-none focus:border-[#C9A84C] text-xs"
+                className="px-3.5 py-2.5 bg-[#231F0D] border border-[#453E1D] text-white placeholder-[#EEDADA]/20 rounded focus:outline-none focus:border-[#EAC784] text-xs"
                 placeholder="e.g. 501234567"
                 name="phone"
                 value={formData.phone}
@@ -714,11 +714,11 @@ export const VisaDetailPage = () => {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col space-y-1.5">
-              <label className="text-[10px] font-bold text-[#EDE0C4]/40 uppercase tracking-wider">Email Address *</label>
+              <label className="text-[10px] font-bold text-[#EEDADA]/40 uppercase tracking-wider">Email Address *</label>
               <input
                 type="email"
                 required
-                className="px-3.5 py-2.5 bg-[#111E35] border border-[#1A2B47] text-white placeholder-[#EDE0C4]/20 rounded focus:outline-none focus:border-[#C9A84C] text-xs"
+                className="px-3.5 py-2.5 bg-[#231F0D] border border-[#453E1D] text-white placeholder-[#EEDADA]/20 rounded focus:outline-none focus:border-[#EAC784] text-xs"
                 placeholder="jane@example.com"
                 name="email"
                 value={formData.email}
@@ -726,10 +726,10 @@ export const VisaDetailPage = () => {
               />
             </div>
             <div className="flex flex-col space-y-1.5">
-              <label className="text-[10px] font-bold text-[#EDE0C4]/40 uppercase tracking-wider">Nationality</label>
+              <label className="text-[10px] font-bold text-[#EEDADA]/40 uppercase tracking-wider">Nationality</label>
               <input
                 type="text"
-                className="px-3.5 py-2.5 bg-[#111E35] border border-[#1A2B47] text-white placeholder-[#EDE0C4]/20 rounded focus:outline-none focus:border-[#C9A84C] text-xs"
+                className="px-3.5 py-2.5 bg-[#231F0D] border border-[#453E1D] text-white placeholder-[#EEDADA]/20 rounded focus:outline-none focus:border-[#EAC784] text-xs"
                 placeholder="e.g. Indian, Jordanian"
                 name="nationality"
                 value={formData.nationality}
@@ -739,10 +739,10 @@ export const VisaDetailPage = () => {
           </div>
 
           <div className="flex flex-col space-y-1.5">
-            <label className="text-[10px] font-bold text-[#EDE0C4]/40 uppercase tracking-wider">Travel Start Date</label>
+            <label className="text-[10px] font-bold text-[#EEDADA]/40 uppercase tracking-wider">Travel Start Date</label>
             <input
               type="date"
-              className="px-3.5 py-2.5 bg-[#111E35] border border-[#1A2B47] text-white rounded focus:outline-none focus:border-[#C9A84C] text-xs"
+              className="px-3.5 py-2.5 bg-[#231F0D] border border-[#453E1D] text-white rounded focus:outline-none focus:border-[#EAC784] text-xs"
               name="travelDate"
               value={formData.travelDate}
               onChange={handleInputChange}
@@ -750,10 +750,10 @@ export const VisaDetailPage = () => {
           </div>
 
           <div className="flex flex-col space-y-1.5">
-            <label className="text-[10px] font-bold text-[#EDE0C4]/40 uppercase tracking-wider">Message</label>
+            <label className="text-[10px] font-bold text-[#EEDADA]/40 uppercase tracking-wider">Message</label>
             <textarea
               rows={3}
-              className="px-3.5 py-2.5 bg-[#111E35] border border-[#1A2B47] text-white placeholder-[#EDE0C4]/20 rounded focus:outline-none focus:border-[#C9A84C] text-xs"
+              className="px-3.5 py-2.5 bg-[#231F0D] border border-[#453E1D] text-white placeholder-[#EEDADA]/20 rounded focus:outline-none focus:border-[#EAC784] text-xs"
               placeholder="Provide details about your travel history or urgent timing..."
               name="message"
               value={formData.message}
@@ -761,18 +761,18 @@ export const VisaDetailPage = () => {
             />
           </div>
 
-          <div className="flex space-x-3 pt-4 border-t border-[#1A2B47]">
+          <div className="flex space-x-3 pt-4 border-t border-[#453E1D]">
             <button
               type="button"
               onClick={() => setIsModalOpen(false)}
-              className="flex-1 py-2.5 bg-[#1A2B47] border border-[#1A2B47] text-white font-bold rounded text-xs uppercase tracking-wider"
+              className="flex-1 py-2.5 bg-[#453E1D] border border-[#453E1D] text-white font-bold rounded text-xs uppercase tracking-wider"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="flex-1 py-2.5 bg-gradient-to-r from-[#C9A84C] to-[#E2BC6A] text-[#070D1A] font-bold rounded text-xs uppercase tracking-wider shadow-sm disabled:opacity-50"
+              className="flex-1 py-2.5 bg-gradient-to-r from-[#EAC784] to-[#EDB868] text-[#2C2712] font-bold rounded text-xs uppercase tracking-wider shadow-sm disabled:opacity-50"
             >
               {submitting ? "Submitting..." : "Submit Enquiry"}
             </button>
@@ -793,14 +793,14 @@ export const VisaDetailPage = () => {
           </div>
           <div className="space-y-2">
             <h3 className="text-base font-bold text-white uppercase tracking-wider">Login Required</h3>
-            <p className="text-[#EDE0C4]/60 leading-relaxed px-4">
+            <p className="text-[#EEDADA]/60 leading-relaxed px-4">
               Please sign in or create a traveler account to start your visa application, upload documents, and track status.
             </p>
           </div>
           <div className="flex gap-3 pt-2">
             <button
               onClick={() => setIsAuthRequiredModalOpen(false)}
-              className="flex-grow py-2.5 bg-[#111E35] border border-[#1A2B47] text-[#EDE0C4]/85 hover:text-white rounded-lg font-bold text-xs uppercase tracking-wider transition-colors"
+              className="flex-grow py-2.5 bg-[#231F0D] border border-[#453E1D] text-[#EEDADA]/85 hover:text-white rounded-lg font-bold text-xs uppercase tracking-wider transition-colors"
             >
               Cancel
             </button>
@@ -809,7 +809,7 @@ export const VisaDetailPage = () => {
                 setIsAuthRequiredModalOpen(false);
                 navigate("/portal/login", { state: { from: location } });
               }}
-              className="flex-grow py-2.5 bg-gradient-to-r from-[#C9A84C] to-[#E2BC6A] text-[#070D1A] font-extrabold rounded-lg text-xs uppercase tracking-wider hover:opacity-95 transition-all shadow-md"
+              className="flex-grow py-2.5 bg-gradient-to-r from-[#EAC784] to-[#EDB868] text-[#2C2712] font-extrabold rounded-lg text-xs uppercase tracking-wider hover:opacity-95 transition-all shadow-md"
             >
               Sign In
             </button>
