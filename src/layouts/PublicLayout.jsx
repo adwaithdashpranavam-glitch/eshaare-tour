@@ -656,7 +656,13 @@ export const PublicLayout = () => {
           {/* SEARCH */}
           <button
             onClick={() => setOpenSearch(true)}
-            className="-mt-8 mx-auto flex h-12 w-12 flex-col items-center justify-center rounded-full bg-[#1D503A] text-white shadow-[0_8px_20px_rgba(230,137,50,0.35)] transition hover:scale-105"
+            className="-mt-8 mx-auto flex h-12 w-12 flex-col items-center justify-center rounded-full
+  bg-[#1D503A]
+  text-white
+  border-2 border-[#7FE6A2]
+  ring-4 ring-[#7FE6A2]/30
+  shadow-[0_0_25px_rgba(127,230,162,0.6)]
+  transition hover:scale-105"
           >
             <Search size={16} />
             <span className="mt-1 text-[9px] font-medium">Search</span>
