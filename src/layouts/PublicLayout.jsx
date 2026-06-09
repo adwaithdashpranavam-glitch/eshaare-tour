@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useAuth } from "../contexts/AuthContext";
@@ -226,6 +226,62 @@ export const PublicLayout = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-surface font-body-md text-on-surface">
+      {/* Siri Orb Keyframe Animations */}
+      <style>{`
+        @keyframes orb-morph-1 {
+          0%, 100% {
+            transform: translate(0px, 0px) scale(1) rotate(0deg);
+            border-radius: 42% 58% 70% 30% / 45% 45% 55% 55%;
+          }
+          33% {
+            transform: translate(-3px, 3px) scale(1.08) rotate(120deg);
+            border-radius: 70% 30% 52% 48% / 60% 40% 60% 40%;
+          }
+          66% {
+            transform: translate(3px, -3px) scale(0.95) rotate(240deg);
+            border-radius: 30% 70% 40% 60% / 50% 60% 40% 50%;
+          }
+        }
+
+        @keyframes orb-morph-2 {
+          0%, 100% {
+            transform: translate(0px, 0px) scale(1) rotate(0deg);
+            border-radius: 50% 50% 30% 70% / 50% 60% 40% 50%;
+          }
+          33% {
+            transform: translate(3px, -3px) scale(0.95) rotate(-120deg);
+            border-radius: 30% 70% 70% 30% / 50% 30% 70% 50%;
+          }
+          66% {
+            transform: translate(-3px, 3px) scale(1.08) rotate(-240deg);
+            border-radius: 60% 40% 30% 70% / 40% 60% 50% 60%;
+          }
+        }
+
+        @keyframes orb-morph-3 {
+          0%, 100% {
+            transform: translate(0px, 0px) scale(1);
+            border-radius: 50%;
+          }
+          50% {
+            transform: translate(2px, 2px) scale(1.12);
+            border-radius: 45% 55% 45% 55%;
+          }
+        }
+
+        @keyframes orb-float {
+          0%, 100% {
+            transform: translateY(0px);
+          }
+          50% {
+            transform: translateY(-8px);
+          }
+        }
+
+        .siri-orb-float {
+          animation: orb-float 4s ease-in-out infinite;
+        }
+      `}</style>
 
       {/* Welcome Banner if authenticated */}
       {user && (
@@ -653,19 +709,48 @@ export const PublicLayout = () => {
             <span>Home</span>
           </Link>
 
-          {/* SEARCH */}
+          {/* SEARCH (SIRI-STYLE GLOWING ORB) */}
           <button
             onClick={() => setOpenSearch(true)}
-            className="-mt-8 mx-auto flex h-12 w-12 flex-col items-center justify-center rounded-full
-  bg-[#1D503A]
-  text-white
-  border-2 border-[#7FE6A2]
-  ring-4 ring-[#7FE6A2]/30
-  shadow-[0_0_25px_rgba(127,230,162,0.6)]
-  transition hover:scale-105"
+            className="-mt-8 mx-auto relative siri-orb-float flex h-14 w-14 items-center justify-center rounded-full
+              bg-black overflow-hidden shadow-[0_0_25px_rgba(34,211,238,0.3)] border border-white/20
+              transition-all duration-300 hover:scale-110 hover:shadow-[0_0_35px_rgba(34,211,238,0.6)] active:scale-95 group-btn"
           >
-            <Search size={16} />
-            <span className="mt-1 text-[9px] font-medium">Search</span>
+            {/* Morphing colored background blobs */}
+            <div className="absolute inset-0 z-0 scale-110 opacity-70">
+              {/* Cyan blob */}
+              <div 
+                className="absolute w-[110%] h-[110%] -top-[5%] -left-[5%] bg-gradient-to-br from-cyan-400 to-blue-500 blur-[8px]"
+                style={{
+                  animation: "orb-morph-1 8s infinite linear",
+                }}
+              />
+              {/* Pink/Magenta blob */}
+              <div 
+                className="absolute w-[120%] h-[120%] -bottom-[10%] -right-[10%] bg-gradient-to-tr from-pink-500 to-rose-500 blur-[10px]"
+                style={{
+                  animation: "orb-morph-2 10s infinite linear",
+                }}
+              />
+              {/* Green/Yellow blob */}
+              <div 
+                className="absolute w-[90%] h-[90%] top-[10%] left-[10%] bg-gradient-to-r from-emerald-400 to-teal-500 blur-[8px]"
+                style={{
+                  animation: "orb-morph-3 12s infinite ease-in-out",
+                }}
+              />
+            </div>
+
+            {/* Glowing White Core */}
+            <div className="absolute w-6 h-6 rounded-full bg-white blur-[4px] opacity-80 z-10 animate-pulse" />
+
+            {/* Search Icon and Text */}
+            <div className="relative z-20 flex flex-col items-center justify-center text-white select-none pointer-events-none">
+              <Search size={16} className="drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]" />
+              <span className="mt-0.5 text-[8px] font-extrabold uppercase tracking-wider drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]">
+                Search
+              </span>
+            </div>
           </button>
 
           {/* EVENTS */}

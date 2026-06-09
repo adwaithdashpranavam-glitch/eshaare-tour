@@ -457,7 +457,13 @@ const SEED_VISA_TYPES = [
       }
     ],
     metaTitle: "Schengen Visa Dubai | Eshaare Tours",
-    metaDescription: "Apply for Schengen visa in Dubai with expert support. VFS slot booking, document audit, and 98% success rate. Contact Eshaare Tours today."
+    metaDescription: "Apply for Schengen visa in Dubai with expert support. VFS slot booking, document audit, and 98% success rate. Contact Eshaare Tours today.",
+    popularDestinations: [
+      { name: "France", slug: "france", imageUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuDmYNWDGDWMTVATuipLHpe97IxxUEIo_YwDJHHHFhud_XEn_m8ODtErhTGfUXyFNh5bEW8EGM8u10CesgxBUAXdMc2z5mlY0KsS4OO6ckjXgMHnkQ6E9THR-gSTbBwtK8FYm0s8n4156PFfIonOtcbp3uUlAhzvlpwnlbhJkydBoKJ0WvIlu7-Y_R0CiTsCnlsTgkf5rh5mQSxHAs83pmsBEu_fb3XRWt4LJXIrDKFGshMc4XxsZ7FqXG8LNBtsOZGHYbdphAeKhbA" },
+      { name: "Italy", slug: "italy", imageUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuDzAOi0Aj0u8aY4kBNSMthGU5SsqvcU6B0rLy2Ms8-Bz0JMpSOmUUFjbRe1s_L_7RGIOPq0ZaM7IIk8iZeSOzMiMFxKaqGrolpVbnXXRzBhcFpG9X8q4robImyaXDJnu4Zt4-7Dlut0js2t5T0msX96LXXkQ5RH4LbkyJ5IhOqodY7bJkuzR1AGErX51s1svodAznliewfQ5AZTt89eDLlKiEPDRhFvsktc8W_YcT_bASCC2DkwuhO3Dcyl9ziRxFdJKWZGDWwpVh4" },
+      { name: "Switzerland", slug: "switzerland", imageUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuBu9KB76iwfBlS5Bij8R9O-skh7Ql5QOc3PZRGu_C0Cyrc8HlWudemG6hHFtDp9wElyBCxdmFpse9B1mk-s7ackGGJnH9lbYTNr_DfEZJdAsQ4OBTdh-T-4v-CiJvxBvbUXafq95fmCUdrgwAeMlDhVx6u0ZRqMgwGxZA6Y2WrOPA_F1sD9SmP962oZQm1-eMEGUzhVgtPHl4UWB2KEFlxSF-ou1t7y6j2bm4SWbzuOnKRUAGVSHWvZpVIrumvssEW9QhmgU2uZiyI" },
+      { name: "Germany", slug: "germany", imageUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuAEKbJi_fvHz3xNsLEWUDIBE6FSTnachmrBgRTsQlXg01noaPfxRtoxCi2bVbM4EmMaCTBq5uJvgbaw7aKu8MwDcWyFBReE_Z0tWJiru-nRImPxSq-JdrnpahzFKqqFbw32rZ9WIZbC6pTRmOfxIPL3C93N-8uWX5bqfd5CxaxguecE1djT2NJCjJszjcoGjFhzKg9k95zz1XVg6phjIIIywBHZvnshG8Oh8Lv1vAnrKhT68yRXtejp3NGCbyVIfIw_EWO9L7BlVdI" }
+    ]
   },
   {
     slug: "uk-visa",
@@ -721,6 +727,287 @@ const SEED_VISA_TYPES = [
     ],
     metaTitle: "Saudi Visa Dubai | Umrah & Tourist Visa | Eshaare Tours",
     metaDescription: "Saudi Arabia visa services in Dubai. Umrah, tourist, and business visa processing with expert support."
+  },
+  {
+    slug: "france",
+    imageUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuDmYNWDGDWMTVATuipLHpe97IxxUEIo_YwDJHHHFhud_XEn_m8ODtErhTGfUXyFNh5bEW8EGM8u10CesgxBUAXdMc2z5mlY0KsS4OO6ckjXgMHnkQ6E9THR-gSTbBwtK8FYm0s8n4156PFfIonOtcbp3uUlAhzvlpwnlbhJkydBoKJ0WvIlu7-Y_R0CiTsCnlsTgkf5rh5mQSxHAs83pmsBEu_fb3XRWt4LJXIrDKFGshMc4XxsZ7FqXG8LNBtsOZGHYbdphAeKhbA",
+    name: "France Schengen Visa",
+    tagline: "Expert document preparation and VFS slot assistance for France",
+    isPublished: true,
+    sortOrder: 6,
+    heroStats: [
+      { label: "Processing Time", value: "10-15 Days", icon: "Clock" },
+      { label: "Success Rate", value: "98.9%", icon: "TrendingUp" },
+      { label: "Required Documents", value: "5 Core Docs", icon: "FileText" },
+      { label: "Embassy Appointment", value: "VFS Global Dubai", icon: "Calendar" }
+    ],
+    overviewText: "Apply for your France tourist or business visa with Eshaare Tours. As one of the most popular Schengen destinations, securing appointments at the French consulate in WAFI Mall Dubai requires diligent slot tracking. We audit your employment contracts, bank transactions, and construct compliant itineraries for your French journey.",
+    suitableFor: ["Tourism", "Family Visit", "Business", "Trade Shows", "Training", "Medical"],
+    visaSpecs: {
+      visaType: "Tourist Visa",
+      validity: "Up to 90 Days",
+      entryType: "Single / Multiple",
+      processingTime: "10–15 Working Days",
+      biometrics: "Required",
+      insurance: "Mandatory",
+      category: "Schengen Visa"
+    },
+    groupedDocuments: {
+      personal: [
+        "Original Passport",
+        "Passport Copy",
+        "UAE Residence Visa Copy",
+        "Emirates ID Copy"
+      ],
+      financial: [
+        "6 Months Bank Statement",
+        "Salary Certificate / NOC"
+      ],
+      travel: [
+        "Flight & Hotel Reservation",
+        "Mandatory Travel Insurance",
+        "Detailed Itinerary"
+      ]
+    },
+    popularLocations: [
+      { name: "Paris", imageUrl: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=500&q=80" },
+      { name: "Nice", imageUrl: "https://images.unsplash.com/photo-1533105079780-92b9be482077?auto=format&fit=crop&w=500&q=80" },
+      { name: "Lyon", imageUrl: "https://images.unsplash.com/photo-1509840841025-9088ba78a826?auto=format&fit=crop&w=500&q=80" }
+    ],
+    requiredDocuments: [
+      "A passport valid for at least 6 months with two blank pages",
+      "A valid UAE residency visa (valid for at least 3 months from the date of return)",
+      "Passport-sized photographs (white background, taken within 6 months)",
+      "3-6 months bank statements showing sufficient funds",
+      "No Objection Certificate (NOC) from employer",
+      "Confirmed flight reservation (return ticket)",
+      "Hotel booking confirmation for entire stay"
+    ],
+    processSteps: [
+      { stepNumber: 1, title: "Submit Details & NOC Checklist", description: "Provide passport copy and complete travel questionnaire." },
+      { stepNumber: 2, title: "Compliance Audit Check", description: "Our senior visa executives verify bank statement transactions, passport validity, and photo dimensions." },
+      { stepNumber: 3, title: "VFS Slot Booking & Submission", description: "We secure an appointment slot at VFS Dubai/Abu Dhabi, compile your document dossier, and accompany you." },
+      { stepNumber: 4, title: "Visa Approved & Delivery", description: "Receive your passport back with your approved French Schengen sticker." }
+    ],
+    feeStructure: [
+      { applicantType: "Adult (12+ years)", embassyFee: "320 AED (€80)", serviceFee: "280 AED" },
+      { applicantType: "Child (6-12 years)", embassyFee: "160 AED (€40)", serviceFee: "280 AED" }
+    ],
+    faqs: [
+      { question: "How long does French processing take?", answer: "Typically 10-15 working days post-submission." }
+    ],
+    metaTitle: "France Visa Dubai | Schengen Visa Specialists | Eshaare Tours",
+    metaDescription: "Apply for France Schengen visa in Dubai with expert support. VFS slot booking and document compliance audits."
+  },
+  {
+    slug: "italy",
+    imageUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuB7k3xVjDUTCz1ZQqypUZEBJaosXgXI7xD4SonoP-9ruQzxuDUI41TdwEpEZnrKEPSa2z1aQisaYk6t8rTtnvHxy6IsViNu6yzyIDihv-UcrI3YXLm4NpkuzmNDqWmzq5JbfIT-ySPk1Kr3U4cy2Qk41JvuCtpg3YasivtKKvgnwyl64cH9F03hy678mFIG17as2c9T7L5ntCw7i-U_XQ2RZ989WhMR_TpgyJhTXXQ8iiDM0b8Esa0WwDj6EqScS0_PYwaMJW7WMF0",
+    name: "Italy Schengen Visa",
+    tagline: "Fast-track Schengen visa processing for Italy from Dubai",
+    isPublished: true,
+    sortOrder: 7,
+    heroStats: [
+      { label: "Processing Time", value: "15-30 Days", icon: "Clock" },
+      { label: "Success Rate", value: "98.5%", icon: "TrendingUp" },
+      { label: "Required Documents", value: "5 Core Docs", icon: "FileText" },
+      { label: "Embassy Appointment", value: "VFS Global Dubai", icon: "Calendar" }
+    ],
+    overviewText: "Travel to Rome, Milan, Venice, or the Amalfi coast. Applying for an Italian Schengen visa involves submitting your biometrics at VFS Global in Dubai or Abu Dhabi. Eshaare Tours ensures that your medical insurance, flight bookings, and hotel vouchers are embassy-compliant.",
+    suitableFor: ["Tourism", "Family Visit", "Business", "Trade Shows", "Training", "Medical"],
+    visaSpecs: {
+      visaType: "Tourist Visa",
+      validity: "Up to 90 Days",
+      entryType: "Single / Multiple",
+      processingTime: "15–30 Working Days",
+      biometrics: "Required",
+      insurance: "Mandatory",
+      category: "Schengen Visa"
+    },
+    groupedDocuments: {
+      personal: [
+        "Original Passport",
+        "Passport Copy",
+        "UAE Residence Visa Copy",
+        "Emirates ID Copy"
+      ],
+      financial: [
+        "6 Months Bank Statement",
+        "Salary Certificate / NOC"
+      ],
+      travel: [
+        "Flight & Hotel Reservation",
+        "Mandatory Travel Insurance",
+        "Detailed Itinerary"
+      ]
+    },
+    popularLocations: [
+      { name: "Venice", imageUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuDh4a9KR0hn2bOKJkxHmx_li3Hp_xX6s-jC9aqI7iENk_W5M5xrWyrQlF3Xc2I19To0GdBmmB0k6UJvyqg5104ODakqmc3Al8MxTZUvyXLI9s94ce5J9J7FEFtFlesllp9HP2NVFbKAkmvD-PTn_dMC58Z_6TVYdklXdF3wY5ZzLDIlqQ-erHw5B85wlEc4J0eYZ4Km7tA3Svfjh4HWgxnPt3b8TsLe2_UQFpnixWQiBOKqQR1veTxadJ_HwnMyoPBtxB9eDUuRSUo" },
+      { name: "Milan", imageUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuCb-r56Z2q2SN8CWdddakMDEUsMQOzNYmLY61lLMZc32les1yUFERaDVI4fldc6NVcOO8OoYwLcsK8T9foobWy31sJ-lKcx-d9Vd2PhLExIxqLCqnOpL_DWyJbsMfBF1M-NXWGnDOGWDrV4HjlA99Ytjqc8_XagDnugh5tCxhX1qkinsKmws0w3jt1F7van49WxAkcDIbsK4fKjH1Nyqjk8YIiQRIXcrnWESZqjdLDOmBv8NVTdtuUluHOJJinJ337zv1ncu-JS0no" },
+      { name: "Florence", imageUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuAcjduxh2RMLt2MYONAc8jYJknUY9sy2mxB0_a4XncZkVFrQz2ClzKqLQlztPVzl7TE5NBbRUr_cyJaoaY5pllP5sYi2BwTTXBPGy3jk8oCtPqgfPeajTBO4jEyAqHZdDIOeQckNwnjqegcWpELK7vkqgq_AR6EIOUMGuHr1M-9uNrhN78AXdSvwCKRmGSHjCkD7Bp4R_9nNa5EPy35bWmySMvvoMWQjiMuxMWxeAVTQWvVii5uTvnz_BegOO_Eh5zcbE0eXamzdaM" }
+    ],
+    requiredDocuments: [
+      "Passport valid for at least 6 months",
+      "UAE residence visa copy",
+      "Passport photos",
+      "3-6 months bank statements showing regular income",
+      "Employer NOC or business setup papers",
+      "Travel insurance compliant with Schengen rules"
+    ],
+    processSteps: [
+      { stepNumber: 1, title: "Submit Details & NOC Checklist", description: "Provide passport copy and complete travel questionnaire." },
+      { stepNumber: 2, title: "Compliance Audit Check", description: "Our senior visa executives verify bank statement transactions, passport validity, and photo dimensions." },
+      { stepNumber: 3, title: "VFS Slot Booking & Submission", description: "We secure an appointment slot at VFS Dubai/Abu Dhabi, compile your document dossier, and accompany you." },
+      { stepNumber: 4, title: "Visa Approved & Delivery", description: "Receive your passport back with your approved Italian Schengen sticker." }
+    ],
+    feeStructure: [
+      { applicantType: "Adult (12+ years)", embassyFee: "320 AED (€80)", serviceFee: "280 AED" },
+      { applicantType: "Child (6-12 years)", embassyFee: "160 AED (€40)", serviceFee: "280 AED" }
+    ],
+    faqs: [
+      { question: "How long does Italian processing take?", answer: "Typically 12-15 working days post-submission." }
+    ],
+    metaTitle: "Italy Visa Dubai | Schengen Visa Specialists | Eshaare Tours",
+    metaDescription: "Apply for Italy Schengen visa in Dubai with expert support. VFS slot booking and document compliance audits."
+  },
+  {
+    slug: "switzerland",
+    imageUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuBu9KB76iwfBlS5Bij8R9O-skh7Ql5QOc3PZRGu_C0Cyrc8HlWudemG6hHFtDp9wElyBCxdmFpse9B1mk-s7ackGGJnH9lbYTNr_DfEZJdAsQ4OBTdh-T-4v-CiJvxBvbUXafq95fmCUdrgwAeMlDhVx6u0ZRqMgwGxZA6Y2WrOPA_F1sD9SmP962oZQm1-eMEGUzhVgtPHl4UWB2KEFlxSF-ou1t7y6j2bm4SWbzuOnKRUAGVSHWvZpVIrumvssEW9QhmgU2uZiyI",
+    name: "Switzerland Schengen Visa",
+    tagline: "Complete Swiss visa application and document guidance from Dubai",
+    isPublished: true,
+    sortOrder: 8,
+    heroStats: [
+      { label: "Processing Time", value: "10-15 Days", icon: "Clock" },
+      { label: "Success Rate", value: "99.1%", icon: "TrendingUp" },
+      { label: "Required Documents", value: "5 Core Docs", icon: "FileText" },
+      { label: "Embassy Appointment", value: "VFS Global Dubai", icon: "Calendar" }
+    ],
+    overviewText: "Securing a Swiss tourist visa requires precise proof of itinerary and accommodation across the Alps. Eshaare Tours coordinates your flight vouchers, hotel bookings, and NOC employer letters, submitting to VFS Global for rapid Swiss embassy approvals.",
+    suitableFor: ["Tourism", "Family Visit", "Business", "Trade Shows", "Training", "Medical"],
+    visaSpecs: {
+      visaType: "Tourist Visa",
+      validity: "Up to 90 Days",
+      entryType: "Single / Multiple",
+      processingTime: "10–15 Working Days",
+      biometrics: "Required",
+      insurance: "Mandatory",
+      category: "Schengen Visa"
+    },
+    groupedDocuments: {
+      personal: [
+        "Original Passport",
+        "Passport Copy",
+        "UAE Residence Visa Copy",
+        "Emirates ID Copy"
+      ],
+      financial: [
+        "6 Months Bank Statement",
+        "Salary Certificate / NOC"
+      ],
+      travel: [
+        "Flight & Hotel Reservation",
+        "Mandatory Travel Insurance",
+        "Detailed Itinerary"
+      ]
+    },
+    popularLocations: [
+      { name: "Zurich", imageUrl: "https://images.unsplash.com/photo-1515488042361-404e9250afef?auto=format&fit=crop&w=500&q=80" },
+      { name: "Geneva", imageUrl: "https://images.unsplash.com/photo-1581084282500-1c09930f7850?auto=format&fit=crop&w=500&q=80" },
+      { name: "Interlaken", imageUrl: "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=500&q=80" }
+    ],
+    requiredDocuments: [
+      "Passport valid for at least 6 months",
+      "UAE residence visa copy",
+      "Passport photos",
+      "3-6 months bank statements showing regular income",
+      "Employer NOC or business setup papers",
+      "Travel insurance compliant with Schengen rules"
+    ],
+    processSteps: [
+      { stepNumber: 1, title: "Submit Details & NOC Checklist", description: "Provide passport copy and complete travel questionnaire." },
+      { stepNumber: 2, title: "Compliance Audit Check", description: "Our senior visa executives verify bank statement transactions, passport validity, and photo dimensions." },
+      { stepNumber: 3, title: "VFS Slot Booking & Submission", description: "We secure an appointment slot at VFS Dubai/Abu Dhabi, compile your document dossier, and accompany you." },
+      { stepNumber: 4, title: "Visa Approved & Delivery", description: "Receive your passport back with your approved Swiss Schengen sticker." }
+    ],
+    feeStructure: [
+      { applicantType: "Adult (12+ years)", embassyFee: "320 AED (€80)", serviceFee: "280 AED" },
+      { applicantType: "Child (6-12 years)", embassyFee: "160 AED (€40)", serviceFee: "280 AED" }
+    ],
+    faqs: [
+      { question: "How long does Swiss processing take?", answer: "Typically 8-12 working days post-submission." }
+    ],
+    metaTitle: "Switzerland Visa Dubai | Schengen Visa Specialists | Eshaare Tours",
+    metaDescription: "Apply for Swiss Schengen visa in Dubai with expert support. VFS slot booking and document compliance audits."
+  },
+  {
+    slug: "germany",
+    imageUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuAEKbJi_fvHz3xNsLEWUDIBE6FSTnachmrBgRTsQlXg01noaPfxRtoxCi2bVbM4EmMaCTBq5uJvgbaw7aKu8MwDcWyFBReE_Z0tWJiru-nRImPxSq-JdrnpahzFKqqFbw32rZ9WIZbC6pTRmOfxIPL3C93N-8uWX5bqfd5CxaxguecE1djT2NJCjJszjcoGjFhzKg9k95zz1XVg6phjIIIywBHZvnshG8Oh8Lv1vAnrKhT68yRXtejp3NGCbyVIfIw_EWO9L7BlVdI",
+    name: "Germany Schengen Visa",
+    tagline: "Expert document check and appointment assistance for Germany",
+    isPublished: true,
+    sortOrder: 9,
+    heroStats: [
+      { label: "Processing Time", value: "15-20 Days", icon: "Clock" },
+      { label: "Success Rate", value: "98.0%", icon: "TrendingUp" },
+      { label: "Required Documents", value: "5 Core Docs", icon: "FileText" },
+      { label: "Embassy Appointment", value: "VFS Global Dubai", icon: "Calendar" }
+    ],
+    overviewText: "Applying for a German Schengen Visa is a highly structured process. The German Consulate in Dubai maintains strict document audit guidelines. Eshaare Tours verifies that your travel history, bank statements, and cover letters are perfect before submission.",
+    suitableFor: ["Tourism", "Family Visit", "Business", "Trade Shows", "Training", "Medical"],
+    visaSpecs: {
+      visaType: "Tourist Visa",
+      validity: "Up to 90 Days",
+      entryType: "Single / Multiple",
+      processingTime: "15–20 Working Days",
+      biometrics: "Required",
+      insurance: "Mandatory",
+      category: "Schengen Visa"
+    },
+    groupedDocuments: {
+      personal: [
+        "Original Passport",
+        "Passport Copy",
+        "UAE Residence Visa Copy",
+        "Emirates ID Copy"
+      ],
+      financial: [
+        "6 Months Bank Statement",
+        "Salary Certificate / NOC"
+      ],
+      travel: [
+        "Flight & Hotel Reservation",
+        "Mandatory Travel Insurance",
+        "Detailed Itinerary"
+      ]
+    },
+    popularLocations: [
+      { name: "Berlin", imageUrl: "https://images.unsplash.com/photo-1599946347371-68eb71b16afc?auto=format&fit=crop&w=500&q=80" },
+      { name: "Munich", imageUrl: "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?auto=format&fit=crop&w=500&q=80" },
+      { name: "Frankfurt", imageUrl: "https://images.unsplash.com/photo-1541746972996-4e0b0f43e01a?auto=format&fit=crop&w=500&q=80" }
+    ],
+    requiredDocuments: [
+      "Passport valid for at least 6 months",
+      "UAE residence visa copy",
+      "Passport photos",
+      "3-6 months bank statements showing regular income",
+      "Employer NOC or business setup papers",
+      "Travel insurance compliant with Schengen rules"
+    ],
+    processSteps: [
+      { stepNumber: 1, title: "Submit Details & NOC Checklist", description: "Provide passport copy and complete travel questionnaire." },
+      { stepNumber: 2, title: "Compliance Audit Check", description: "Our senior visa executives verify bank statement transactions, passport validity, and photo dimensions." },
+      { stepNumber: 3, title: "VFS Slot Booking & Submission", description: "We secure an appointment slot at VFS Dubai/Abu Dhabi, compile your document dossier, and accompany you." },
+      { stepNumber: 4, title: "Visa Approved & Delivery", description: "Receive your passport back with your approved German Schengen sticker." }
+    ],
+    feeStructure: [
+      { applicantType: "Adult (12+ years)", embassyFee: "320 AED (€80)", serviceFee: "280 AED" },
+      { applicantType: "Child (6-12 years)", embassyFee: "160 AED (€40)", serviceFee: "280 AED" }
+    ],
+    faqs: [
+      { question: "How long does German processing take?", answer: "Typically 10-15 working days post-submission." }
+    ],
+    metaTitle: "Germany Visa Dubai | Schengen Visa Specialists | Eshaare Tours",
+    metaDescription: "Apply for Germany Schengen visa in Dubai with expert support. VFS slot booking and document compliance audits."
   }
 ];
 
@@ -733,7 +1020,7 @@ export async function seedVisaTypes() {
       const itemRef = doc(db, "visa_types", item.slug);
       
       const defaultSupportPackages = {
-        showSupportPackages: item.slug === "schengen",
+        showSupportPackages: item.slug === "schengen" || item.slug === "france" || item.slug === "italy" || item.slug === "switzerland" || item.slug === "germany",
         supportPackages: {
           standard: {
             title: item.slug === "schengen" ? "Standard Schengen Support" : `${item.name} Standard Support`,
@@ -772,7 +1059,7 @@ export async function seedVisaTypes() {
     });
 
     await batch.commit();
-    toast.success("5 visa types created successfully");
+    toast.success("9 visa types created successfully");
     return true;
   } catch (error) {
     handleError(error, "seedVisaTypes");

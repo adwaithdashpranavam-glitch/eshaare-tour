@@ -58,6 +58,7 @@ export const VisaTypeEditorPage = () => {
     faqs: [
       { question: "How long does processing take?", answer: "Typically 5-15 working days depending on country." }
     ],
+    popularDestinations: [],
     metaTitle: "",
     metaDescription: "",
     showSupportPackages: false,
@@ -136,7 +137,8 @@ export const VisaTypeEditorPage = () => {
             requiredDocuments: visa.requiredDocuments || [],
             processSteps: visa.processSteps || [],
             feeStructure: visa.feeStructure || [],
-            faqs: visa.faqs || []
+            faqs: visa.faqs || [],
+            popularDestinations: visa.popularDestinations || []
           });
         } else {
           toast.error("Visa page not found");
@@ -372,6 +374,34 @@ export const VisaTypeEditorPage = () => {
     nextFAQs[idx] = nextFAQs[nextIdx];
     nextFAQs[nextIdx] = temp;
     setFormData(prev => ({ ...prev, faqs: nextFAQs }));
+  };
+
+  // Popular Destinations updates
+  const addDestination = () => {
+    if ((formData.popularDestinations || []).length >= 12) {
+      toast.error("Maximum 12 popular destinations allowed");
+      return;
+    }
+    setFormData(prev => ({
+      ...prev,
+      popularDestinations: [
+        ...(prev.popularDestinations || []),
+        { name: "", slug: "", imageUrl: "" }
+      ]
+    }));
+  };
+
+  const updateDestinationField = (idx, field, value) => {
+    const nextDests = [...(formData.popularDestinations || [])];
+    nextDests[idx] = { ...nextDests[idx], [field]: value };
+    setFormData(prev => ({ ...prev, popularDestinations: nextDests }));
+  };
+
+  const removeDestination = (idx) => {
+    setFormData(prev => ({
+      ...prev,
+      popularDestinations: (prev.popularDestinations || []).filter((_, i) => i !== idx)
+    }));
   };
 
   // Stats updates
@@ -1057,6 +1087,89 @@ export const VisaTypeEditorPage = () => {
                           onChange={(e) => updateFAQField(idx, "answer", e.target.value)}
                           className="w-full bg-primary-container border border-on-primary-fixed-variant px-2.5 py-1.5 text-xs text-on-primary-container rounded focus:border-secondary focus:outline-none"
                           placeholder="Detailed answer text..."
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Card: Popular Destinations (Sub-countries) */}
+          <div className="bg-primary-container/40 border border-on-primary-fixed-variant rounded-card p-6 border-l-4 border-l-secondary space-y-4">
+            <div className="flex justify-between items-center">
+              <div>
+                <h2 className="text-base font-bold text-white tracking-wide flex items-center gap-1.5">
+                  <Plus className="h-4.5 w-4.5 text-secondary" />
+                  <span>Popular Destinations (Sub-countries)</span>
+                </h2>
+                <p className="text-[10px] text-on-primary-container/50">Showcase specific countries that link to their own visa pages (Max 12)</p>
+              </div>
+              <button
+                type="button"
+                onClick={addDestination}
+                className="px-2.5 py-1.5 bg-white/5 border border-on-primary-fixed-variant hover:border-secondary hover:text-secondary text-xs rounded transition-colors flex items-center space-x-1"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                <span>Add Country</span>
+              </button>
+            </div>
+
+            {(!formData.popularDestinations || formData.popularDestinations.length === 0) ? (
+              <div className="text-center py-6 border border-dashed border-on-primary-fixed-variant/40 rounded text-xs text-on-primary-container/40">
+                No popular destinations configured. Click "Add Country" above to configure country links.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {formData.popularDestinations.map((dest, idx) => (
+                  <div key={idx} className="bg-primary-container/20 p-4 rounded border border-on-primary-fixed-variant/60 space-y-3 relative">
+                    <div className="flex justify-between items-center border-b border-on-primary-fixed-variant/40 pb-2">
+                      <span className="text-[10px] font-bold text-secondary uppercase tracking-widest">Country Link #{idx + 1}</span>
+                      <button
+                        type="button"
+                        onClick={() => removeDestination(idx)}
+                        className="text-on-primary-container/40 hover:text-error-red p-1"
+                        title="Remove Destination"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                    <div className="space-y-2">
+                      <div>
+                        <label className="block text-[9px] font-bold uppercase text-on-primary-container/60 mb-1">Country Name</label>
+                        <input
+                          type="text"
+                          required
+                          value={dest.name}
+                          onChange={(e) => updateDestinationField(idx, "name", e.target.value)}
+                          className="w-full bg-primary-container border border-on-primary-fixed-variant px-2.5 py-1 text-xs text-white rounded focus:border-secondary focus:outline-none"
+                          placeholder="e.g. France"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[9px] font-bold uppercase text-on-primary-container/60 mb-1">URL Slug Link</label>
+                        <input
+                          type="text"
+                          required
+                          value={dest.slug}
+                          onChange={(e) => updateDestinationField(idx, "slug", e.target.value)}
+                          className="w-full bg-primary-container border border-[#4D4740] px-2.5 py-1 text-xs text-white rounded focus:border-secondary focus:outline-none font-mono"
+                          placeholder="e.g. france"
+                        />
+                        <span className="text-[8px] text-on-primary-container/40 mt-1 block">
+                          Points to: /visa/{dest.slug || "slug-preview"}
+                        </span>
+                      </div>
+                      <div>
+                        <label className="block text-[9px] font-bold uppercase text-on-primary-container/60 mb-1">Image URL</label>
+                        <input
+                          type="text"
+                          required
+                          value={dest.imageUrl}
+                          onChange={(e) => updateDestinationField(idx, "imageUrl", e.target.value)}
+                          className="w-full bg-primary-container border border-[#4D4740] px-2.5 py-1 text-xs text-white rounded focus:border-secondary focus:outline-none"
+                          placeholder="e.g. https://images.unsplash.com/..."
                         />
                       </div>
                     </div>

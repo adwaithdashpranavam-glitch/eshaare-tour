@@ -234,20 +234,18 @@ export const SettingsPage = () => {
                 <div className="flex justify-end pt-2">
                   <button
                     onClick={handleSeedDatabase}
-                    disabled={isSeeded || seeding}
+                    disabled={seeding}
                     className="px-4 py-2 border-2 border-secondary hover:border-secondary-fixed text-secondary hover:text-secondary-fixed font-bold rounded uppercase tracking-wider shadow-sm flex items-center space-x-1.5 disabled:opacity-40 disabled:border-on-primary-fixed-variant disabled:text-on-primary-fixed-variant cursor-pointer disabled:cursor-not-allowed transition-all"
                   >
                     {seeding ? (
                       <>
                         <Loader2 className="h-4 w-4 animate-spin" />
-                        <span>Creating visa types...</span>
+                        <span>Creating/Updating visa types...</span>
                       </>
-                    ) : isSeeded ? (
-                      <span>✓ Already Seeded</span>
                     ) : (
                       <>
                         <Database className="h-4 w-4" />
-                        <span>Seed Visa Database</span>
+                        <span>Seed / Update Visa Database</span>
                       </>
                     )}
                   </button>

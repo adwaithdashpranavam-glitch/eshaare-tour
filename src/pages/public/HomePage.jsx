@@ -4,6 +4,7 @@ import { createLead } from "../../lib/firestore";
 import { generateLeadNo } from "../../utils/helpers";
 import { serverTimestamp } from "../../lib/firebase";
 import toast from "react-hot-toast";
+import InteractiveCanvas from "../../components/ui/InteractiveCanvas";
 
 export const HomePage = () => {
   const navigate = useNavigate();
@@ -206,6 +207,7 @@ export const HomePage = () => {
 
   return (
     <div className="bg-surface min-h-screen">
+      <InteractiveCanvas />
 
       {/* HERO SLIDER SECTION */}
       <section className="relative overflow-hidden h-[70vh] min-h-[500px]">
@@ -258,8 +260,8 @@ export const HomePage = () => {
       </section>
 
       {/* TRUST/STATS BAR */}
-      <section className="bg-primary-container py-6 px-margin-mobile md:px-margin-desktop">
-        <div className="max-w-container-max mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+      <section className="relative overflow-hidden bg-primary-container py-6 px-margin-mobile md:px-margin-desktop">
+        <div className="max-w-container-max mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-center relative z-10">
           <div>
             <div className="font-display-lg text-secondary-fixed text-4xl md:text-4xl mb-1">{counts.visas}+</div>
             <div className="text-on-primary-container/80 font-label-md text-label-md">Visas Approved</div>
@@ -280,8 +282,8 @@ export const HomePage = () => {
       </section>
 
       {/* SERVICE CARDS GRID */}
-      <section className="py-[120px] px-margin-mobile md:px-margin-desktop bg-surface">
-        <div className="max-w-container-max mx-auto space-y-12">
+      <section className="relative overflow-hidden py-[120px] px-margin-mobile md:px-margin-desktop bg-surface">
+        <div className="max-w-container-max mx-auto space-y-12 relative z-10">
           <div className="text-center max-w-xl mx-auto space-y-3">
             <h2 className="font-headline-lg text-headline-lg text-primary">Comprehensive Visa Services</h2>
             <p className="text-on-surface-variant text-body-md">
@@ -293,7 +295,7 @@ export const HomePage = () => {
             {services.map((srv, idx) => (
               <div
                 key={idx}
-                className="bg-surface-container-lowest p-8 rounded-xl border border-outline-variant/10 hover:border-secondary transition-all premium-shadow group flex flex-col justify-between"
+                className="relative bg-surface-container-lowest p-8 rounded-xl border border-outline-variant/10 hover:border-secondary transition-all premium-shadow group flex flex-col justify-between"
               >
                 <div>
                   <span className="material-symbols-outlined text-4xl text-secondary mb-6 block">
@@ -321,8 +323,8 @@ export const HomePage = () => {
       </section>
 
       {/* FEATURED TOUR PACKAGES (BENTO GRID) */}
-      <section className="py-[120px] px-margin-mobile md:px-margin-desktop bg-surface-container-low">
-        <div className="max-w-container-max mx-auto space-y-12">
+      <section className="relative overflow-hidden py-[120px] px-margin-mobile md:px-margin-desktop bg-surface-container-low">
+        <div className="max-w-container-max mx-auto space-y-12 relative z-10">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
             <div className="space-y-2">
               <h2 className="font-headline-lg text-headline-lg text-primary">Featured Holiday Packages</h2>
@@ -340,14 +342,16 @@ export const HomePage = () => {
           {/* Bento Grid */}
           <div className="grid grid-cols-1 md:grid-cols-4 md:grid-rows-2 gap-4 h-[800px] md:h-[600px]">
             {/* France & Italy (Featured Large Card) */}
-            <div className="relative group overflow-hidden rounded-2xl md:col-span-2 md:row-span-2">
-              <img
-                src={packages[0].img}
-                alt={packages[0].title}
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
-              <div className="absolute inset-0 flex flex-col justify-end p-8 text-white">
+            <div className="relative group md:col-span-2 md:row-span-2">
+              <div className="absolute inset-0 overflow-hidden rounded-2xl">
+                <img
+                  src={packages[0].img}
+                  alt={packages[0].title}
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+              </div>
+              <div className="absolute inset-0 flex flex-col justify-end p-8 text-white z-10">
                 <span className="bg-secondary-container text-on-secondary-container text-[11px] font-bold px-3 py-1 rounded-full w-fit mb-3">
                   {packages[0].duration}
                 </span>
@@ -367,14 +371,16 @@ export const HomePage = () => {
             </div>
 
             {/* Japan (Small Card) */}
-            <div className="relative group overflow-hidden rounded-2xl md:col-span-1 md:row-span-1">
-              <img
-                src={packages[1].img}
-                alt={packages[1].title}
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
-              <div className="absolute inset-0 flex flex-col justify-end p-6 text-white">
+            <div className="relative group md:col-span-1 md:row-span-1">
+              <div className="absolute inset-0 overflow-hidden rounded-2xl">
+                <img
+                  src={packages[1].img}
+                  alt={packages[1].title}
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+              </div>
+              <div className="absolute inset-0 flex flex-col justify-end p-6 text-white z-10">
                 <span className="text-[10px] text-white/85 font-medium mb-1">{packages[1].duration}</span>
                 <h4 className="font-bold text-body-lg text-white mb-2">{packages[1].title}</h4>
                 <div className="flex justify-between items-center">
@@ -391,14 +397,16 @@ export const HomePage = () => {
             </div>
 
             {/* United Kingdom (Small Card) */}
-            <div className="relative group overflow-hidden rounded-2xl md:col-span-1 md:row-span-1">
-              <img
-                src={packages[2].img}
-                alt={packages[2].title}
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
-              <div className="absolute inset-0 flex flex-col justify-end p-6 text-white">
+            <div className="relative group md:col-span-1 md:row-span-1">
+              <div className="absolute inset-0 overflow-hidden rounded-2xl">
+                <img
+                  src={packages[2].img}
+                  alt={packages[2].title}
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+              </div>
+              <div className="absolute inset-0 flex flex-col justify-end p-6 text-white z-10">
                 <span className="text-[10px] text-white/85 font-medium mb-1">{packages[2].duration}</span>
                 <h4 className="font-bold text-body-lg text-white mb-2">{packages[2].title}</h4>
                 <div className="flex justify-between items-center">
@@ -415,29 +423,31 @@ export const HomePage = () => {
             </div>
 
             {/* Extra Bento Card (Call out / Stats highlight) */}
-            <div className="bg-primary-container p-8 rounded-2xl text-on-primary-container flex flex-col justify-between md:col-span-2 md:row-span-1">
-              <div>
-                <span className="material-symbols-outlined text-secondary-fixed text-4xl mb-4">public_off</span>
-                <h4 className="font-headline-md text-headline-md text-white mb-2">Can't Find Your Package?</h4>
-                <p className="text-on-primary-container/80 text-body-sm leading-relaxed">
-                  We build customized boutique itineraries catering to your budget, travel group, and dates. Let us coordinate flight logistics, hotels, transfers, and visas.
-                </p>
+            <div className="relative group bg-primary-container p-8 rounded-2xl text-on-primary-container flex flex-col justify-between md:col-span-2 md:row-span-1 overflow-visible">
+              <div className="relative z-10 flex flex-col justify-between h-full">
+                <div>
+                  <span className="material-symbols-outlined text-secondary-fixed text-4xl mb-4">public_off</span>
+                  <h4 className="font-headline-md text-headline-md text-white mb-2">Can't Find Your Package?</h4>
+                  <p className="text-on-primary-container/80 text-body-sm leading-relaxed">
+                    We build customized boutique itineraries catering to your budget, travel group, and dates. Let us coordinate flight logistics, hotels, transfers, and visas.
+                  </p>
+                </div>
+                <a
+                  href="#enquire"
+                  className="bg-secondary-container text-on-secondary-container px-6 py-3 rounded-xl font-bold text-body-sm hover:scale-[1.02] transition-transform w-fit flex items-center gap-2 mt-4"
+                >
+                  <span>Request Custom Package</span>
+                  <span className="material-symbols-outlined text-lg">edit_note</span>
+                </a>
               </div>
-              <a
-                href="#enquire"
-                className="bg-secondary-container text-on-secondary-container px-6 py-3 rounded-xl font-bold text-body-sm hover:scale-[1.02] transition-transform w-fit flex items-center gap-2 mt-4"
-              >
-                <span>Request Custom Package</span>
-                <span className="material-symbols-outlined text-lg">edit_note</span>
-              </a>
             </div>
           </div>
         </div>
       </section>
 
       {/* CONTINENTS BAR TAB FILTER */}
-      <section className="py-[120px] px-margin-mobile md:px-margin-desktop bg-surface">
-        <div className="max-w-container-max mx-auto space-y-12">
+      <section className="relative overflow-hidden py-[120px] px-margin-mobile md:px-margin-desktop bg-surface">
+        <div className="max-w-container-max mx-auto space-y-12 relative z-10">
           <div className="text-center max-w-xl mx-auto space-y-3">
             <h2 className="font-headline-lg text-headline-lg text-primary">Global Visa Coverage</h2>
             <p className="text-on-surface-variant text-body-md">Check countries and requirements across all seven continents.</p>
@@ -464,9 +474,9 @@ export const HomePage = () => {
             {continentCountries[activeContinent].map((country, idx) => (
               <div
                 key={idx}
-                className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/10 premium-shadow flex flex-col justify-between gap-4"
+                className="relative group bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/10 premium-shadow flex flex-col justify-between gap-4"
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 relative z-10">
                   <span className="text-3xl">{country.flag}</span>
                   <div>
                     <h4 className="font-bold text-body-md text-primary">{country.name}</h4>
@@ -475,7 +485,7 @@ export const HomePage = () => {
                 </div>
                 <Link
                   to="/visa-services"
-                  className="text-secondary font-bold text-body-sm flex items-center gap-1 hover:underline w-fit mt-2"
+                  className="text-secondary font-bold text-body-sm flex items-center gap-1 hover:underline w-fit mt-2 relative z-10"
                 >
                   <span>View Visa Requirements</span>
                   <span className="material-symbols-outlined text-lg">arrow_forward</span>
@@ -487,8 +497,8 @@ export const HomePage = () => {
       </section>
 
       {/* ABOUT SECTION */}
-      <section className="py-[120px] px-margin-mobile md:px-margin-desktop bg-surface-container-low">
-        <div className="max-w-container-max mx-auto grid grid-cols-1 md:grid-cols-2 gap-[64px] items-center">
+      <section className="relative overflow-hidden py-[120px] px-margin-mobile md:px-margin-desktop bg-surface-container-low">
+        <div className="max-w-container-max mx-auto grid grid-cols-1 md:grid-cols-2 gap-[64px] items-center relative z-10">
           <div className="space-y-6">
             <h2 className="font-headline-lg text-headline-lg text-primary">About Eshaare Tours</h2>
             <p className="text-on-surface-variant text-body-md leading-relaxed">
@@ -526,8 +536,8 @@ export const HomePage = () => {
       </section>
 
       {/* TEAM GRID (4 MEMBERS) */}
-      <section className="py-[120px] px-margin-mobile md:px-margin-desktop bg-surface">
-        <div className="max-w-container-max mx-auto space-y-12">
+      <section className="relative overflow-hidden py-[120px] px-margin-mobile md:px-margin-desktop bg-surface">
+        <div className="max-w-container-max mx-auto space-y-12 relative z-10">
           <div className="text-center max-w-xl mx-auto space-y-3">
             <h2 className="font-headline-lg text-headline-lg text-primary">Meet Our Specialists</h2>
             <p className="text-on-surface-variant text-body-md">Our team manages travel itineraries, embassy bookings, and file compliance audits.</p>
@@ -540,13 +550,15 @@ export const HomePage = () => {
               { name: "Aisha Al-Mansoori", role: "Luxury Tour Consultant", img: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=400&q=80" },
               { name: "Hassan Ali", role: "VFS Operations Lead", img: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=400&q=80" }
             ].map((member, idx) => (
-              <div key={idx} className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/10 premium-shadow text-center space-y-4">
-                <div className="w-24 h-24 rounded-full overflow-hidden mx-auto shadow-md">
-                  <img src={member.img} alt={member.name} className="w-full h-full object-cover" />
-                </div>
-                <div>
-                  <h4 className="font-bold text-body-lg text-primary">{member.name}</h4>
-                  <p className="text-body-sm text-on-surface-variant">{member.role}</p>
+              <div key={idx} className="relative group bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/10 premium-shadow text-center space-y-4">
+                <div className="relative z-10 space-y-4">
+                  <div className="w-24 h-24 rounded-full overflow-hidden mx-auto shadow-md">
+                    <img src={member.img} alt={member.name} className="w-full h-full object-cover" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-body-lg text-primary">{member.name}</h4>
+                    <p className="text-body-sm text-on-surface-variant">{member.role}</p>
+                  </div>
                 </div>
               </div>
             ))}
@@ -555,8 +567,8 @@ export const HomePage = () => {
       </section>
 
       {/* LEAD INQUIRY SECTION (2-COL) */}
-      <section id="enquire" className="py-[120px] px-margin-mobile md:px-margin-desktop bg-surface-container-low">
-        <div className="max-w-container-max mx-auto bg-surface-container-lowest rounded-3xl overflow-hidden premium-shadow border border-outline-variant/10 grid grid-cols-1 md:grid-cols-3">
+      <section id="enquire" className="relative overflow-hidden py-[120px] px-margin-mobile md:px-margin-desktop bg-surface-container-low">
+        <div className="max-w-container-max mx-auto bg-surface-container-lowest rounded-3xl overflow-hidden premium-shadow border border-outline-variant/10 grid grid-cols-1 md:grid-cols-3 relative z-10">
 
           {/* Left Column (Dark Navy) */}
           <div className="bg-primary-container p-12 text-on-primary-container flex flex-col justify-between gap-8">
@@ -710,8 +722,8 @@ export const HomePage = () => {
       </section>
 
       {/* TESTIMONIALS SECTION */}
-      <section className="py-[120px] px-margin-mobile md:px-margin-desktop bg-surface">
-        <div className="max-w-container-max mx-auto bg-primary-container p-12 rounded-3xl relative overflow-hidden space-y-12">
+      <section className="relative overflow-hidden py-[120px] px-margin-mobile md:px-margin-desktop bg-surface">
+        <div className="max-w-container-max mx-auto bg-primary-container p-12 rounded-3xl relative overflow-hidden space-y-12 z-10">
           {/* Decorative Blobs */}
           <div className="absolute -top-24 -right-24 w-64 h-64 bg-secondary/10 rounded-full blur-3xl"></div>
 
@@ -721,23 +733,27 @@ export const HomePage = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
-            <div className="bg-white/5 p-8 rounded-xl border border-white/10 flex flex-col justify-between gap-6">
-              <p className="text-white italic text-body-md">
-                "Got my French Schengen visa in record time!Rakhi and Hassan made the NOC reviews and slot booking effortless. The client portal is completely state-of-the-art for tracing documents."
-              </p>
-              <div>
-                <h4 className="text-secondary-fixed font-bold text-body-md">Sarah Al-Kamali</h4>
-                <p className="text-white/60 text-xs uppercase tracking-widest">Abu Dhabi resident</p>
+            <div className="relative group bg-white/5 p-8 rounded-xl border border-white/10 flex flex-col justify-between gap-6 overflow-visible">
+              <div className="relative z-10 flex flex-col justify-between gap-6 h-full">
+                <p className="text-white italic text-body-md">
+                  "Got my French Schengen visa in record time!Rakhi and Hassan made the NOC reviews and slot booking effortless. The client portal is completely state-of-the-art for tracing documents."
+                </p>
+                <div>
+                  <h4 className="text-secondary-fixed font-bold text-body-md">Sarah Al-Kamali</h4>
+                  <p className="text-white/60 text-xs uppercase tracking-widest">Abu Dhabi resident</p>
+                </div>
               </div>
             </div>
 
-            <div className="bg-white/5 p-8 rounded-xl border border-white/10 flex flex-col justify-between gap-6">
-              <p className="text-white italic text-body-md">
-                "We booked a 7-day Rome & Paris tour package through Eshaare. They coordinate all flight transfers and secured Schengen appointments in Waﬁ mall Dubai. Exceptional service!"
-              </p>
-              <div>
-                <h4 className="text-secondary-fixed font-bold text-body-md">Michael Richardson</h4>
-                <p className="text-white/60 text-xs uppercase tracking-widest">UK Expat in Dubai</p>
+            <div className="relative group bg-white/5 p-8 rounded-xl border border-white/10 flex flex-col justify-between gap-6 overflow-visible">
+              <div className="relative z-10 flex flex-col justify-between gap-6 h-full">
+                <p className="text-white italic text-body-md">
+                  "We booked a 7-day Rome & Paris tour package through Eshaare. They coordinate all flight transfers and secured Schengen appointments in Waﬁ mall Dubai. Exceptional service!"
+                </p>
+                <div>
+                  <h4 className="text-secondary-fixed font-bold text-body-md">Michael Richardson</h4>
+                  <p className="text-white/60 text-xs uppercase tracking-widest">UK Expat in Dubai</p>
+                </div>
               </div>
             </div>
           </div>

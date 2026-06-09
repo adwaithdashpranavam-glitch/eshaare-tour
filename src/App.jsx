@@ -25,6 +25,7 @@ import TrackApplicationPage from "./pages/public/TrackApplicationPage";
 import ResourcesPage from "./pages/public/ResourcesPage";
 import AppointmentBookingPage from "./pages/public/AppointmentBookingPage";
 import GlobePage from "./pages/public/GlobePage";
+import ScrollToTop from "./components/ui/ScrollToTop";
 
 // Auth Pages
 import AdminLogin from "./pages/auth/AdminLogin";
@@ -73,6 +74,7 @@ function App() {
       <AppProvider>
         <AuthProvider>
           <BrowserRouter>
+            <ScrollToTop />
             <Routes>
               
               {/* PUBLIC MARKETING WEBSITE */}
