@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useAuth } from "../../contexts/AuthContext";
-import { doc, updateDoc } from "firebase/firestore";
+import { doc, updateDoc, setDoc } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 import { Save, User, Bell, Lock } from "lucide-react";
 import toast from "react-hot-toast";
@@ -33,7 +33,24 @@ export const PortalSettingsPage = () => {
 
     try {
       const docRef = doc(db, "users", user.uid);
-      await updateDoc(docRef, profile);
+      const customerRef = doc(db, "customers", user.uid);
+
+      const profileUpdates = {
+        name: profile.name,
+        fullName: profile.name,
+        phone: profile.phone,
+        phoneNumber: profile.phone,
+        nationality: profile.nationality
+      };
+
+      await updateDoc(docRef, profileUpdates);
+      await setDoc(customerRef, {
+        name: profile.name,
+        phone: profile.phone,
+        nationality: profile.nationality,
+        updatedAt: new Date()
+      }, { merge: true });
+
       toast.success("Profile updated successfully!");
     } catch (err) {
       console.warn("Firestore profile save skipped (mock mode):", err);
