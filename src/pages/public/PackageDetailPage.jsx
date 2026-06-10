@@ -1,22 +1,60 @@
-import React, { useState } from "react";
-import { useParams, Link } from "react-router-dom";
-import { MOCK_PACKAGES } from "../../utils/constants";
+import React, { useState, useEffect } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../../lib/firestore";
+import LoadingSpinner from "../../components/ui/LoadingSpinner";
 import toast from "react-hot-toast";
 
 export const PackageDetailPage = () => {
   const { slug } = useParams();
-
-  const currentPkg = MOCK_PACKAGES.find(p => p.slug === slug) || MOCK_PACKAGES[0];
+  const navigate = useNavigate();
+  const [currentPkg, setCurrentPkg] = useState(null);
+  const [loading, setLoading] = useState(true);
   
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
 
+  useEffect(() => {
+    const fetchPackage = async () => {
+      try {
+        const docRef = doc(db, "packages", slug);
+        const snap = await getDoc(docRef);
+        if (snap.exists()) {
+          setCurrentPkg({ id: snap.id, ...snap.data() });
+        } else {
+          // Fallback to check if it's one of our mock slugs, otherwise redirect
+          toast.error("Package not found");
+          navigate("/packages");
+        }
+      } catch (err) {
+        toast.error("Failed to load package details");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPackage();
+  }, [slug, navigate]);
+
   const handleBookSubmit = (e) => {
     e.preventDefault();
+    if (!currentPkg) return;
     toast.success(`Booking request sent for ${currentPkg.title}! Our agent will contact you shortly.`);
     setName("");
     setPhone("");
   };
+
+  if (loading) {
+    return (
+      <div className="bg-surface min-h-screen py-12 px-margin-mobile md:px-margin-desktop flex items-center justify-center">
+        <LoadingSpinner message="Loading package details..." />
+      </div>
+    );
+  }
+
+  if (!currentPkg) {
+    return null;
+  }
 
   return (
     <div className="bg-surface min-h-screen py-12 px-margin-mobile md:px-margin-desktop">
@@ -37,7 +75,7 @@ export const PackageDetailPage = () => {
             <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant/10 overflow-hidden premium-shadow">
               <div className="relative h-80">
                 <img
-                  src={currentPkg.image}
+                  src={currentPkg.imageUrl || currentPkg.image || "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=800&q=80"}
                   alt={currentPkg.title}
                   className="w-full h-full object-cover"
                 />
@@ -48,13 +86,13 @@ export const PackageDetailPage = () => {
               <div className="p-6 sm:p-8 space-y-4">
                 <div className="flex items-center gap-1.5 text-body-sm text-on-surface-variant font-semibold">
                   <span className="material-symbols-outlined text-secondary text-lg">location_on</span>
-                  <span>{currentPkg.destination}</span>
+                  <span>{currentPkg.country || currentPkg.destination}</span>
                 </div>
                 <h1 className="text-3xl font-headline-lg text-headline-lg text-primary tracking-tight leading-tight">
                   {currentPkg.title}
                 </h1>
-                <p className="text-on-surface-variant text-body-md leading-relaxed">
-                  Enjoy a hassle-free, premium travel experience. This package includes flights, luxury 4-star hotels, daily breakfasts, visa assistance guidance, and professional local guides.
+                <p className="text-on-surface-variant text-body-md leading-relaxed whitespace-pre-line">
+                  {currentPkg.description || "Enjoy a hassle-free, premium travel experience. This package includes flights, luxury 4-star hotels, daily breakfasts, visa assistance guidance, and professional local guides."}
                 </p>
               </div>
             </div>
@@ -63,7 +101,7 @@ export const PackageDetailPage = () => {
             <div className="bg-surface-container-lowest p-6 sm:p-8 border border-outline-variant/10 rounded-2xl premium-shadow space-y-4">
               <h3 className="font-headline-md text-headline-md text-primary">Package Highlights</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {currentPkg.highlights.map((hl, idx) => (
+                {(currentPkg.highlights || ["Premium Hotels", "Airport Transfers", "Daily Breakfast", "Sightseeing Guides"]).map((hl, idx) => (
                   <div key={idx} className="flex items-start gap-2 text-body-sm text-on-surface-variant">
                     <span className="material-symbols-outlined text-secondary text-lg">check_circle</span>
                     <span>{hl}</span>
@@ -100,7 +138,9 @@ export const PackageDetailPage = () => {
             <div className="bg-surface-container-lowest p-6 border border-outline-variant/10 rounded-2xl premium-shadow sticky top-24 space-y-6">
               <div>
                 <span className="text-[10px] text-on-surface-variant uppercase tracking-wider block font-semibold">Price starts at</span>
-                <span className="text-3xl font-bold text-primary font-display">{currentPkg.price} AED</span>
+                <span className="text-3xl font-bold text-primary font-display">
+                  {typeof currentPkg.price === "number" ? `${currentPkg.price} AED` : currentPkg.price}
+                </span>
                 <span className="text-body-sm text-on-surface-variant block mt-1">per traveler (double occupancy)</span>
               </div>
 

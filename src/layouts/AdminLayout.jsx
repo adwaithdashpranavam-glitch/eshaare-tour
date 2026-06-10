@@ -78,6 +78,13 @@ export const AdminLayout = () => {
       ]
     },
     {
+      title: "App Content",
+      items: [
+        { label: "Packages", path: "/admin/app/packages", icon: Compass },
+        { label: "Visa", path: "/admin/app/visa", icon: Globe }
+      ]
+    },
+    {
       title: "System",
       items: [
         { label: "Settings", path: "/admin/settings", icon: Settings },

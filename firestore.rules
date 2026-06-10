@@ -143,5 +143,23 @@ service cloud.firestore {
       allow read, write: if isStaff() || (isSignedIn() && (resource == null || resource.data.userId == request.auth.uid));
       allow create: if isSignedIn();
     }
+
+    // ==========================================
+    // 14. App Packages Collection
+    // ==========================================
+    match /packages/{packageId} {
+      // Public read access; write only by staff
+      allow read: if true;
+      allow write: if isStaff();
+    }
+
+    // ==========================================
+    // 15. App Visas Collection
+    // ==========================================
+    match /visas/{visaId} {
+      // Public read access; write only by staff
+      allow read: if true;
+      allow write: if isStaff();
+    }
   }
 }
