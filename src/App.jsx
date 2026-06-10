@@ -2,7 +2,6 @@ import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "react-hot-toast";
-import { Analytics } from "@vercel/analytics/next"
 
 // Contexts
 import { AuthProvider, ProtectedRoute, ClientRoute } from "./contexts/AuthContext";
@@ -47,6 +46,8 @@ import ReportsPage from "./pages/admin/ReportsPage";
 import SettingsPage from "./pages/admin/SettingsPage";
 import VisaTypesListPage from "./pages/admin/VisaTypesListPage";
 import VisaTypeEditorPage from "./pages/admin/VisaTypeEditorPage";
+import VisaEligibilityPage from "./pages/public/VisaEligibilityPage";
+import VisaCheckerCms from "./pages/admin/VisaCheckerCms";
 
 // Portal Pages
 import PortalDashboard from "./pages/portal/PortalDashboard";
@@ -77,7 +78,7 @@ function App() {
           <BrowserRouter>
             <ScrollToTop />
             <Routes>
-              
+
               {/* PUBLIC MARKETING WEBSITE */}
               <Route path="/" element={<PublicLayout />}>
                 <Route index element={<HomePage />} />
@@ -93,10 +94,11 @@ function App() {
                 <Route path="resources" element={<ResourcesPage />} />
                 <Route path="appointment" element={<AppointmentBookingPage />} />
                 <Route path="globe" element={<GlobePage />} />
+                <Route path="visa-eligibility" element={<VisaEligibilityPage />} />
 
                 {/* CLIENT TRAVELLER PORTAL */}
-                <Route 
-                  path="portal" 
+                <Route
+                  path="portal"
                   element={
                     <ClientRoute>
                       <PortalLayout />
@@ -121,8 +123,8 @@ function App() {
               <Route path="/portal/login" element={<PortalLogin />} />
 
               {/* ADMIN CRM PORTAL (STAFF) */}
-              <Route 
-                path="/admin" 
+              <Route
+                path="/admin"
                 element={
                   <ProtectedRoute>
                     <AdminLayout />
@@ -145,6 +147,12 @@ function App() {
                 <Route path="visa-types" element={<VisaTypesListPage />} />
                 <Route path="visa-types/new" element={<VisaTypeEditorPage />} />
                 <Route path="visa-types/:id/edit" element={<VisaTypeEditorPage />} />
+                
+                {/* DYNAMIC CMS / CRM PORTAL TABS */}
+                <Route path="cms/visa-checker" element={<VisaCheckerCms activeTab="cms" />} />
+                <Route path="crm/applications" element={<VisaCheckerCms activeTab="applications" />} />
+                <Route path="crm/leads" element={<VisaCheckerCms activeTab="leads" />} />
+                <Route path="settings/theme" element={<VisaCheckerCms activeTab="theme" />} />
               </Route>
 
               {/* CATCH-ALL REDIRECT */}
@@ -152,7 +160,7 @@ function App() {
 
             </Routes>
           </BrowserRouter>
-          <Toaster 
+          <Toaster
             position="top-right"
             toastOptions={{
               style: {

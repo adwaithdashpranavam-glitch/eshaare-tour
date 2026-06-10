@@ -213,12 +213,7 @@ export const InteractiveCanvas = () => {
     };
   }, []);
 
-  return (
-    <canvas
-      ref={canvasRef}
-      className="fixed inset-0 w-full h-full pointer-events-none z-30"
-    />
-  );
+  return null; // Temporarily hidden as requested
 };
 
 export default InteractiveCanvas;

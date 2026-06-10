@@ -210,7 +210,7 @@ export const HomePage = () => {
       <InteractiveCanvas />
 
       {/* HERO SLIDER SECTION */}
-      <section className="relative overflow-hidden h-[70vh] min-h-[500px]">
+      <section className="relative overflow-hidden h-[91vh] min-h-[500px]">
         {slides.map((slide, index) => (
           <div
             key={index}
@@ -460,8 +460,8 @@ export const HomePage = () => {
                 key={continent}
                 onClick={() => setActiveContinent(continent)}
                 className={`pb-3 text-label-md font-label-md whitespace-nowrap cursor-pointer transition-colors ${activeContinent === continent
-                    ? "text-secondary border-b-2 border-secondary font-semibold"
-                    : "text-on-surface-variant hover:text-primary"
+                  ? "text-secondary border-b-2 border-secondary font-semibold"
+                  : "text-on-surface-variant hover:text-primary"
                   }`}
               >
                 {continent}

@@ -39,13 +39,15 @@ export const AdminLayout = () => {
     {
       title: "Sales",
       items: [
-        { label: "Leads", path: "/admin/leads", icon: Users }
+        { label: "Leads", path: "/admin/leads", icon: Users },
+        { label: "Leads CRM", path: "/admin/crm/leads", icon: Users }
       ]
     },
     {
       title: "Operations",
       items: [
         { label: "Visa Cases", path: "/admin/cases", icon: FileText },
+        { label: "Applications", path: "/admin/crm/applications", icon: FileSpreadsheet },
         { label: "Appointments", path: "/admin/appointments", icon: CalendarCheck }
       ]
     },
@@ -71,13 +73,15 @@ export const AdminLayout = () => {
     {
       title: "Website Content",
       items: [
-        { label: "Visa Pages", path: "/admin/visa-types", icon: Globe }
+        { label: "Visa Pages", path: "/admin/visa-types", icon: Globe },
+        { label: "Visa Checker CMS", path: "/admin/cms/visa-checker", icon: Settings }
       ]
     },
     {
       title: "System",
       items: [
-        { label: "Settings", path: "/admin/settings", icon: Settings }
+        { label: "Settings", path: "/admin/settings", icon: Settings },
+        { label: "Theme & SEO CMS", path: "/admin/settings/theme", icon: Settings }
       ]
     }
   ];

@@ -303,7 +303,7 @@ export const VisaDetailPage = () => {
   }
 
   return (
-    <div className="bg-[#FAF8F5] min-h-screen text-slate-700 font-sans pb-24 relative">
+    <div className="bg-[#FAF8F5] min-h-screen text-slate-700 font-sans pb-24 relative">  
 
       {/* Draft Mode Banner (Visible to Admin only) */}
       {isDraft && isAdmin && (

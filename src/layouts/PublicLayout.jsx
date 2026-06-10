@@ -126,6 +126,10 @@ export const PublicLayout = () => {
       ],
     },
     {
+      title: "ELIGIBILITY",
+      path: "/visa-eligibility"
+    },
+    {
       title: "APPOINTMENTS",
       path: "/appointment"
     },
@@ -151,6 +155,7 @@ export const PublicLayout = () => {
     if (t === "Contact Us" || t === "Request Callback") return "/contact";
     if (t === "Appointments" || t === "APPOINTMENTS") return "/appointment";
     if (t === "Documentation" || t === "DOCUMENTATION") return "/resources";
+    if (t === "Eligibility" || t === "ELIGIBILITY") return "/visa-eligibility";
 
     // Visas
     if (t === "Visa Services") return "/visa-services";
@@ -719,21 +724,21 @@ export const PublicLayout = () => {
             {/* Morphing colored background blobs */}
             <div className="absolute inset-0 z-0 scale-110 opacity-70">
               {/* Cyan blob */}
-              <div 
+              <div
                 className="absolute w-[110%] h-[110%] -top-[5%] -left-[5%] bg-gradient-to-br from-cyan-400 to-blue-500 blur-[8px]"
                 style={{
                   animation: "orb-morph-1 8s infinite linear",
                 }}
               />
               {/* Pink/Magenta blob */}
-              <div 
+              <div
                 className="absolute w-[120%] h-[120%] -bottom-[10%] -right-[10%] bg-gradient-to-tr from-pink-500 to-rose-500 blur-[10px]"
                 style={{
                   animation: "orb-morph-2 10s infinite linear",
                 }}
               />
               {/* Green/Yellow blob */}
-              <div 
+              <div
                 className="absolute w-[90%] h-[90%] top-[10%] left-[10%] bg-gradient-to-r from-emerald-400 to-teal-500 blur-[8px]"
                 style={{
                   animation: "orb-morph-3 12s infinite ease-in-out",
