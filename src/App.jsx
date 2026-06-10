@@ -48,6 +48,10 @@ import VisaTypesListPage from "./pages/admin/VisaTypesListPage";
 import VisaTypeEditorPage from "./pages/admin/VisaTypeEditorPage";
 import VisaEligibilityPage from "./pages/public/VisaEligibilityPage";
 import VisaCheckerCms from "./pages/admin/VisaCheckerCms";
+import AppPackagesListPage from "./pages/admin/AppPackagesListPage";
+import AppPackageEditorPage from "./pages/admin/AppPackageEditorPage";
+import AppVisasListPage from "./pages/admin/AppVisasListPage";
+import AppVisaEditorPage from "./pages/admin/AppVisaEditorPage";
 
 // Portal Pages
 import PortalDashboard from "./pages/portal/PortalDashboard";
@@ -147,6 +151,14 @@ function App() {
                 <Route path="visa-types" element={<VisaTypesListPage />} />
                 <Route path="visa-types/new" element={<VisaTypeEditorPage />} />
                 <Route path="visa-types/:id/edit" element={<VisaTypeEditorPage />} />
+                
+                {/* App Content Section Routes */}
+                <Route path="app/packages" element={<AppPackagesListPage />} />
+                <Route path="app/packages/new" element={<AppPackageEditorPage />} />
+                <Route path="app/packages/:id/edit" element={<AppPackageEditorPage />} />
+                <Route path="app/visa" element={<AppVisasListPage />} />
+                <Route path="app/visa/new" element={<AppVisaEditorPage />} />
+                <Route path="app/visa/:id/edit" element={<AppVisaEditorPage />} />
                 
                 {/* DYNAMIC CMS / CRM PORTAL TABS */}
                 <Route path="cms/visa-checker" element={<VisaCheckerCms activeTab="cms" />} />

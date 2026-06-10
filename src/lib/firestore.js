@@ -16,6 +16,7 @@ import {
   serverTimestamp
 } from "firebase/firestore";
 import { db, auth } from "./firebase";
+export { db, auth };
 import toast from "react-hot-toast";
 
 // Helper for error logging
@@ -1232,4 +1233,85 @@ export const markAllNotificationsRead = async (userId) => {
     handleError(error, "markAllNotificationsRead");
   }
 };
+
+// ==========================================
+// APP PACKAGES & VISAS COLLECTION SERVICES
+// ==========================================
+
+export function getPackages(callback, errorCallback = null) {
+  try {
+    const collRef = collection(db, "packages");
+    return onSnapshot(collRef, (snapshot) => {
+      const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      callback(items);
+    }, (error) => {
+      console.error("Packages listener error:", error);
+      if (errorCallback) errorCallback(error);
+    });
+  } catch (error) {
+    handleError(error, "getPackages");
+  }
+}
+
+export async function savePackage(id, data) {
+  try {
+    const docRef = doc(db, "packages", id);
+    const uid = auth.currentUser?.uid || "system";
+    await setDoc(docRef, {
+      ...data,
+      updatedAt: serverTimestamp(),
+      updatedBy: uid
+    }, { merge: true });
+  } catch (error) {
+    handleError(error, "savePackage");
+  }
+}
+
+export async function deletePackage(id) {
+  try {
+    const docRef = doc(db, "packages", id);
+    await deleteDoc(docRef);
+  } catch (error) {
+    handleError(error, "deletePackage");
+  }
+}
+
+export function getVisas(callback, errorCallback = null) {
+  try {
+    const collRef = collection(db, "visas");
+    return onSnapshot(collRef, (snapshot) => {
+      const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      callback(items);
+    }, (error) => {
+      console.error("Visas listener error:", error);
+      if (errorCallback) errorCallback(error);
+    });
+  } catch (error) {
+    handleError(error, "getVisas");
+  }
+}
+
+export async function saveVisa(id, data) {
+  try {
+    const docRef = doc(db, "visas", id);
+    const uid = auth.currentUser?.uid || "system";
+    await setDoc(docRef, {
+      ...data,
+      updatedAt: serverTimestamp(),
+      updatedBy: uid
+    }, { merge: true });
+  } catch (error) {
+    handleError(error, "saveVisa");
+  }
+}
+
+export async function deleteVisa(id) {
+  try {
+    const docRef = doc(db, "visas", id);
+    await deleteDoc(docRef);
+  } catch (error) {
+    handleError(error, "deleteVisa");
+  }
+}
+
 
