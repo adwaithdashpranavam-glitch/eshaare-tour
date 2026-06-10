@@ -9,10 +9,20 @@ export const PortalSettingsPage = () => {
   const { user, userProfile } = useAuth();
   
   const [profile, setProfile] = useState({
-    name: userProfile?.name || "Sarah Connor",
-    phone: userProfile?.phone || "+971503334444",
-    nationality: userProfile?.nationality || "Jordanian"
+    name: "",
+    phone: "",
+    nationality: ""
   });
+
+  React.useEffect(() => {
+    if (userProfile) {
+      setProfile({
+        name: userProfile.name || "",
+        phone: userProfile.phone || "",
+        nationality: userProfile.nationality || ""
+      });
+    }
+  }, [userProfile]);
 
   const [passwordForm, setPasswordForm] = useState({
     currentPassword: "",
