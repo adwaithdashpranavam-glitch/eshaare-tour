@@ -73,7 +73,15 @@ export const AuthProvider = ({ children }) => {
           if (custData.name && custData.name !== "Client User") {
             name = custData.name;
           }
-          profileData = { ...profileData, ...custData };
+          profileData = { 
+            ...profileData, 
+            ...custData,
+            phone: custData.phone || profileData.phone || profileData.phoneNumber || "",
+            phoneNumber: custData.phone || profileData.phoneNumber || profileData.phone || ""
+          };
+        } else {
+          profileData.phone = profileData.phone || profileData.phoneNumber || "";
+          profileData.phoneNumber = profileData.phone;
         }
         await setDoc(customerRef, {
           uid: currentUser.uid,
@@ -127,7 +135,7 @@ export const AuthProvider = ({ children }) => {
           uid: user.uid,
           name: extraData.name || "Client User",
           email: email.trim(),
-          phone: extraData.phoneNumber || "",
+          phone: extraData.phoneNumber || extraData.phone || "",
           nationality: extraData.nationality || "",
           createdAt: new Date(),
           lastLoginAt,
@@ -189,7 +197,16 @@ export const AuthProvider = ({ children }) => {
           if (profile && profile.role === ROLES.CLIENT) {
             const customerDoc = await getDoc(doc(db, "customers", currentUser.uid));
             if (customerDoc.exists()) {
-              profile = { ...profile, ...customerDoc.data() };
+              const custData = customerDoc.data();
+              profile = { 
+                ...profile, 
+                ...custData,
+                phone: custData.phone || profile.phone || profile.phoneNumber || "",
+                phoneNumber: custData.phone || profile.phoneNumber || profile.phone || ""
+              };
+            } else {
+              profile.phone = profile.phone || profile.phoneNumber || "";
+              profile.phoneNumber = profile.phone;
             }
           }
 
