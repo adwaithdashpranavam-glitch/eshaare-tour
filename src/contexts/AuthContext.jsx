@@ -290,7 +290,7 @@ export const ProtectedRoute = ({ children }) => {
 
 // Protect client portal routes (requires client auth)
 export const ClientRoute = ({ children }) => {
-  const { user, loading } = useAuth();
+  const { user, isAdmin, loading } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -300,6 +300,11 @@ export const ClientRoute = ({ children }) => {
   if (!user) {
     // Redirect to client login
     return <Navigate to="/portal/login" state={{ from: location }} replace />;
+  }
+
+  if (isAdmin) {
+    // Redirect admin to admin dashboard
+    return <Navigate to="/admin/dashboard" replace />;
   }
 
   return children;

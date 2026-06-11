@@ -20,9 +20,32 @@ import {
 export const PublicLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, userProfile } = useAuth();
+  const { user, userProfile, isAdmin, loading } = useAuth();
   const userName = userProfile?.name || user?.displayName || user?.email || "Customer";
   const isPortal = location.pathname.startsWith("/portal");
+
+  // Redirect admin users to admin dashboard if they land on the home page root
+  useEffect(() => {
+    if (user && isAdmin && !loading && location.pathname === "/") {
+      navigate("/admin/dashboard", { replace: true });
+    }
+  }, [user, isAdmin, loading, location.pathname, navigate]);
+
+  const getMonogram = (name) => {
+    if (!name) return "";
+    let cleanName = name;
+    if (name.includes("@")) {
+      cleanName = name.split("@")[0];
+    }
+    const parts = cleanName.trim().split(/[\s._-]+/).filter(Boolean);
+    if (parts.length === 0) return "";
+    if (parts.length === 1) {
+      return parts[0].slice(0, 2).toUpperCase();
+    }
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  };
+
+  const userMonogram = getMonogram(userName);
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [email, setEmail] = useState("");
@@ -295,7 +318,7 @@ export const PublicLayout = () => {
             <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
             <span>
               Welcome,{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#1D503A] to-amber-300 font-extrabold uppercase tracking-wider">
+              <span className="text-amber-300 font-extrabold uppercase tracking-wider">
                 {userName}
               </span>
             </span>
@@ -413,29 +436,31 @@ export const PublicLayout = () => {
               </Link>
             ) : (
               <Link
-                to="/portal"
+                to={isAdmin ? "/admin" : "/portal"}
                 className="h-9 border border-gray-300 hover:bg-gray-100 text-gray-800 px-6 rounded-full font-semibold text-sm flex items-center justify-center transition-all duration-300"
               >
-                Dashboard
+                {isAdmin ? "Admin Portal" : "Dashboard"}
               </Link>
             )}
 
             <Link
               to="/appointment"
-              className="group relative flex items-center gap-2 h-9 bg-[#1D503A] border border-[#1D503A] text-white px-5 rounded-full font-semibold text-sm hover:bg-[#0e4a1e] transition-all duration-300 overflow-hidden shadow-md"
+              className="group relative flex items-center gap-2 h-9 bg-[#1D503A] border border-[#1D503A] text-white px-3 rounded-full font-semibold text-sm hover:bg-[#0e4a1e] transition-all duration-300 overflow-hidden shadow-md"
             >
               <Phone className="h-4 w-4" />
               <span>Enquire Now</span>
             </Link>
 
-            {/* Profile Avatar / ES monogram */}
-            <Link
-              to="/portal"
-              className="h-11 w-11 rounded-full border border-gray-200 shadow-sm bg-orange-50 flex items-center justify-center font-bold text-xs text-[#1D503A] hover:bg-orange-100/50 transition-colors"
-              title="User Portal"
-            >
-              ES
-            </Link>
+            {/* Profile Avatar / user monogram */}
+            {user && (
+              <Link
+                to={isAdmin ? "/admin" : "/portal"}
+                className="h-11 w-11 rounded-full border border-gray-200 shadow-sm bg-orange-50 flex items-center justify-center font-bold text-xs text-[#1D503A] hover:bg-orange-100/50 transition-colors shrink-0"
+                title={`${isAdmin ? "Admin Portal" : "User Portal"}: ${userName}`}
+              >
+                {userMonogram}
+              </Link>
+            )}
           </div>
 
           {/* Mobile Hamburg Trigger */}
@@ -545,11 +570,11 @@ export const PublicLayout = () => {
                 </Link>
               ) : (
                 <Link
-                  to="/portal"
+                  to={isAdmin ? "/admin" : "/portal"}
                   className="border border-gray-300 text-gray-800 py-3 rounded-full text-center font-semibold text-sm hover:bg-gray-50"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  Dashboard
+                  {isAdmin ? "Admin Portal" : "Dashboard"}
                 </Link>
               )}
 
@@ -769,11 +794,11 @@ export const PublicLayout = () => {
 
           {/* ACCOUNT */}
           <Link
-            to={user ? "/portal" : "/portal/login"}
+            to={user ? (isAdmin ? "/admin" : "/portal") : "/portal/login"}
             className="flex flex-col items-center justify-center gap-1 text-xs text-gray-700 transition hover:text-[#1D503A]"
           >
             <User size={17} />
-            <span>Account</span>
+            <span>{isAdmin ? "Admin" : "Account"}</span>
           </Link>
 
         </div>

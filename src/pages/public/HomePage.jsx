@@ -13,19 +13,22 @@ export const HomePage = () => {
   const [activeSlide, setActiveSlide] = useState(0);
   const slides = [
     {
-      image: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1600&q=80",
+      image: "https://images.unsplash.com/photo-1531366936337-7c912a4589a7?auto=format&fit=crop&w=1600&q=80",
       headline: "Explore The World Without Boundaries",
-      subtext: "Premium visa processing assistance & bespoke international holiday packages. Curated specifically for UAE residents seeking seamless global travel."
+      subtext: "Premium visa processing assistance & bespoke international holiday packages. Curated specifically for UAE residents seeking seamless global travel.",
+      animated: true  // 👈 aurora slide
     },
     {
-      image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1600&q=80",
+      image: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=1600&q=80",
       headline: "Seamless Schengen & Global Visa Support",
-      subtext: "99% document audit accuracy, express VFS slot allocations, and tailor-made NOC employer templates for rapid embassy approvals."
+      subtext: "99% document audit accuracy, express VFS slot allocations, and tailor-made NOC employer templates for rapid embassy approvals.",
+      animated: false
     },
     {
-      image: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=1600&q=80",
+      image: "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=1600&q=80",
       headline: "Curated Luxury Holiday Experiences",
-      subtext: "Unlock handcrafted tour itineraries, priority entry passes, and boutique stays in Paris, Kyoto, London, and beyond."
+      subtext: "Unlock handcrafted tour itineraries, priority entry passes, and boutique stays in Paris, Kyoto, London, and beyond.",
+      animated: false
     }
   ];
 
@@ -217,34 +220,47 @@ export const HomePage = () => {
             className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${activeSlide === index ? "opacity-100 z-10" : "opacity-0 z-0"
               }`}
           >
-            {/* Background Image */}
             <img
               src={slide.image}
               alt={slide.headline}
-              className="w-full h-full object-cover"
+              className={`w-full h-full object-cover ${slide.animated ? "animate-aurora-pan" : ""
+                }`}
             />
-            {/* Dark Overlay */}
             <div className="absolute inset-0 bg-black/40"></div>
 
-            {/* Content Container */}
             <div className="absolute inset-0 flex flex-col justify-center max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop text-white">
-              <h1 className="font-display-lg text-display-lg-mobile md:text-display-lg text-white mb-4 max-w-2xl leading-tight">
+              <h1
+                className={`font-display-lg text-display-lg-mobile md:text-display-lg text-white mb-4 max-w-2xl leading-tight
+          transition-all duration-700 delay-300
+          ${activeSlide === index ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
+              >
                 {slide.headline}
               </h1>
-              <p className="font-body-lg text-body-lg text-white/90 max-w-lg mb-8 leading-relaxed">
+              <p
+                className={`font-body-lg text-body-lg text-white/90 max-w-lg mb-8 leading-relaxed
+          transition-all duration-700 delay-500
+          ${activeSlide === index ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
+              >
                 {slide.subtext}
               </p>
               <Link
                 to="/appointment"
-                className="bg-secondary-container text-on-secondary-container px-8 py-4 rounded-xl font-bold flex items-center gap-2 hover:scale-105 transition-transform w-fit"
+                className={`group inline-flex items-center gap-2 w-fit px-8 py-4 rounded-xl font-bold text-white
+          bg-white/15 backdrop-blur-xl ring-1 ring-white/30
+          shadow-[0_10px_30px_-10px_rgba(0,0,0,0.35)]
+          hover:bg-white/25 hover:ring-white/50
+          hover:shadow-[0_16px_40px_-12px_rgba(255,255,255,0.25)]
+          transition-all duration-700 delay-700 hover:scale-105
+          ${activeSlide === index ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
               >
                 <span>Apply Now</span>
-                <span className="material-symbols-outlined">arrow_forward</span>
+                <span className="material-symbols-outlined transition-transform group-hover:translate-x-1">
+                  arrow_forward
+                </span>
               </Link>
             </div>
           </div>
         ))}
-
         {/* Slider Dots */}
         <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-20 flex gap-2">
           {slides.map((_, index) => (
@@ -259,27 +275,132 @@ export const HomePage = () => {
         </div>
       </section>
 
-      {/* TRUST/STATS BAR */}
-      <section className="relative overflow-hidden bg-primary-container py-6 px-margin-mobile md:px-margin-desktop">
-        <div className="max-w-container-max mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-center relative z-10">
-          <div>
-            <div className="font-display-lg text-secondary-fixed text-4xl md:text-4xl mb-1">{counts.visas}+</div>
-            <div className="text-on-primary-container/80 font-label-md text-label-md">Visas Approved</div>
-          </div>
-          <div>
-            <div className="font-display-lg text-secondary-fixed text-4xl md:text-4xl mb-1">{counts.countries}+</div>
-            <div className="text-on-primary-container/80 font-label-md text-label-md">Countries Supported</div>
-          </div>
-          <div>
-            <div className="font-display-lg text-secondary-fixed text-4xl md:text-4xl mb-1">{counts.rate}%</div>
-            <div className="text-on-primary-container/80 font-label-md text-label-md">Success Rate</div>
-          </div>
-          <div>
-            <div className="font-display-lg text-secondary-fixed text-4xl md:text-4xl mb-1">{counts.support}/7</div>
-            <div className="text-on-primary-container/80 font-label-md text-label-md">Support Hours</div>
+
+      {/* TRUST / STATS BAR — Glass Diamond Vitrine */}
+      <section className="relative -mt-8 md:-mt-5 z-30 px-margin-mobile md:px-margin-desktop">
+        <div className="max-w-container-max mx-auto">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5">
+
+            {/* VISAS */}
+            <div className="group relative flex items-center gap-4
+        bg-white/30 backdrop-blur-xl
+        ring-1 ring-white/40
+        rounded-2xl
+        px-5 py-4 md:px-6 md:py-5
+        shadow-[0_8px_30px_-10px_rgba(29,80,58,0.15)]
+        hover:shadow-[0_16px_40px_-12px_rgba(212,175,55,0.25)]
+        hover:bg-white/40
+        transition-all duration-500">
+              <div className="relative shrink-0">
+                <div className="size-10 rotate-45 border border-[#D4AF37]/50 flex items-center justify-center transition-transform duration-700 group-hover:rotate-[135deg]">
+                  <span className="material-symbols-outlined -rotate-45 group-hover:rotate-[-135deg] transition-transform duration-700 text-[#1D503A] text-[18px]">
+                    verified
+                  </span>
+                </div>
+                <div className="absolute -top-1 -left-1 size-1.5 border-t border-l border-[#D4AF37]/70" />
+                <div className="absolute -bottom-1 -right-1 size-1.5 border-b border-r border-[#D4AF37]/70" />
+              </div>
+              <div className="flex flex-col text-left min-w-0">
+                <div className="font-serif italic text-xl md:text-2xl text-[#1D503A] leading-tight">
+                  {counts.visas}+
+                </div>
+                <p className="text-[10px] uppercase tracking-[0.18em] text-[#1D503A]/65 mt-0.5">
+                  Visas Approved
+                </p>
+              </div>
+            </div>
+
+            {/* COUNTRIES */}
+            <div className="group relative flex items-center gap-4
+        bg-white/30 backdrop-blur-xl
+        ring-1 ring-white/40
+        rounded-2xl
+        px-5 py-4 md:px-6 md:py-5
+        shadow-[0_8px_30px_-10px_rgba(29,80,58,0.15)]
+        hover:shadow-[0_16px_40px_-12px_rgba(212,175,55,0.25)]
+        hover:bg-white/40
+        transition-all duration-500">
+              <div className="relative shrink-0">
+                <div className="size-10 rotate-45 border border-[#D4AF37]/50 flex items-center justify-center transition-transform duration-700 group-hover:rotate-[135deg]">
+                  <span className="material-symbols-outlined -rotate-45 group-hover:rotate-[-135deg] transition-transform duration-700 text-[#1D503A] text-[18px]">
+                    public
+                  </span>
+                </div>
+                <div className="absolute -top-1 -left-1 size-1.5 border-t border-l border-[#D4AF37]/70" />
+                <div className="absolute -bottom-1 -right-1 size-1.5 border-b border-r border-[#D4AF37]/70" />
+              </div>
+              <div className="flex flex-col text-left min-w-0">
+                <div className="font-serif italic text-xl md:text-2xl text-[#1D503A] leading-tight">
+                  {counts.countries}+
+                </div>
+                <p className="text-[10px] uppercase tracking-[0.18em] text-[#1D503A]/65 mt-0.5">
+                  Countries
+                </p>
+              </div>
+            </div>
+
+            {/* SUCCESS RATE — filled emerald accent */}
+            <div className="group relative flex items-center gap-4
+        bg-white/30 backdrop-blur-xl
+        ring-1 ring-white/40
+        rounded-2xl
+        px-5 py-4 md:px-6 md:py-5
+        shadow-[0_8px_30px_-10px_rgba(29,80,58,0.15)]
+        hover:shadow-[0_16px_40px_-12px_rgba(212,175,55,0.25)]
+        hover:bg-white/40
+        transition-all duration-500">
+              <div className="relative shrink-0">
+                <div className="size-10 rotate-45 bg-[#1D503A] flex items-center justify-center transition-transform duration-700 group-hover:rotate-[225deg]">
+                  <span className="material-symbols-outlined -rotate-45 group-hover:rotate-[-225deg] transition-transform duration-700 text-[#D4AF37] text-[18px]">
+                    trending_up
+                  </span>
+                </div>
+                <div className="absolute -top-1 -left-1 size-1.5 border-t border-l border-[#D4AF37]/70" />
+                <div className="absolute -bottom-1 -right-1 size-1.5 border-b border-r border-[#D4AF37]/70" />
+              </div>
+              <div className="flex flex-col text-left min-w-0">
+                <div className="font-serif italic text-xl md:text-2xl text-[#1D503A] leading-tight">
+                  {counts.rate}%
+                </div>
+                <p className="text-[10px] uppercase tracking-[0.18em] text-[#1D503A]/65 mt-0.5">
+                  Success Rate
+                </p>
+              </div>
+            </div>
+
+            {/* SUPPORT */}
+            <div className="group relative flex items-center gap-4
+        bg-white/30 backdrop-blur-xl
+        ring-1 ring-white/40
+        rounded-2xl
+        px-5 py-4 md:px-6 md:py-5
+        shadow-[0_8px_30px_-10px_rgba(29,80,58,0.15)]
+        hover:shadow-[0_16px_40px_-12px_rgba(212,175,55,0.25)]
+        hover:bg-white/40
+        transition-all duration-500">
+              <div className="relative shrink-0">
+                <div className="size-10 rotate-45 border border-[#D4AF37]/50 flex items-center justify-center transition-transform duration-700 group-hover:rotate-[135deg]">
+                  <span className="material-symbols-outlined -rotate-45 group-hover:rotate-[-135deg] transition-transform duration-700 text-[#1D503A] text-[18px]">
+                    support_agent
+                  </span>
+                </div>
+                <div className="absolute -top-1 -left-1 size-1.5 border-t border-l border-[#D4AF37]/70" />
+                <div className="absolute -bottom-1 -right-1 size-1.5 border-b border-r border-[#D4AF37]/70" />
+              </div>
+              <div className="flex flex-col text-left min-w-0">
+                <div className="font-serif italic text-xl md:text-2xl text-[#1D503A] leading-tight">
+                  {counts.support}/7
+                </div>
+                <p className="text-[10px] uppercase tracking-[0.18em] text-[#1D503A]/65 mt-0.5">
+                  Support
+                </p>
+              </div>
+            </div>
+
           </div>
         </div>
       </section>
+
 
       {/* SERVICE CARDS GRID */}
       <section className="relative overflow-hidden py-[120px] px-margin-mobile md:px-margin-desktop bg-surface">
