@@ -122,7 +122,7 @@ service cloud.firestore {
     // ==========================================
     match /payments/{paymentId} {
       // Clients can read their own payments; staff can read/write everything
-      allow read: if isStaff() || (isSignedIn() && resource.data.clientUid == request.auth.uid);
+      allow read: if isStaff() || (isSignedIn() && (resource.data.clientUid == request.auth.uid || resource.data.clientEmail.lower() == request.auth.token.email.lower()));
       allow write: if isStaff();
       allow create: if isSignedIn();
     }

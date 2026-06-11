@@ -26,11 +26,8 @@ export const PortalDocumentsPage = () => {
       setDocs(list);
       setLoading(false);
     }, (error) => {
-      console.warn("Using mock documents lists:", error);
-      setDocs([
-        { id: "1", name: "passport_scan.pdf", type: "Passport Copy", date: new Date(), status: "Verified", fileUrl: "https://example.com" },
-        { id: "2", name: "bank_stmt_may.pdf", type: "Financial", date: new Date(), status: "Pending", fileUrl: "https://example.com" }
-      ]);
+      console.warn("Error fetching documents lists:", error);
+      setDocs([]);
       setLoading(false);
     });
 

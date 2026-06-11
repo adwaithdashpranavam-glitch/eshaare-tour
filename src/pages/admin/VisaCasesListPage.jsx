@@ -25,11 +25,8 @@ export const VisaCasesListPage = () => {
       setCases(items);
       setLoading(false);
     }, (error) => {
-      console.warn("Using mock visa cases fallback:", error);
-      setCases([
-        { id: "1", caseNo: "VC-20260601-001", travellerName: "Amit Sharma", visaType: "Schengen", destination: "France", assignedOfficer: "Visa Ops Officer", stage: "Docs Pending", priority: "Urgent", submissionDate: null, expectedDecisionAt: null, createdAt: new Date() },
-        { id: "2", caseNo: "VC-20260601-002", travellerName: "Sarah Connor", visaType: "UK Visa", destination: "United Kingdom", assignedOfficer: "Visa Ops Officer", stage: "Submitted", priority: "Normal", submissionDate: new Date(), expectedDecisionAt: new Date(Date.now() - 86400000), createdAt: new Date() }
-      ]);
+      console.warn("Error loading visa cases:", error);
+      setCases([]);
       setLoading(false);
     });
 

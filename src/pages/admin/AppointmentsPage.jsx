@@ -27,14 +27,13 @@ export const AppointmentsPage = () => {
       if (!snapshot.empty) {
         const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         setAppointments(items);
+      } else {
+        setAppointments([]);
       }
       setLoading(false);
     }, (error) => {
-      console.warn("Using mock appointments fallback:", error);
-      setAppointments([
-        { id: "1", clientName: "Amit Sharma", consultant: "Visa Advisor A", date: "2026-06-02", time: "10:30 AM", type: "Video Call", status: "Confirmed" },
-        { id: "2", clientName: "Sarah Connor", consultant: "Visa Advisor B", date: "2026-06-03", time: "02:00 PM", type: "In-Person", status: "Rescheduled" }
-      ]);
+      console.warn("Error fetching appointments:", error);
+      setAppointments([]);
       setLoading(false);
     });
 

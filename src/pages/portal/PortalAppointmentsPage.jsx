@@ -22,21 +22,21 @@ export const PortalAppointmentsPage = () => {
   });
 
   useEffect(() => {
-    if (!userProfile?.name) return;
+    if (!userProfile?.email) return;
 
     const appRef = collection(db, "appointments");
-    const q = query(appRef, where("clientName", "==", userProfile.name));
+    const q = query(appRef, where("email", "==", userProfile.email.toLowerCase()));
     
     const unsubscribe = onSnapshot(q, (snapshot) => {
       if (!snapshot.empty) {
         setAppts(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      } else {
+        setAppts([]);
       }
       setLoading(false);
     }, (error) => {
-      console.warn("Using mock appts fallback lists:", error);
-      setAppts([
-        { id: "1", date: "2026-06-02", time: "10:30 AM", type: "Video Call", status: "Confirmed", consultant: "Rana G." }
-      ]);
+      console.warn("Error fetching appointments:", error);
+      setAppts([]);
       setLoading(false);
     });
 
@@ -49,6 +49,8 @@ export const PortalAppointmentsPage = () => {
       const appRef = collection(db, "appointments");
       await addDoc(appRef, {
         clientName: userProfile.name,
+        email: userProfile.email.toLowerCase(),
+        clientUid: userProfile.id || "",
         consultant: "Unassigned Advisor",
         date: bookingForm.date,
         time: bookingForm.time,

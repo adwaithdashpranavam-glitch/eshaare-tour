@@ -70,25 +70,9 @@ export const CaseDetailPage = () => {
       }
       setLoading(false);
     }, (error) => {
-      console.warn("Using mock visa case details:", error);
-      setCaseData({
-        id: id,
-        caseNo: "VC-20260601-002",
-        travellerName: "Sarah Connor",
-        travellerPhone: "+971503334444",
-        travellerEmail: "sarah@yahoo.com",
-        visaType: "UK Visa",
-        destination: "United Kingdom",
-        assignedOfficer: "Visa Ops Officer",
-        stage: "Submitted",
-        priority: "Normal",
-        createdAt: { seconds: 1780327362 }
-      });
-      setDocItems([
-        { id: 0, name: "Original Passport", status: "Verified", fileUrl: "https://example.com/passport.pdf" },
-        { id: 1, name: "Emirates ID Copy", status: "Verified", fileUrl: "https://example.com/eid.pdf" },
-        { id: 2, name: "6 Months Bank Statement", status: "Uploaded", fileUrl: "https://example.com/bank.pdf" }
-      ]);
+      console.warn("Error loading visa case details:", error);
+      toast.error("Error loading case details: " + error.message);
+      navigate("/admin/cases");
       setLoading(false);
     });
 
@@ -212,9 +196,16 @@ export const CaseDetailPage = () => {
       const payRef = collection(db, "payments");
       await addDoc(payRef, {
         orderId: caseData.caseNo,
+        invoiceNo: caseData.caseNo?.replace("VC-", "PAY-") || `PAY-${Date.now()}`,
+        clientName: caseData.travellerName || "",
+        clientEmail: caseData.travellerEmail?.toLowerCase() || "",
+        clientUid: caseData.travellerId || "",
+        service: `${caseData.visaType || caseData.destination || "Visa"} Booking`,
         amount: Number(paymentData.amount),
         method: paymentData.method,
         ref: paymentData.ref,
+        status: "Paid",
+        date: new Date(),
         createdAt: new Date()
       });
 

@@ -14,6 +14,7 @@ export const PortalApplicationDetailPage = () => {
   const [caseData, setCaseData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [docItems, setDocItems] = useState([]);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const docRef = doc(db, "visa_cases", id);
@@ -35,24 +36,13 @@ export const PortalApplicationDetailPage = () => {
           };
         });
         setDocItems(mappedDocs);
+      } else {
+        setError("Application not found");
       }
       setLoading(false);
-    }, (error) => {
-      console.warn("Using mock traveler case details:", error);
-      setCaseData({
-        id: id,
-        caseNo: "VC-20260601-002",
-        travellerName: "Sarah Connor",
-        visaType: "UK Visa",
-        destination: "United Kingdom",
-        stage: "Docs Pending",
-        assignedOfficerName: "Ahmed K."
-      });
-      setDocItems([
-        { id: 0, name: "Original Passport", status: "Verified", fileUrl: "https://example.com/passport.pdf" },
-        { id: 1, name: "Emirates ID Copy", status: "Verified", fileUrl: "https://example.com/eid.pdf" },
-        { id: 2, name: "6 Months Bank Statement", status: "Pending", fileUrl: "" }
-      ]);
+    }, (err) => {
+      console.error("Error loading traveler case details:", err);
+      setError(err.message || "Failed to load application details.");
       setLoading(false);
     });
 
@@ -78,8 +68,17 @@ export const PortalApplicationDetailPage = () => {
     }
   };
 
-  if (loading || !caseData) {
+  if (loading) {
     return <LoadingSpinner message="Loading case details..." fullScreen={true} />;
+  }
+
+  if (error || !caseData) {
+    return (
+      <div className="text-center py-12 space-y-4 font-sans text-xs">
+        <p className="text-sm text-red-400">{error || "Failed to load application details."}</p>
+        <Link to="/portal/applications" className="text-xs text-secondary underline">Back to Applications</Link>
+      </div>
+    );
   }
 
   return (

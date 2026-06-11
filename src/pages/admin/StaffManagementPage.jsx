@@ -16,15 +16,13 @@ export const StaffManagementPage = () => {
     const unsubscribe = onSnapshot(sRef, (snapshot) => {
       if (!snapshot.empty) {
         setStaff(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      } else {
+        setStaff([]);
       }
       setLoading(false);
     }, (error) => {
-      console.warn("Using mock staff logs:", error);
-      setStaff([
-        { id: "1", name: "Rana G.", email: "rana@eshaare.com", role: "super_admin", status: "Active", casesHandled: 42 },
-        { id: "2", name: "Ahmed K.", email: "ahmed@eshaare.com", role: "visa_ops", status: "Active", casesHandled: 28 },
-        { id: "3", name: "Lina M.", email: "lina@eshaare.com", role: "sales", status: "Inactive", casesHandled: 15 }
-      ]);
+      console.warn("Error loading staff logs:", error);
+      setStaff([]);
       setLoading(false);
     });
 

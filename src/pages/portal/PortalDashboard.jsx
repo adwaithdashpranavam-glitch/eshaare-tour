@@ -71,10 +71,9 @@ export const PortalDashboard = () => {
       }
       setLoading(false);
     }, (error) => {
-      console.warn("Using mock traveller details:", error);
-      setActiveCases([
-        { id: "1", caseNo: "VC-20260601-002", visaType: "UK Visa", destination: "United Kingdom", stage: "Docs Pending", priority: "Normal", createdAt: new Date() }
-      ]);
+      console.warn("Error fetching traveller details:", error);
+      setActiveCases([]);
+      setPendingDocsCount(0);
       setLoading(false);
     });
 

@@ -14,21 +14,21 @@ export const PortalPaymentsPage = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!userProfile?.name) return;
+    if (!userProfile?.email) return;
 
     const pRef = collection(db, "payments");
-    const q = query(pRef, where("clientName", "==", userProfile.name));
+    const q = query(pRef, where("clientEmail", "==", userProfile.email.toLowerCase()));
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       if (!snapshot.empty) {
         setPayments(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      } else {
+        setPayments([]);
       }
       setLoading(false);
     }, (error) => {
-      console.warn("Using mock traveller payments fallback lists:", error);
-      setPayments([
-        { id: "1", invoiceNo: "PAY-20260601-001", service: "Schengen Visa Booking", amount: 450, method: "Card", date: new Date(), status: "Paid", paymentLinkUrl: "https://stripe.com" }
-      ]);
+      console.warn("Error fetching payments lists:", error);
+      setPayments([]);
       setLoading(false);
     });
 

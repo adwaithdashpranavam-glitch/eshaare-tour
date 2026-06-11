@@ -68,16 +68,8 @@ export const Dashboard = () => {
     { name: "Awaiting Decision", value: 3, color: "#627555" }
   ];
 
-  const [recentLeads, setRecentLeads] = useState([
-    { id: "1", contactName: "Amit Sharma", source: "WhatsApp", stage: "New", createdAt: new Date() },
-    { id: "2", contactName: "Sarah Connor", source: "Website", stage: "Contacted", createdAt: new Date() },
-    { id: "3", contactName: "Habib Al-Fardan", source: "Referral", stage: "Qualified", createdAt: new Date() }
-  ]);
-
-  const [upcomingAppointments, setUpcomingAppointments] = useState([
-    { id: "1", clientName: "Amit Sharma", time: "10:30 AM", type: "Video Call" },
-    { id: "2", clientName: "Zayn Malik", time: "02:00 PM", type: "In-Person" }
-  ]);
+  const [recentLeads, setRecentLeads] = useState([]);
+  const [upcomingAppointments, setUpcomingAppointments] = useState([]);
 
   useEffect(() => {
     // 1. Fetch analytic counts (Safe from non-existent collections)
@@ -169,13 +161,22 @@ export const Dashboard = () => {
         const sortedLeads = leads
           .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0))
           .slice(0, 5);
-        if (sortedLeads.length > 0) {
-          setRecentLeads(sortedLeads);
-        }
+        setRecentLeads(sortedLeads);
+      } else {
+        setRecentLeads([]);
+        setKpis(prev => ({
+          ...prev,
+          newLeads: 0
+        }));
       }
       setLoading(false);
     }, (error) => {
-      console.warn("Real-time snapshot error (using mock config):", error);
+      console.warn("Real-time snapshot error for leads:", error);
+      setRecentLeads([]);
+      setKpis(prev => ({
+        ...prev,
+        newLeads: 0
+      }));
       setLoading(false);
     });
 
@@ -192,12 +193,41 @@ export const Dashboard = () => {
           activeCases: active,
           pendingDocs: pending
         }));
+      } else {
+        setKpis(prev => ({
+          ...prev,
+          activeCases: 0,
+          pendingDocs: 0
+        }));
       }
-    }, () => { });
+    }, (error) => {
+      console.warn("Real-time snapshot error for cases:", error);
+      setKpis(prev => ({
+        ...prev,
+        activeCases: 0,
+        pendingDocs: 0
+      }));
+    });
+
+    // 4. Real-time listener for Appointments
+    const apptsRef = collection(db, "appointments");
+    const qAppts = query(apptsRef, limit(10));
+    const unsubscribeAppts = onSnapshot(qAppts, (snapshot) => {
+      if (!snapshot.empty) {
+        const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setUpcomingAppointments(items);
+      } else {
+        setUpcomingAppointments([]);
+      }
+    }, (error) => {
+      console.warn("Error fetching dashboard appointments:", error);
+      setUpcomingAppointments([]);
+    });
 
     return () => {
       unsubscribeLeads();
       unsubscribeCases();
+      unsubscribeAppts();
     };
   }, []);
 

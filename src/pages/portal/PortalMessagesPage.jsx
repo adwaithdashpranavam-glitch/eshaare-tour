@@ -28,15 +28,14 @@ export const PortalMessagesPage = () => {
     const unsubscribe = onSnapshot(q, (snapshot) => {
       if (!snapshot.empty) {
         setMessages(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      } else {
+        setMessages([]);
       }
       // Scroll to bottom
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, (error) => {
-      console.warn("Using mock message records fallback:", error);
-      setMessages([
-        { id: "1", senderId: "advisor", senderName: "Rana G. (Advisor)", text: "Hi Sarah, I reviewed your bank statements. They look good, but we need the stamp on the last page.", createdAt: new Date(Date.now() - 3600000) },
-        { id: "2", senderId: user.uid, senderName: "Sarah Connor", text: "Sure, I am uploading the stamped version now.", createdAt: new Date(Date.now() - 1800000) }
-      ]);
+      console.warn("Error fetching message records:", error);
+      setMessages([]);
     });
 
     return () => unsubscribe();

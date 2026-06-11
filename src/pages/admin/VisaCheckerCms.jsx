@@ -106,11 +106,11 @@ export const VisaCheckerCms = ({ activeTab = "cms" }) => {
   const [faqsList, setFaqsList] = useState(DEFAULT_FAQ);
   const [formSteps, setFormSteps] = useState(DEFAULT_FORM_STEPS);
   const [rulesList, setRulesList] = useState(DEFAULT_RULES);
-  const [auditLogs, setAuditLogs] = useState(MOCK_AUDITS);
+  const [auditLogs, setAuditLogs] = useState([]);
   
   // Real database applications and leads arrays
-  const [applications, setApplications] = useState(MOCK_APPLICATIONS);
-  const [leads, setLeads] = useState(MOCK_LEADS);
+  const [applications, setApplications] = useState([]);
+  const [leads, setLeads] = useState([]);
 
   // Active admin simulated role
   const [adminRole, setAdminRole] = useState("Super Admin"); // Super Admin, Visa Manager, Document Reviewer, Sales Agent
@@ -171,20 +171,40 @@ export const VisaCheckerCms = ({ activeTab = "cms" }) => {
     const unsubApps = onSnapshot(collection(db, "applications"), (snap) => {
       if (!snap.empty) {
         const list = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        // Merge mock templates so dashboard lists look highly populated
-        const merged = [...list, ...MOCK_APPLICATIONS];
-        setApplications(merged);
+        setApplications(list);
+      } else {
+        setApplications([]);
       }
-    }, (err) => console.log("Firestore applications lookup failed"));
+    }, (err) => {
+      console.log("Firestore applications lookup failed", err);
+      setApplications([]);
+    });
 
     // Fetch dynamic leads list from firestore
     const unsubLeads = onSnapshot(collection(db, "leads"), (snap) => {
       if (!snap.empty) {
         const list = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        const merged = [...list, ...MOCK_LEADS];
-        setLeads(merged);
+        setLeads(list);
+      } else {
+        setLeads([]);
       }
-    }, (err) => console.log("Firestore leads lookup failed"));
+    }, (err) => {
+      console.log("Firestore leads lookup failed", err);
+      setLeads([]);
+    });
+
+    // Fetch dynamic audit logs from firestore
+    const unsubAudit = onSnapshot(query(collection(db, "auditLogs"), orderBy("createdAt", "desc"), limit(20)), (snap) => {
+      if (!snap.empty) {
+        const list = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        setAuditLogs(list);
+      } else {
+        setAuditLogs([]);
+      }
+    }, (err) => {
+      console.log("Firestore audit logs lookup failed", err);
+      setAuditLogs([]);
+    });
 
     return () => {
       unsubTheme();
@@ -195,6 +215,7 @@ export const VisaCheckerCms = ({ activeTab = "cms" }) => {
       unsubRules();
       unsubApps();
       unsubLeads();
+      unsubAudit();
     };
   }, []);
 

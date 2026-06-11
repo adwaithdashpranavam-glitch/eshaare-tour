@@ -17,6 +17,7 @@ export const PaymentsPage = () => {
   const [paymentForm, setPaymentForm] = useState({
     invoiceNo: "",
     clientName: "",
+    clientEmail: "",
     service: "Schengen Visa",
     amount: "",
     method: "Card",
@@ -29,14 +30,13 @@ export const PaymentsPage = () => {
       if (!snapshot.empty) {
         const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         setPayments(items);
+      } else {
+        setPayments([]);
       }
       setLoading(false);
     }, (error) => {
-      console.warn("Using mock payments fallback lists:", error);
-      setPayments([
-        { id: "1", invoiceNo: "PAY-20260601-001", clientName: "Amit Sharma", service: "Schengen Visa", amount: 450, method: "Card", date: new Date(), dueDate: new Date(), status: "Paid" },
-        { id: "2", invoiceNo: "PAY-20260520-002", clientName: "Sarah Connor", service: "UK Visa Assistance", amount: 650, method: "Online Link", date: new Date(), dueDate: new Date(Date.now() - 86400000), status: "Overdue" }
-      ]);
+      console.warn("Error fetching payments lists:", error);
+      setPayments([]);
       setLoading(false);
     });
 
@@ -52,6 +52,7 @@ export const PaymentsPage = () => {
       await addDoc(payRef, {
         invoiceNo: paymentForm.invoiceNo,
         clientName: paymentForm.clientName,
+        clientEmail: paymentForm.clientEmail.toLowerCase(),
         service: paymentForm.service,
         amount: Number(paymentForm.amount),
         method: paymentForm.method,
@@ -64,6 +65,7 @@ export const PaymentsPage = () => {
       setPaymentForm({
         invoiceNo: "",
         clientName: "",
+        clientEmail: "",
         service: "Schengen Visa",
         amount: "",
         method: "Card",
@@ -193,6 +195,17 @@ export const PaymentsPage = () => {
               className="px-3 py-2 bg-primary-container border border-on-primary-fixed-variant text-on-primary-container rounded focus:outline-none focus:border-secondary"
               value={paymentForm.clientName}
               onChange={(e) => setPaymentForm({ ...paymentForm, clientName: e.target.value })}
+            />
+          </div>
+          <div className="flex flex-col space-y-1">
+            <label className="text-[10px] font-bold text-on-primary-container/50 uppercase">Client Email</label>
+            <input
+              type="email"
+              required
+              placeholder="client@example.com"
+              className="px-3 py-2 bg-primary-container border border-on-primary-fixed-variant text-on-primary-container rounded focus:outline-none focus:border-secondary"
+              value={paymentForm.clientEmail}
+              onChange={(e) => setPaymentForm({ ...paymentForm, clientEmail: e.target.value })}
             />
           </div>
           <div className="flex flex-col space-y-1">

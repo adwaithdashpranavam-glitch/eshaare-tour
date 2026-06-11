@@ -20,11 +20,8 @@ export const QuotationsListPage = () => {
       setQuotes(items);
       setLoading(false);
     }, (error) => {
-      console.warn("Using mock quotations fallback list:", error);
-      setQuotes([
-        { id: "1", quoteNo: "QT-20260601-001", clientName: "Amit Sharma", amount: 1500, approvalStatus: "Draft", createdAt: new Date() },
-        { id: "2", quoteNo: "QT-20260528-002", clientName: "Sarah Connor", amount: 1850, approvalStatus: "Sent", createdAt: new Date() }
-      ]);
+      console.warn("Error loading quotations list:", error);
+      setQuotes([]);
       setLoading(false);
     });
 
