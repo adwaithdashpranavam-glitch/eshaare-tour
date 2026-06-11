@@ -64,7 +64,7 @@ export const AuthProvider = ({ children }) => {
       }
 
       // If they are a client/customer, update the 'customers' collection as well
-      if (profileData.role === ROLES.CLIENT) {
+      if (profileData.role === ROLES.CLIENT || profileData.role === "customer") {
         const customerRef = doc(db, "customers", currentUser.uid);
         const customerDoc = await getDoc(customerRef);
         let name = profileData.name;
@@ -194,7 +194,7 @@ export const AuthProvider = ({ children }) => {
             };
           }
 
-          if (profile && profile.role === ROLES.CLIENT) {
+          if (profile && (profile.role === ROLES.CLIENT || profile.role === "customer")) {
             const customerDoc = await getDoc(doc(db, "customers", currentUser.uid));
             if (customerDoc.exists()) {
               const custData = customerDoc.data();
@@ -248,8 +248,15 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const role = userProfile?.role;
-  const isAdmin = role && role !== ROLES.CLIENT;
-  const isClient = role === ROLES.CLIENT;
+  const isAdmin = role && [
+    ROLES.SUPER_ADMIN,
+    ROLES.MANAGER,
+    ROLES.SALES,
+    ROLES.VISA_OPS,
+    ROLES.FINANCE,
+    ROLES.SUPPORT
+  ].includes(role);
+  const isClient = role === ROLES.CLIENT || role === "customer";
 
   const value = {
     user,
