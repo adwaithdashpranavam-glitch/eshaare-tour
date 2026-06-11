@@ -22,9 +22,8 @@ export const PortalDocumentsPage = () => {
     const q = query(docsRef, where("travellerEmail", "==", userProfile.email.toLowerCase()));
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      if (!snapshot.empty) {
-        setDocs(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-      }
+      const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setDocs(list);
       setLoading(false);
     }, (error) => {
       console.warn("Using mock documents lists:", error);
@@ -73,8 +72,8 @@ export const PortalDocumentsPage = () => {
                   <FolderOpen className="h-5 w-5" />
                 </div>
                 <div className="truncate">
-                  <h4 className="font-semibold text-white truncate max-w-[180px]">{doc.name}</h4>
-                  <span className="text-[10px] text-on-primary-container/40 uppercase tracking-widest">{doc.type}</span>
+                  <h4 className="font-semibold text-white truncate max-w-[180px]">{doc.fileName || doc.name}</h4>
+                  <span className="text-[10px] text-on-primary-container/40 uppercase tracking-widest">{doc.docType || doc.type}</span>
                 </div>
               </div>
 

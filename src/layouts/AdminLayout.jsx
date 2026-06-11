@@ -146,7 +146,7 @@ export const AdminLayout = () => {
           {navSections.map((section, idx) => (
             <div key={idx} className="space-y-1.5">
               {!sidebarCollapsed && (
-                <span className="text-[10px] font-bold text-on-primary-container/30 uppercase tracking-widest pl-2">
+                <span className="text-[10px] font-bold text-on-primary-container/60 uppercase tracking-widest pl-2">
                   {section.title}
                 </span>
               )}
@@ -159,8 +159,8 @@ export const AdminLayout = () => {
                     to={item.path}
                     className={`flex items-center space-x-3 px-3 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all duration-150 ${
                       isActive
-                        ? "bg-secondary-container/10 text-secondary border-l-2 border-secondary pl-2.5"
-                        : "text-on-primary-container/60 hover:text-white hover:bg-white/5 border-l-2 border-transparent"
+                        ? "bg-white/10 text-white border-l-2 border-secondary-fixed pl-2.5"
+                        : "text-on-primary-container/80 hover:text-white hover:bg-white/5 border-l-2 border-transparent"
                     }`}
                     title={item.label}
                   >
@@ -222,7 +222,7 @@ export const AdminLayout = () => {
             </div>
             <input
               type="text"
-              className="w-full pl-10 pr-4 py-2 bg-primary-container border border-on-primary-fixed-variant text-on-primary-container placeholder-on-primary-container/30 rounded-button text-xs focus:outline-none focus:border-secondary"
+              className="w-full pl-10 pr-4 py-2 bg-primary-container border border-on-primary-fixed-variant text-on-primary-container placeholder-on-primary-container/60 rounded-button text-xs focus:outline-none focus:border-secondary"
               placeholder="Search leads, cases by name or phone..."
               value={searchVal}
               onChange={(e) => setSearchVal(e.target.value)}
@@ -275,7 +275,7 @@ export const AdminLayout = () => {
             <nav className="flex-1 overflow-y-auto space-y-4 pr-1">
               {navSections.map((sect, sIdx) => (
                 <div key={sIdx} className="space-y-1">
-                  <span className="text-[9px] font-bold text-on-primary-container/35 uppercase tracking-widest pl-2">
+                  <span className="text-[9px] font-bold text-on-primary-container/60 uppercase tracking-widest pl-2">
                     {sect.title}
                   </span>
                   {sect.items.map(item => {
@@ -288,8 +288,8 @@ export const AdminLayout = () => {
                         onClick={() => setMobileMenuOpen(false)}
                         className={`flex items-center space-x-3 px-3 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-colors ${
                           isActive
-                            ? "bg-secondary-container/10 text-secondary border-l-2 border-secondary pl-2"
-                            : "text-on-primary-container/60 hover:text-white"
+                            ? "bg-white/10 text-white border-l-2 border-secondary-fixed pl-2"
+                            : "text-on-primary-container/80 hover:text-white"
                         }`}
                       >
                         <ItemIcon className="h-4 w-4" />
