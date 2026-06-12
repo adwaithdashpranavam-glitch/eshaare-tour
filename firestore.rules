@@ -350,5 +350,30 @@ service cloud.firestore {
       allow read: if true;
       allow write: if isAdmin();
     }
+    // ==========================================
+    // 18. Offers Collection (Promo offers)
+    // ==========================================
+    match /offers/{offerId} {
+      allow read: if true;
+      allow write: if isManager();
+    }
+
+    // ==========================================
+    // 19. Bookings Collection
+    // ==========================================
+    match /bookings/{bookingId} {
+      allow read: if isManager() || (isSignedIn() && (resource.data.clientUid == request.auth.uid || resource.data.clientEmail.lower() == request.auth.token.email.lower()));
+      allow create: if isSignedIn() && (isManager() || request.resource.data.clientUid == request.auth.uid);
+      allow update: if isManager() || (isActive() && resource.data.clientUid == request.auth.uid);
+      allow delete: if isSuperAdmin();
+    }
+
+    // ==========================================
+    // 20. Hotels Collection
+    // ==========================================
+    match /hotels/{hotelId} {
+      allow read: if true;
+      allow write: if isManager();
+    }
   }
 }

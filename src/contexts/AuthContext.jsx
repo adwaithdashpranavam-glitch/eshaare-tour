@@ -224,6 +224,11 @@ export const AuthProvider = ({ children }) => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setLoading(true);
       if (currentUser) {
+        // Skip re-fetching if login() already set the profile for this user (avoids race condition)
+        if (userProfile && user?.uid === currentUser.uid) {
+          setLoading(false);
+          return;
+        }
         try {
           const profile = await fetchAndLinkProfile(currentUser);
           
