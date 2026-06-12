@@ -36,7 +36,12 @@ export const AuthProvider = ({ children }) => {
     
     if (userDoc.exists()) {
       const data = userDoc.data();
-      await setDoc(userDocRef, { lastLoginAt }, { merge: true });
+      // Only update lastLoginAt - don't change role/status/uid so we don't violate update rules
+      try {
+        await setDoc(userDocRef, { lastLoginAt }, { merge: true });
+      } catch (e) {
+        console.warn("Could not update lastLoginAt:", e);
+      }
       return { ...data, lastLoginAt };
     }
     
@@ -49,6 +54,8 @@ export const AuthProvider = ({ children }) => {
         const profileData = {
           ...staffData,
           uid: currentUser.uid,
+          email: currentUser.email.toLowerCase().trim(),
+          status: staffData.status || 'Active',   // Default missing status to Active
           lastLoginAt
         };
         // Link it to the UID document
@@ -69,6 +76,7 @@ export const AuthProvider = ({ children }) => {
       email: currentUser.email || "",
       name: currentUser.displayName || "Client User",
       role: ROLES.CLIENT,
+      status: 'Active',
       createdAt: new Date(),
       lastLoginAt
     };

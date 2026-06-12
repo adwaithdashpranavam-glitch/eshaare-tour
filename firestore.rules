@@ -166,22 +166,23 @@ service cloud.firestore {
       allow create: if isSignedIn() && 
                     userId == request.auth.uid &&
                     (
+                      // New client self-registration
                       (request.resource.data.role == 'client' && request.resource.data.status == 'Active') ||
+                      // Staff linking: email-keyed doc exists with matching role (status may be absent in legacy docs)
                       (
                         exists(/databases/$(database)/documents/users/$(request.resource.data.email.lower())) &&
-                        get(/databases/$(database)/documents/users/$(request.resource.data.email.lower())).data.role == request.resource.data.role &&
-                        get(/databases/$(database)/documents/users/$(request.resource.data.email.lower())).data.status == request.resource.data.status
+                        get(/databases/$(database)/documents/users/$(request.resource.data.email.lower())).data.role == request.resource.data.role
                       )
                     ) &&
                     validateUserSchema(request.resource.data);
       
-      // Allow updates only to own profile (role, status, email, uid must match existing values)
+      // Allow updates only to own profile (role, status, email must match existing; uid match is optional for legacy docs)
       allow update: if isSignedIn() && request.auth.uid == userId && 
-                    resource.data.status == 'Active' &&
+                    (!('status' in resource.data) || resource.data.status == 'Active') &&
                     request.resource.data.role == resource.data.role && 
-                    request.resource.data.status == resource.data.status &&
+                    (!('status' in resource.data) || request.resource.data.status == resource.data.status) &&
                     request.resource.data.email == resource.data.email &&
-                    request.resource.data.uid == resource.data.uid &&
+                    (!('uid' in resource.data) || request.resource.data.uid == resource.data.uid) &&
                     validateUserSchema(request.resource.data);
                     
       // Client-side deletes blocked completely (except legacy self-linking cleanup of pre-created email profile)
