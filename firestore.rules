@@ -67,9 +67,7 @@ service cloud.firestore {
     // ==========================================
 
     function validateUserSchema(data) {
-      let allowedFields = ['uid', 'name', 'email', 'role', 'status', 'createdAt', 'lastLoginAt', 'casesHandled', 'phone', 'phoneNumber', 'nationality', 'photoURL'];
-      return data.keys().hasOnly(allowedFields) &&
-             (data.uid == null || data.uid is string) &&
+      return (data.uid == null || data.uid is string) &&
              (data.name == null || data.name is string) &&
              data.email is string &&
              data.role in ['super_admin', 'admin', 'manager', 'sales', 'visa_ops', 'finance', 'support', 'client', 'customer'] &&
@@ -78,9 +76,7 @@ service cloud.firestore {
     }
 
     function validateCustomerSchema(data) {
-      let allowedFields = ['uid', 'name', 'email', 'phone', 'nationality', 'createdAt', 'lastLoginAt', 'status', 'assignedAgentId', 'ownerId'];
-      return data.keys().hasOnly(allowedFields) &&
-             data.uid is string &&
+      return data.uid is string &&
              data.name is string &&
              data.email is string &&
              (data.phone == null || data.phone is string) &&
@@ -186,7 +182,7 @@ service cloud.firestore {
                     validateUserSchema(request.resource.data);
                     
       // Client-side deletes blocked completely (except legacy self-linking cleanup of pre-created email profile)
-      allow delete: if isSignedIn() && userId != request.auth.uid && resource.data.email.lower() == request.auth.token.email.lower();
+      allow delete: if isSignedIn() && userId != request.auth.uid && (userId.lower() == request.auth.token.email.lower() || ('email' in resource.data && resource.data.email.lower() == request.auth.token.email.lower()));
     }
 
     // ==========================================
@@ -374,6 +370,38 @@ service cloud.firestore {
     match /hotels/{hotelId} {
       allow read: if true;
       allow write: if isManager();
+    }
+
+    // ==========================================
+    // 21. CMS Collection (Hero, FAQs, etc.)
+    // ==========================================
+    match /cms/{cmsId} {
+      allow read: if true;
+      allow write: if isManager();
+    }
+
+    // ==========================================
+    // 22. Form Builder Collection
+    // ==========================================
+    match /formBuilder/{formId} {
+      allow read: if true;
+      allow write: if isManager();
+    }
+
+    // ==========================================
+    // 23. Rules Collection (Visa Eligibility Checker rules)
+    // ==========================================
+    match /rules/{ruleId} {
+      allow read: if true;
+      allow write: if isManager();
+    }
+
+    // ==========================================
+    // 24. UI Config Audit Logs Collection (CamelCase auditLogs)
+    // ==========================================
+    match /auditLogs/{logId} {
+      allow read: if isStaff();
+      allow create: if isStaff();
     }
   }
 }
