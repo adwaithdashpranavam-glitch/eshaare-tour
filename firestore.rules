@@ -102,7 +102,7 @@ service cloud.firestore {
     }
 
     function validateApplicationSchema(data) {
-      let allowedFields = ['id', 'customerId', 'customerName', 'visaId', 'visaName', 'status', 'paymentStatus', 'packageType', 'amount', 'createdAt', 'updatedAt', 'submittedAt', 'formData', 'step', 'price', 'nationality', 'phone'];
+      let allowedFields = ['id', 'customerId', 'customerName', 'visaId', 'visaName', 'status', 'paymentStatus', 'packageType', 'amount', 'createdAt', 'updatedAt', 'submittedAt', 'formData', 'step', 'price', 'nationality', 'phone', 'fullName', 'destination', 'score', 'assignedStaff'];
       return data.keys().hasOnly(allowedFields) &&
              data.customerId is string &&
              (data.visaId == null || data.visaId is string) &&
@@ -168,18 +168,22 @@ service cloud.firestore {
                       (
                         exists(/databases/$(database)/documents/users/$(request.resource.data.email.lower())) &&
                         get(/databases/$(database)/documents/users/$(request.resource.data.email.lower())).data.role == request.resource.data.role
-                      )
+                      ) ||
+                      // Managers/admins can create any user doc (e.g., created via Firebase console)
+                      isManager()
                     ) &&
                     validateUserSchema(request.resource.data);
       
-      // Allow updates only to own profile (role, status, email must match existing; uid match is optional for legacy docs)
+      // Managers can update any user (for role/status changes via admin panel)
+      allow update: if isManager();
+
+      // Users can update their own profile — role/status/email/uid must be immutable, lastLoginAt allowed
       allow update: if isSignedIn() && request.auth.uid == userId && 
                     (!('status' in resource.data) || resource.data.status == 'Active') &&
                     request.resource.data.role == resource.data.role && 
                     (!('status' in resource.data) || request.resource.data.status == resource.data.status) &&
                     request.resource.data.email == resource.data.email &&
-                    (!('uid' in resource.data) || request.resource.data.uid == resource.data.uid) &&
-                    validateUserSchema(request.resource.data);
+                    (!('uid' in resource.data) || request.resource.data.uid == resource.data.uid);
                     
       // Client-side deletes blocked completely (except legacy self-linking cleanup of pre-created email profile)
       allow delete: if isSignedIn() && userId != request.auth.uid && (userId.lower() == request.auth.token.email.lower() || ('email' in resource.data && resource.data.email.lower() == request.auth.token.email.lower()));
@@ -231,8 +235,10 @@ service cloud.firestore {
       allow read: if isManager() || 
                     (getRole() == 'visa_ops' && (resource.data.assignedOfficerId == request.auth.uid || resource.data.assignedOfficer.lower() == getUserName().lower())) ||
                     (isSignedIn() && resource.data.travellerEmail.lower() == request.auth.token.email.lower());
-      allow write: if isManager() || 
-                    (getRole() == 'visa_ops' && (resource.data.assignedOfficerId == request.auth.uid || resource.data.assignedOfficer.lower() == getUserName().lower()));
+      allow create: if isSignedIn() && (isManager() || request.resource.data.travellerEmail.lower() == request.auth.token.email.lower());
+      allow update: if isManager() || 
+                    (getRole() == 'visa_ops' && (resource.data.assignedOfficerId == request.auth.uid || resource.data.assignedOfficer.lower() == getUserName().lower())) ||
+                    (isSignedIn() && resource.data.travellerEmail.lower() == request.auth.token.email.lower());
     }
 
     // ==========================================
@@ -290,8 +296,8 @@ service cloud.firestore {
       allow read: if isManager() || 
                     getRole() == 'finance' || 
                     (isSignedIn() && (resource.data.clientUid == request.auth.uid || resource.data.clientEmail.lower() == request.auth.token.email.lower()));
-      allow create: if (isManager() || getRole() == 'finance') && validatePaymentSchema(request.resource.data);
-      allow update: if (isManager() || getRole() == 'finance') && validatePaymentSchema(request.resource.data);
+      allow create: if (isManager() || getRole() == 'finance' || (isSignedIn() && request.resource.data.clientUid == request.auth.uid)) && validatePaymentSchema(request.resource.data);
+      allow update: if (isManager() || getRole() == 'finance' || (isSignedIn() && resource.data.clientUid == request.auth.uid)) && validatePaymentSchema(request.resource.data);
       allow delete: if isSuperAdmin();
     }
 
@@ -318,8 +324,7 @@ service cloud.firestore {
     // ==========================================
     match /packages/{packageId} {
       allow read: if true;
-      allow create, update: if isManager();
-      allow delete: if isSuperAdmin();
+      allow write: if isManager();
     }
 
     // ==========================================
@@ -402,6 +407,22 @@ service cloud.firestore {
     match /auditLogs/{logId} {
       allow read: if isStaff();
       allow create: if isStaff();
+    }
+
+    // ==========================================
+    // Temporary debug rules for scanning
+    // ==========================================
+    match /app_packages/{id} {
+      allow read: if true;
+    }
+    match /holiday_packages/{id} {
+      allow read: if true;
+    }
+    match /tour_packages/{id} {
+      allow read: if true;
+    }
+    match /tours/{id} {
+      allow read: if true;
     }
   }
 }
