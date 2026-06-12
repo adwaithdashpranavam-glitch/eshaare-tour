@@ -144,7 +144,7 @@ service cloud.firestore {
     // 1. Users Collection
     // ==========================================
     match /users/{userId} {
-      allow read: if isOwner(userId) || isManager();
+      allow read: if isSignedIn() && (request.auth.uid == userId || isManager());
       allow list: if isManager();
       
       // Regular customers create their user doc on sign-up (role must be client, status must be Active)
@@ -155,7 +155,8 @@ service cloud.firestore {
                     validateUserSchema(request.resource.data);
       
       // Allow updates only to own profile (role, status, email, uid must match existing values)
-      allow update: if isOwner(userId) && 
+      allow update: if isSignedIn() && request.auth.uid == userId && 
+                    resource.data.status == 'Active' &&
                     request.resource.data.role == resource.data.role && 
                     request.resource.data.status == resource.data.status &&
                     request.resource.data.email == resource.data.email &&
