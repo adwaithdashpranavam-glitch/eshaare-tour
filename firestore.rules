@@ -156,10 +156,10 @@ service cloud.firestore {
       
       // Allow updates only to own profile (role, status, email, uid must match existing values)
       allow update: if isOwner(userId) && 
-                    resource.data.role == 'client' && 
-                    request.resource.data.role == 'client' && 
+                    request.resource.data.role == resource.data.role && 
                     request.resource.data.status == resource.data.status &&
                     request.resource.data.email == resource.data.email &&
+                    request.resource.data.uid == resource.data.uid &&
                     validateUserSchema(request.resource.data);
                     
       // Client-side deletes blocked completely (except legacy self-linking cleanup of pre-created email profile)
