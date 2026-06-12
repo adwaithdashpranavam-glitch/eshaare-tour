@@ -123,7 +123,7 @@ export const AdminLayout = () => {
       <aside 
         className={`hidden md:flex flex-col bg-primary-container border-r border-on-primary-fixed-variant/65 transition-all duration-200 ${
           sidebarCollapsed ? "w-20" : "w-64"
-        } relative z-20`}
+        } relative z-20 h-screen sticky top-0`}
       >
         {/* Sidebar Header Logo */}
         <div className="h-16 flex items-center justify-between px-4 border-b border-on-primary-fixed-variant">
