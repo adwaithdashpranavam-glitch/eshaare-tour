@@ -312,3 +312,4 @@ exports.logAuthEvent = functions.https.onCall(async (data, context) => {
 
   return { success: true };
 });
+

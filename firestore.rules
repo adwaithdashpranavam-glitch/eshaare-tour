@@ -58,8 +58,8 @@ service cloud.firestore {
     function validateUserSchema(data) {
       let allowedFields = ['uid', 'name', 'email', 'role', 'status', 'createdAt', 'lastLoginAt', 'casesHandled', 'phone', 'phoneNumber', 'nationality', 'photoURL'];
       return data.keys().hasOnly(allowedFields) &&
-             data.uid is string &&
-             data.name is string &&
+             (data.uid == null || data.uid is string) &&
+             (data.name == null || data.name is string) &&
              data.email is string &&
              data.role in ['super_admin', 'admin', 'manager', 'sales', 'visa_ops', 'finance', 'support', 'client', 'customer'] &&
              (data.status == null || data.status in ['Active', 'Suspended', 'Disabled']) &&
