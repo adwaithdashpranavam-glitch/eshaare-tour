@@ -1,8 +1,9 @@
-const functions = require("firebase-functions");
+const functions = require("firebase-functions/v1");
 const admin = require("firebase-admin");
+const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 admin.initializeApp();
 
-const db = admin.firestore();
+const db = getFirestore();
 
 // Helper to check if caller is super_admin
 async function verifySuperAdmin(context) {
@@ -53,7 +54,7 @@ exports.createStaff = functions.https.onCall(async (data, context) => {
     role,
     status: "Active",
     casesHandled: 0,
-    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    createdAt: FieldValue.serverTimestamp(),
     lastLoginAt: null
   };
 
@@ -65,7 +66,7 @@ exports.createStaff = functions.https.onCall(async (data, context) => {
     performedBy: callerUid,
     performedByRole: "super_admin",
     targetId: userRecord.uid,
-    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+    timestamp: FieldValue.serverTimestamp(),
     details: { name, email: emailLower, role }
   });
 
@@ -113,7 +114,7 @@ exports.updateStaffStatus = functions.https.onCall(async (data, context) => {
     performedBy: callerUid,
     performedByRole: "super_admin",
     targetId: uid,
-    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+    timestamp: FieldValue.serverTimestamp(),
     details: { status }
   });
 
@@ -150,7 +151,7 @@ exports.updateStaffRole = functions.https.onCall(async (data, context) => {
     performedBy: callerUid,
     performedByRole: "super_admin",
     targetId: uid,
-    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+    timestamp: FieldValue.serverTimestamp(),
     details: { oldRole, newRole: role }
   });
 
@@ -187,7 +188,7 @@ exports.deleteStaff = functions.https.onCall(async (data, context) => {
     performedBy: callerUid,
     performedByRole: "super_admin",
     targetId: uid,
-    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+    timestamp: FieldValue.serverTimestamp(),
     details: { email: userData.email, name: userData.name }
   });
 
@@ -251,8 +252,8 @@ exports.submitLead = functions.https.onCall(async (data, context) => {
     ownerId: null,
     isDeleted: false,
     isActive: true,
-    createdAt: admin.firestore.FieldValue.serverTimestamp(),
-    updatedAt: admin.firestore.FieldValue.serverTimestamp()
+    createdAt: FieldValue.serverTimestamp(),
+    updatedAt: FieldValue.serverTimestamp()
   };
 
   const docRef = await db.collection("leads").add(leadData);
@@ -263,7 +264,7 @@ exports.submitLead = functions.https.onCall(async (data, context) => {
     performedBy: "Anonymous",
     performedByRole: "client",
     targetId: docRef.id,
-    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+    timestamp: FieldValue.serverTimestamp(),
     details: { email: emailLower, country: destinationCountry }
   });
 
@@ -278,7 +279,7 @@ exports.onUserCreated = functions.auth.user().onCreate(async (user) => {
       performedBy: user.uid,
       performedByRole: "client",
       targetId: user.uid,
-      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      timestamp: FieldValue.serverTimestamp(),
       details: { email: user.email }
     });
   } catch (err) {
@@ -305,7 +306,7 @@ exports.logAuthEvent = functions.https.onCall(async (data, context) => {
     performedBy: callerUid,
     performedByRole: role,
     targetId: callerUid,
-    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+    timestamp: FieldValue.serverTimestamp(),
     details: { email: context.auth.token.email || "" }
   });
 
