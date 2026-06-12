@@ -15,7 +15,7 @@ import {
   limit,
   serverTimestamp
 } from "firebase/firestore";
-import { db, auth } from "./firebase";
+import { db, auth, functions, httpsCallable } from "./firebase";
 export { db, auth };
 import toast from "react-hot-toast";
 
@@ -31,15 +31,17 @@ const handleError = (error, context) => {
 
 export const createLead = async (data) => {
   try {
-    const leadsRef = collection(db, "leads");
-    const docRef = await addDoc(leadsRef, {
-      ...data,
-      isDeleted: false,
-      isActive: true,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp()
+    const submitLeadFn = httpsCallable(functions, "submitLead");
+    const result = await submitLeadFn({
+      contactName: data.contactName || data.name || "",
+      contactEmail: data.contactEmail || data.email || "",
+      contactPhone: data.contactPhone || data.phone || "",
+      destinationCountry: data.destinationCountry || data.country || "",
+      serviceType: data.serviceType || "Visa",
+      notes: data.notes || data.message || "",
+      honeypot: data.honeypot || ""
     });
-    return docRef.id;
+    return result.data.id;
   } catch (error) {
     handleError(error, "createLead");
   }

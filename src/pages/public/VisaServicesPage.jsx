@@ -35,7 +35,8 @@ export const VisaServicesPage = () => {
     email: "",
     nationality: "",
     travelDate: "",
-    message: ""
+    message: "",
+    honeypot: ""
   });
   const [submitting, setSubmitting] = useState(false);
 
@@ -53,7 +54,8 @@ export const VisaServicesPage = () => {
   const [checkerContact, setCheckerContact] = useState({
     name: "",
     email: "",
-    phone: ""
+    phone: "",
+    honeypot: ""
   });
   const [checkerSubmitted, setCheckerSubmitted] = useState(false);
   const [checkerSubmitting, setCheckerSubmitting] = useState(false);
@@ -88,7 +90,8 @@ export const VisaServicesPage = () => {
       email: "",
       nationality: "",
       travelDate: "",
-      message: ""
+      message: "",
+      honeypot: ""
     });
     setIsModalOpen(true);
   };
@@ -121,6 +124,7 @@ export const VisaServicesPage = () => {
         priority: "Medium",
         ownerId: null,
         notes: formData.message,
+        honeypot: formData.honeypot,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       };
@@ -275,6 +279,7 @@ export const VisaServicesPage = () => {
 - Has Bank Statement: ${checkerForm.bankStatement}
 - Travel History: ${checkerForm.priorTravel.length > 0 ? checkerForm.priorTravel.join(", ") : "None"}
 - System recommendations provided: ${eligibilityResult.recommendations.join(" | ")}`,
+        honeypot: checkerContact.honeypot,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       };
@@ -787,6 +792,16 @@ export const VisaServicesPage = () => {
 
                       {/* Lead generation capturing form */}
                       <form onSubmit={handleCheckerLeadSubmit} className="bg-surface p-4 rounded-xl border border-outline-variant/10 space-y-3">
+                        {/* Honeypot field for bot spam protection */}
+                        <input
+                          type="text"
+                          name="honeypot"
+                          style={{ display: "none" }}
+                          tabIndex="-1"
+                          autoComplete="off"
+                          value={checkerContact.honeypot || ""}
+                          onChange={handleCheckerContactChange}
+                        />
                         <div className="text-center pb-1.5 border-b border-outline-variant/5">
                           <span className="text-[9px] font-bold text-[#1D503A] uppercase tracking-wider">Book Express Document Audit</span>
                         </div>
@@ -891,6 +906,16 @@ export const VisaServicesPage = () => {
         size="md"
       >
         <form onSubmit={handleFormSubmit} className="space-y-4 font-sans text-xs">
+          {/* Honeypot field for bot spam protection */}
+          <input
+            type="text"
+            name="honeypot"
+            style={{ display: "none" }}
+            tabIndex="-1"
+            autoComplete="off"
+            value={formData.honeypot || ""}
+            onChange={handleInputChange}
+          />
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col space-y-1.5">
               <label className="text-[10px] font-bold text-[#EAE3D5]/60 uppercase tracking-wider">Full Name *</label>

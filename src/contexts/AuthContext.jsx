@@ -7,9 +7,9 @@ import {
   setPersistence,
   browserLocalPersistence
 } from "firebase/auth";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, deleteDoc, collection } from "firebase/firestore";
 import { Navigate, useLocation } from "react-router-dom";
-import { auth, db } from "../lib/firebase";
+import { auth, db, functions, httpsCallable } from "../lib/firebase";
 import { ROLES } from "../utils/constants";
 import toast from "react-hot-toast";
 import { LoadingSpinner } from "../components/ui/LoadingSpinner";
@@ -29,6 +29,53 @@ export const AuthProvider = ({ children }) => {
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const fetchAndLinkProfile = async (currentUser) => {
+    const userDocRef = doc(db, "users", currentUser.uid);
+    const userDoc = await getDoc(userDocRef);
+    const lastLoginAt = new Date();
+    
+    if (userDoc.exists()) {
+      const data = userDoc.data();
+      await setDoc(userDocRef, { lastLoginAt }, { merge: true });
+      return { ...data, lastLoginAt };
+    }
+    
+    // If UID doc does not exist, check if there's a pre-created staff profile using lowercase email as ID
+    if (currentUser.email) {
+      const emailDocRef = doc(db, "users", currentUser.email.toLowerCase().trim());
+      const emailDoc = await getDoc(emailDocRef);
+      if (emailDoc.exists()) {
+        const staffData = emailDoc.data();
+        const profileData = {
+          ...staffData,
+          uid: currentUser.uid,
+          lastLoginAt
+        };
+        // Link it to the UID document
+        await setDoc(userDocRef, profileData);
+        // Delete the email-based document to clean up
+        try {
+          await deleteDoc(emailDocRef);
+        } catch (e) {
+          console.warn("Clean up of email doc failed:", e);
+        }
+        return profileData;
+      }
+    }
+    
+    // Default fallback: Create a client profile
+    const profileData = {
+      uid: currentUser.uid,
+      email: currentUser.email || "",
+      name: currentUser.displayName || "Client User",
+      role: ROLES.CLIENT,
+      createdAt: new Date(),
+      lastLoginAt
+    };
+    await setDoc(userDocRef, profileData);
+    return profileData;
+  };
+
   const login = async (email, password) => {
     setLoading(true);
     try {
@@ -36,31 +83,20 @@ export const AuthProvider = ({ children }) => {
       const userCredential = await signInWithEmailAndPassword(auth, email.trim(), password);
       const currentUser = userCredential.user;
 
-      const lastLoginAt = new Date();
-      const userDocRef = doc(db, "users", currentUser.uid);
-      const userDoc = await getDoc(userDocRef);
-      
-      let profileData = {};
-      const isStaffEmail = currentUser.email?.endsWith("@eshaare.com") || currentUser.email?.endsWith("@eshaareuae.com");
-      if (userDoc.exists()) {
-        const data = userDoc.data();
-        profileData = { ...data, lastLoginAt };
-        if (isStaffEmail && (data.role === ROLES.CLIENT || data.role === "admin")) {
-          profileData.role = ROLES.SUPER_ADMIN;
-          await setDoc(userDocRef, { role: ROLES.SUPER_ADMIN, lastLoginAt }, { merge: true });
-        } else {
-          await setDoc(userDocRef, { lastLoginAt }, { merge: true });
-        }
-      } else {
-        profileData = {
-          uid: currentUser.uid,
-          email: currentUser.email,
-          name: currentUser.displayName || (isStaffEmail ? "Staff User" : "Client User"),
-          role: isStaffEmail ? ROLES.SUPER_ADMIN : ROLES.CLIENT,
-          createdAt: new Date(),
-          lastLoginAt
-        };
-        await setDoc(userDocRef, profileData);
+      let profileData = await fetchAndLinkProfile(currentUser);
+
+      if (profileData.status === "Suspended" || profileData.status === "Disabled") {
+        toast.error("Your account has been suspended. Please contact support.");
+        await signOut(auth);
+        throw new Error("Your account has been suspended.");
+      }
+
+      // Log login action
+      try {
+        const logAuthEventFn = httpsCallable(functions, "logAuthEvent");
+        await logAuthEventFn({ action: "USER_LOGIN" });
+      } catch (err) {
+        console.warn("Audit logging failed:", err);
       }
 
       // If they are a client/customer, update the 'customers' collection as well
@@ -90,7 +126,7 @@ export const AuthProvider = ({ children }) => {
           phone: profileData.phone || "",
           nationality: profileData.nationality || "",
           createdAt: profileData.createdAt || new Date(),
-          lastLoginAt,
+          lastLoginAt: new Date(),
           status: "Active"
         }, { merge: true });
         profileData.name = name || "Client User";
@@ -115,14 +151,13 @@ export const AuthProvider = ({ children }) => {
       const user = userCredential.user;
       
       const lastLoginAt = new Date();
-      const isStaffEmail = email.trim().endsWith("@eshaare.com") || email.trim().endsWith("@eshaareuae.com");
       const profileData = {
         uid: user.uid,
         email: email.trim(),
-        role: isStaffEmail ? ROLES.SUPER_ADMIN : ROLES.CLIENT,
+        role: ROLES.CLIENT, // Default to client role, no auto-elevation
         createdAt: new Date(),
         lastLoginAt,
-        name: extraData.name || (isStaffEmail ? "Staff User" : "Client User"),
+        name: extraData.name || "Client User",
         ...extraData
       };
 
@@ -130,22 +165,22 @@ export const AuthProvider = ({ children }) => {
       await setDoc(doc(db, "users", user.uid), profileData);
       
       // Save profile to Firestore 'customers'
-      if (!isStaffEmail) {
-        await setDoc(doc(db, "customers", user.uid), {
-          uid: user.uid,
-          name: extraData.name || "Client User",
-          email: email.trim(),
-          phone: extraData.phoneNumber || extraData.phone || "",
-          nationality: extraData.nationality || "",
-          createdAt: new Date(),
-          lastLoginAt,
-          status: "Active"
-        });
-      }
+      await setDoc(doc(db, "customers", user.uid), {
+        uid: user.uid,
+        name: extraData.name || "Client User",
+        email: email.trim(),
+        phone: extraData.phoneNumber || extraData.phone || "",
+        nationality: extraData.nationality || "",
+        createdAt: new Date(),
+        lastLoginAt,
+        status: "Active"
+      });
       
       // Set state directly immediately to prevent race condition
       setUserProfile(profileData);
       setUser(user);
+
+      // Registration audit is handled automatically on the backend via Auth onCreate trigger (onUserCreated)
       
       return user;
     } catch (error) {
@@ -159,6 +194,14 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     setLoading(true);
     try {
+      if (user) {
+        try {
+          const logAuthEventFn = httpsCallable(functions, "logAuthEvent");
+          await logAuthEventFn({ action: "USER_LOGOUT" });
+        } catch (err) {
+          console.warn("Audit logging failed:", err);
+        }
+      }
       await signOut(auth);
       setUser(null);
       setUserProfile(null);
@@ -174,45 +217,38 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       if (currentUser) {
         try {
-          const userDocRef = doc(db, "users", currentUser.uid);
-          const userDoc = await getDoc(userDocRef);
+          const profile = await fetchAndLinkProfile(currentUser);
           
-          let profile = null;
-          const isStaffEmail = currentUser.email?.endsWith("@eshaare.com") || currentUser.email?.endsWith("@eshaareuae.com");
-          if (userDoc.exists()) {
-            profile = userDoc.data();
-            if (isStaffEmail && (profile.role === ROLES.CLIENT || profile.role === "admin")) {
-              profile.role = ROLES.SUPER_ADMIN;
-              await setDoc(userDocRef, { role: ROLES.SUPER_ADMIN }, { merge: true });
-            }
-          } else {
-            profile = {
-              uid: currentUser.uid,
-              email: currentUser.email,
-              name: currentUser.displayName || (isStaffEmail ? "Staff User" : "Client User"),
-              role: isStaffEmail ? ROLES.SUPER_ADMIN : ROLES.CLIENT
-            };
+          let updatedProfile = { ...profile };
+
+          if (updatedProfile && (updatedProfile.status === "Suspended" || updatedProfile.status === "Disabled")) {
+            toast.error("Your account has been suspended. Please contact support.");
+            await signOut(auth);
+            setUser(null);
+            setUserProfile(null);
+            setLoading(false);
+            return;
           }
 
           if (profile && (profile.role === ROLES.CLIENT || profile.role === "customer")) {
             const customerDoc = await getDoc(doc(db, "customers", currentUser.uid));
             if (customerDoc.exists()) {
               const custData = customerDoc.data();
-              profile = { 
+              updatedProfile = { 
                 ...profile, 
                 ...custData,
                 phone: custData.phone || profile.phone || profile.phoneNumber || "",
                 phoneNumber: custData.phone || profile.phoneNumber || profile.phone || ""
               };
             } else {
-              profile.phone = profile.phone || profile.phoneNumber || "";
-              profile.phoneNumber = profile.phone;
+              updatedProfile.phone = profile.phone || profile.phoneNumber || "";
+              updatedProfile.phoneNumber = profile.phone;
             }
           }
 
           // Enforce 15-day session check
-          if (profile && profile.lastLoginAt) {
-            const loginDate = profile.lastLoginAt.toDate ? profile.lastLoginAt.toDate() : new Date(profile.lastLoginAt);
+          if (updatedProfile && updatedProfile.lastLoginAt) {
+            const loginDate = updatedProfile.lastLoginAt.toDate ? updatedProfile.lastLoginAt.toDate() : new Date(updatedProfile.lastLoginAt);
             const fifteenDaysAgo = new Date(Date.now() - 15 * 24 * 60 * 60 * 1000);
             if (loginDate < fifteenDaysAgo) {
               toast.error("Session expired (15 days max). Please log in again.");
@@ -225,16 +261,15 @@ export const AuthProvider = ({ children }) => {
           }
 
           setUser(currentUser);
-          setUserProfile(profile);
+          setUserProfile(updatedProfile);
         } catch (error) {
           console.error("Error fetching user profile:", error);
-          const isStaffEmail = currentUser.email?.endsWith("@eshaare.com") || currentUser.email?.endsWith("@eshaareuae.com");
           setUser(currentUser);
           setUserProfile({
             uid: currentUser.uid,
             email: currentUser.email,
             name: "User Profile Error",
-            role: isStaffEmail ? ROLES.SUPER_ADMIN : ROLES.CLIENT
+            role: ROLES.CLIENT
           });
         }
       } else {

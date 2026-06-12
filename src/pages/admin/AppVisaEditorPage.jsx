@@ -1,13 +1,29 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Save, Loader2, Plus, Trash2, Image as ImageIcon } from "lucide-react";
+import { ArrowLeft, Save, Loader2, Plus, Trash2, Shield, Image as ImageIcon } from "lucide-react";
 import { saveVisa, db } from "../../lib/firestore";
 import { doc, getDoc } from "firebase/firestore";
+import { useAuth } from "../../contexts/AuthContext";
 import toast from "react-hot-toast";
 
 export const AppVisaEditorPage = () => {
+  const { userProfile } = useAuth();
   const { id } = useParams();
   const navigate = useNavigate();
+
+  const isAuthorized = ["super_admin", "admin", "manager"].includes(userProfile?.role);
+
+  if (!isAuthorized) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[50vh] text-center space-y-4 font-sans">
+        <Shield className="h-16 w-16 text-danger animate-pulse" />
+        <h1 className="text-xl font-bold text-white uppercase tracking-wide">Access Denied</h1>
+        <p className="text-xs text-on-primary-container/60 max-w-md leading-relaxed">
+          You do not have the required permissions to modify App Visa Guides. Only Super Admins, Admins, and Managers can edit visa guides.
+        </p>
+      </div>
+    );
+  }
   const isEditMode = !!id;
 
   const [saving, setSaving] = useState(false);

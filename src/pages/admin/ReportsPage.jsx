@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { BarChart3, TrendingUp, Download, ArrowUpRight } from "lucide-react";
+import { BarChart3, TrendingUp, Download, ArrowUpRight, Shield } from "lucide-react";
 import DateRangePicker from "../../components/ui/DateRangePicker";
+import { useAuth } from "../../contexts/AuthContext";
 import { 
   ResponsiveContainer, AreaChart, Area, CartesianGrid, 
   XAxis, YAxis, Tooltip, BarChart, Bar, Legend, Cell 
@@ -8,8 +9,23 @@ import {
 import toast from "react-hot-toast";
 
 export const ReportsPage = () => {
+  const { userProfile } = useAuth();
   const [dateRange, setDateRange] = useState("This Month");
   const [activeTab, setActiveTab] = useState("overview");
+
+  const isAuthorized = ["super_admin", "admin", "manager"].includes(userProfile?.role);
+
+  if (!isAuthorized) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[50vh] text-center space-y-4 font-sans">
+        <Shield className="h-16 w-16 text-danger animate-pulse" />
+        <h1 className="text-xl font-bold text-white uppercase tracking-wide">Access Denied</h1>
+        <p className="text-xs text-on-primary-container/60 max-w-md leading-relaxed">
+          You do not have the required permissions to access CRM Reports & Analytics. Only Super Admins, Admins, and Managers can view analytics dashboards.
+        </p>
+      </div>
+    );
+  }
 
   const revenueTrend = [
     { name: "Week 1", revenue: 15000, profit: 8000 },

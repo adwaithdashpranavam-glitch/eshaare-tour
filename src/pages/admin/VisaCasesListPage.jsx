@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { collection, onSnapshot, query, where } from "firebase/firestore";
 import { db } from "../../lib/firebase";
+import { useAuth } from "../../contexts/AuthContext";
 import { Search, FileSpreadsheet, Plus, AlertCircle } from "lucide-react";
 import StatusBadge from "../../components/ui/StatusBadge";
 import FilterBar from "../../components/ui/FilterBar";
@@ -12,14 +13,21 @@ import toast from "react-hot-toast";
 
 export const VisaCasesListPage = () => {
   const navigate = useNavigate();
+  const { user, userProfile } = useAuth();
+  const isVisaOps = userProfile?.role === "visa_ops";
+
   const [cases, setCases] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState({ stage: "All", assignedOfficer: "All" });
 
   useEffect(() => {
+    if (!user) return;
     const casesRef = collection(db, "visa_cases");
-    const q = query(casesRef, where("isDeleted", "==", false));
+    let q = query(casesRef, where("isDeleted", "==", false));
+    if (isVisaOps) {
+      q = query(casesRef, where("isDeleted", "==", false), where("assignedOfficerId", "==", user.uid));
+    }
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setCases(items);

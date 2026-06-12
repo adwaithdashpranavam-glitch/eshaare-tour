@@ -21,13 +21,29 @@ export const PortalMessagesPage = () => {
   useEffect(() => {
     if (!user) return;
 
-    // Fetch messages sorted by timestamp
+    // Fetch messages where user is a participant
     const msgRef = collection(db, "chats");
-    const q = query(msgRef, orderBy("createdAt", "asc"));
+    const q = query(msgRef, where("participants", "array-contains", user.uid));
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       if (!snapshot.empty) {
-        setMessages(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+        // Sort client-side by createdAt to avoid requiring a Firestore composite index
+        const sorted = snapshot.docs
+          .map(doc => ({ id: doc.id, ...doc.data() }))
+          .sort((a, b) => {
+            const timeA = a.createdAt?.seconds 
+              ? a.createdAt.seconds * 1000 
+              : a.createdAt?.toDate 
+                ? a.createdAt.toDate().getTime() 
+                : new Date(a.createdAt || 0).getTime();
+            const timeB = b.createdAt?.seconds 
+              ? b.createdAt.seconds * 1000 
+              : b.createdAt?.toDate 
+                ? b.createdAt.toDate().getTime() 
+                : new Date(b.createdAt || 0).getTime();
+            return timeA - timeB;
+          });
+        setMessages(sorted);
       } else {
         setMessages([]);
       }
@@ -53,7 +69,8 @@ export const PortalMessagesPage = () => {
         text: newMessage.trim(),
         attachmentUrl: attachment?.url || null,
         attachmentName: attachment?.name || null,
-        createdAt: new Date()
+        createdAt: new Date(),
+        participants: [user.uid, "support"]
       });
       setNewMessage("");
       setAttachment(null);
@@ -166,7 +183,7 @@ export const PortalMessagesPage = () => {
           </p>
           <FileUpload
             collectionName="chats"
-            documentId="attachments"
+            documentId={user.uid}
             docType="chat_docs"
             onUploadSuccess={handleAttachmentSuccess}
           />

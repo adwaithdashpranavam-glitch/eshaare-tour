@@ -7,159 +7,325 @@ service cloud.firestore {
       return request.auth != null;
     }
     
-    // Helper function: Check if request belongs to owner
-    function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
+    // Check if user document exists in users collection
+    function hasUserDoc() {
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid));
     }
-    
-    // Helper function: Check if user has an admin/staff role in /users collection
+
+    // Helper to get user's role from users collection
+    function getRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+
+    // Helper to check user status (Active/Suspended/Disabled)
+    function isActive() {
+      return isSignedIn() && hasUserDoc() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.status == 'Active';
+    }
+
+    // Helper to check if request belongs to owner
+    function isOwner(userId) {
+      return isActive() && request.auth.uid == userId;
+    }
+
+    // Helper to get the logged in user's name
+    function getUserName() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.name;
+    }
+
+    // Role helper functions:
+    function isSuperAdmin() {
+      return isActive() && getRole() == 'super_admin';
+    }
+
+    function isAdmin() {
+      return isActive() && getRole() in ['super_admin', 'admin'];
+    }
+
+    // Managers and above (super_admin, admin, manager)
+    function isManager() {
+      return isActive() && getRole() in ['super_admin', 'admin', 'manager'];
+    }
+
+    // General staff (requires Active status)
     function isStaff() {
-      return isSignedIn() && 
-        exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['super_admin', 'admin', 'manager', 'sales', 'visa_ops', 'finance', 'support'];
+      return isActive() && getRole() in ['super_admin', 'admin', 'manager', 'sales', 'visa_ops', 'finance', 'support'];
+    }
+
+    // ==========================================
+    // Schema Validation Helpers
+    // ==========================================
+
+    function validateUserSchema(data) {
+      let allowedFields = ['uid', 'name', 'email', 'role', 'status', 'createdAt', 'lastLoginAt', 'casesHandled', 'phone', 'phoneNumber', 'nationality', 'photoURL'];
+      return data.keys().hasOnly(allowedFields) &&
+             data.uid is string &&
+             data.name is string &&
+             data.email is string &&
+             data.role in ['super_admin', 'admin', 'manager', 'sales', 'visa_ops', 'finance', 'support', 'client', 'customer'] &&
+             (data.status == null || data.status in ['Active', 'Suspended', 'Disabled']) &&
+             (data.casesHandled == null || data.casesHandled is int || data.casesHandled is float);
+    }
+
+    function validateCustomerSchema(data) {
+      let allowedFields = ['uid', 'name', 'email', 'phone', 'nationality', 'createdAt', 'lastLoginAt', 'status', 'assignedAgentId', 'ownerId'];
+      return data.keys().hasOnly(allowedFields) &&
+             data.uid is string &&
+             data.name is string &&
+             data.email is string &&
+             (data.phone == null || data.phone is string) &&
+             (data.nationality == null || data.nationality is string) &&
+             (data.status == null || data.status in ['Active', 'Suspended', 'Disabled']);
+    }
+
+    function validatePaymentSchema(data) {
+      let allowedFields = ['id', 'clientUid', 'clientEmail', 'amount', 'currency', 'status', 'createdAt', 'updatedAt', 'purpose', 'transactionId', 'paymentMethod'];
+      return data.keys().hasOnly(allowedFields) &&
+             data.clientEmail is string &&
+             (data.clientUid == null || data.clientUid is string) &&
+             (data.status in ['Pending', 'Completed', 'Failed', 'Refunded']);
+    }
+
+    function validateAppointmentSchema(data) {
+      let allowedFields = ['id', 'clientUid', 'name', 'email', 'phone', 'date', 'time', 'status', 'createdAt', 'notes', 'visaType', 'destinationCountry'];
+      return data.keys().hasOnly(allowedFields) &&
+             data.name is string &&
+             data.email is string &&
+             (data.clientUid == null || data.clientUid is string) &&
+             (data.status in ['Scheduled', 'Completed', 'Cancelled', 'Pending']);
+    }
+
+    function validateApplicationSchema(data) {
+      let allowedFields = ['id', 'customerId', 'customerName', 'visaId', 'visaName', 'status', 'paymentStatus', 'packageType', 'amount', 'createdAt', 'updatedAt', 'submittedAt', 'formData', 'step', 'price', 'nationality', 'phone'];
+      return data.keys().hasOnly(allowedFields) &&
+             data.customerId is string &&
+             (data.visaId == null || data.visaId is string) &&
+             (data.visaName == null || data.visaName is string);
+    }
+
+    function validateDocumentSchema(data) {
+      let allowedFields = ['id', 'travellerId', 'travellerEmail', 'visaCaseId', 'docType', 'type', 'fileName', 'mimeType', 'storageKey', 'fileSizeBytes', 'fileUrl', 'verificationStatus', 'status', 'uploadedBy', 'createdAt', 'rejectionReason', 'verifiedBy', 'verifiedAt'];
+      return data.keys().hasOnly(allowedFields) &&
+             data.type is string &&
+             data.fileUrl is string &&
+             (data.travellerId == null || data.travellerId is string) &&
+             (data.travellerEmail == null || data.travellerEmail is string);
+    }
+
+    function validateChatSchema(data) {
+      let allowedFields = ['id', 'senderId', 'senderName', 'text', 'attachmentUrl', 'attachmentName', 'createdAt', 'participants'];
+      return data.keys().hasOnly(allowedFields) &&
+             data.participants is list &&
+             data.senderId is string &&
+             data.senderName is string &&
+             (data.text == null || data.text is string) &&
+             (data.attachmentUrl == null || data.attachmentUrl is string) &&
+             (data.attachmentName == null || data.attachmentName is string);
+    }
+
+    function validateNotificationSchema(data) {
+      let allowedFields = ['id', 'userId', 'title', 'message', 'read', 'createdAt', 'type'];
+      return data.keys().hasOnly(allowedFields) &&
+             data.userId is string &&
+             data.title is string &&
+             data.message is string &&
+             data.read is bool;
+    }
+
+    function validateAuditLogSchema(data) {
+      let allowedFields = ['action', 'performedBy', 'performedByRole', 'targetId', 'timestamp', 'details'];
+      return data.keys().hasOnly(allowedFields) &&
+             data.action is string &&
+             data.performedBy is string &&
+             data.performedByRole is string &&
+             data.targetId is string;
     }
 
     // ==========================================
     // 1. Users Collection
     // ==========================================
     match /users/{userId} {
-      // Allow users to read/write their own profiles; staff can do everything
-      allow read: if isOwner(userId) || isStaff();
-      allow create: if isSignedIn(); // Allow writing initial user profile on registration
-      allow update: if isOwner(userId) || isStaff();
-      allow delete: if isStaff();
-      allow list: if isStaff();
+      allow read: if isOwner(userId) || isManager();
+      allow list: if isManager();
+      
+      // Regular customers create their user doc on sign-up (role must be client, status must be Active)
+      allow create: if isSignedIn() && 
+                    userId == request.auth.uid &&
+                    request.resource.data.role == 'client' && 
+                    request.resource.data.status == 'Active' && 
+                    validateUserSchema(request.resource.data);
+      
+      // Allow updates only to own profile (role, status, email, uid must match existing values)
+      allow update: if isOwner(userId) && 
+                    resource.data.role == 'client' && 
+                    request.resource.data.role == 'client' && 
+                    request.resource.data.status == resource.data.status &&
+                    request.resource.data.email == resource.data.email &&
+                    validateUserSchema(request.resource.data);
+                    
+      // Client-side deletes blocked completely (except legacy self-linking cleanup of pre-created email profile)
+      allow delete: if isSignedIn() && userId != request.auth.uid && resource.data.email.lower() == request.auth.token.email.lower();
     }
 
     // ==========================================
     // 2. Customers Collection
     // ==========================================
     match /customers/{customerId} {
-      // Allow customers to read/write their own details; staff can do everything
-      allow read: if isOwner(customerId) || isStaff();
-      allow create: if isSignedIn(); // Allow writing initial customer doc
-      allow update: if isOwner(customerId) || isStaff();
-      allow delete: if isStaff();
-      allow list: if isStaff();
+      allow read: if isOwner(customerId) || 
+                    isManager() || 
+                    (getRole() == 'sales' && (resource.data.ownerId == request.auth.uid || resource.data.assignedAgentId == request.auth.uid));
+      allow list: if isManager();
+      allow create: if isSignedIn() && (isManager() || customerId == request.auth.uid) && validateCustomerSchema(request.resource.data);
+      allow update: if (isOwner(customerId) || isManager()) && validateCustomerSchema(request.resource.data);
+      allow delete: if isSuperAdmin();
     }
 
     // ==========================================
     // 3. Visa Types Collection (CMS pages)
     // ==========================================
     match /visa_types/{visaId} {
-      // Anyone (public) can read/view published or draft visa pages
       allow read: if true;
-      // Signed in users (usually staff) can write/edit visa pages
-      allow write: if isSignedIn();
+      allow write: if isManager();
     }
 
     // ==========================================
     // 4. Global Settings Collection
     // ==========================================
     match /settings/{settingId} {
-      // Anyone can read general config settings
       allow read: if true;
-      // Only staff can update settings config
-      allow write: if isStaff();
+      allow write: if isAdmin();
     }
 
     // ==========================================
     // 5. Leads Collection
     // ==========================================
     match /leads/{leadId} {
-      // Allow anyone (public web users) to create leads via contact/visa forms
-      allow create: if true;
-      // Only staff can list/read/update leads
-      allow read, write: if isStaff();
+      // Public creation is blocked completely (only allowed through backend Cloud Function)
+      allow create: if false;
+      allow read, write: if isManager() || 
+                           (isStaff() && (resource.data.ownerId == request.auth.uid || resource.data.assignedToId == request.auth.uid));
     }
 
     // ==========================================
     // 6. Visa Cases Collection (CRM application progress)
     // ==========================================
     match /visa_cases/{caseId} {
-      // Clients can read their own cases if the email matches; staff can do everything
-      allow read: if isStaff() || (isSignedIn() && resource.data.travellerEmail.lower() == request.auth.token.email.lower());
-      allow write: if isStaff();
+      allow read: if isManager() || 
+                    (getRole() == 'visa_ops' && (resource.data.assignedOfficerId == request.auth.uid || resource.data.assignedOfficer.lower() == getUserName().lower())) ||
+                    (isSignedIn() && resource.data.travellerEmail.lower() == request.auth.token.email.lower());
+      allow write: if isManager() || 
+                    (getRole() == 'visa_ops' && (resource.data.assignedOfficerId == request.auth.uid || resource.data.assignedOfficer.lower() == getUserName().lower()));
     }
 
     // ==========================================
     // 7. Applications Collection (Portal Drafts)
     // ==========================================
     match /applications/{appId} {
-      // Allow clients to CRUD their own applications; staff can do everything
-      allow read, write: if isStaff() || (isSignedIn() && resource.data.customerId == request.auth.uid);
-      allow create: if isSignedIn();
+      allow read: if isManager() || (isActive() && resource.data.customerId == request.auth.uid);
+      allow create: if isActive() && (isManager() || request.resource.data.customerId == request.auth.uid) && validateApplicationSchema(request.resource.data);
+      allow update: if (isManager() || (isActive() && resource.data.customerId == request.auth.uid)) && validateApplicationSchema(request.resource.data);
+      allow delete: if isSuperAdmin();
     }
 
     // ==========================================
     // 8. Documents Collection
     // ==========================================
     match /documents/{docId} {
-      // Clients can CRUD their own documents; staff can do everything
-      allow read, write: if isStaff() || (isSignedIn() && (resource == null || resource.data.travellerEmail.lower() == request.auth.token.email.lower()));
-      allow create: if isSignedIn();
+      allow read: if isManager() || (isActive() && resource.data.travellerEmail.lower() == request.auth.token.email.lower());
+      allow create: if isActive() && (isManager() || (request.resource.data.travellerId == request.auth.uid && request.resource.data.uploadedBy == request.auth.uid)) && validateDocumentSchema(request.resource.data);
+      allow update: if (isManager() || (isActive() && resource.data.travellerEmail.lower() == request.auth.token.email.lower())) && validateDocumentSchema(request.resource.data);
+      allow delete: if isManager() || (isActive() && resource.data.travellerEmail.lower() == request.auth.token.email.lower());
     }
 
     // ==========================================
     // 9. Chats Collection (Consultant Inbox Messages)
     // ==========================================
     match /chats/{chatId} {
-      // Read & write allowed for authenticated users (staff + clients)
-      allow read, write: if isSignedIn();
+      allow read: if isSignedIn() && (request.auth.uid in resource.data.participants || isManager() || getRole() == 'support');
+      allow create: if isSignedIn() && (
+        isManager() || 
+        getRole() == 'support' || 
+        (
+          request.resource.data.participants.size() == 2 && 
+          request.auth.uid in request.resource.data.participants && 
+          "support" in request.resource.data.participants
+        )
+      ) && validateChatSchema(request.resource.data);
+      allow update: if isSignedIn() && (request.auth.uid in resource.data.participants || isManager() || getRole() == 'support') && request.resource.data.participants == resource.data.participants && validateChatSchema(request.resource.data);
+      allow delete: if isSuperAdmin();
     }
 
     // ==========================================
     // 10. Appointments Collection
     // ==========================================
     match /appointments/{appId} {
-      // Anyone can create an appointment slot (leads/guests); staff and owner can read/write
-      allow create: if true;
-      allow read, write: if isStaff() || (isSignedIn() && (resource == null || resource.data.clientUid == request.auth.uid || resource.data.email.lower() == request.auth.token.email.lower()));
+      allow read: if isManager() || (isActive() && (resource.data.clientUid == request.auth.uid || resource.data.email.lower() == request.auth.token.email.lower()));
+      allow create: if isSignedIn() && (isStaff() || request.resource.data.clientUid == request.auth.uid) && validateAppointmentSchema(request.resource.data);
+      allow update: if (isManager() || (isActive() && resource.data.clientUid == request.auth.uid)) && validateAppointmentSchema(request.resource.data);
+      allow delete: if isSuperAdmin();
     }
 
     // ==========================================
     // 11. Payments Collection
     // ==========================================
     match /payments/{paymentId} {
-      // Clients can read their own payments; staff can read/write everything
-      allow read: if isStaff() || (isSignedIn() && (resource.data.clientUid == request.auth.uid || resource.data.clientEmail.lower() == request.auth.token.email.lower()));
-      allow write: if isStaff();
-      allow create: if isSignedIn();
+      allow read: if isManager() || 
+                    getRole() == 'finance' || 
+                    (isSignedIn() && (resource.data.clientUid == request.auth.uid || resource.data.clientEmail.lower() == request.auth.token.email.lower()));
+      allow create: if (isManager() || getRole() == 'finance') && validatePaymentSchema(request.resource.data);
+      allow update: if (isManager() || getRole() == 'finance') && validatePaymentSchema(request.resource.data);
+      allow delete: if isSuperAdmin();
     }
 
     // ==========================================
     // 12. Tasks Collection
     // ==========================================
     match /tasks/{taskId} {
-      // Internal staff workflow tasks
-      allow read, write: if isStaff();
+      allow read, create, update: if isStaff();
+      allow delete: if isSuperAdmin();
     }
 
     // ==========================================
     // 13. Notifications Collection
     // ==========================================
     match /notifications/{notifId} {
-      // Owners can read/write their own notifications; staff can do everything
-      allow read, write: if isStaff() || (isSignedIn() && (resource == null || resource.data.userId == request.auth.uid));
-      allow create: if isSignedIn();
+      allow read: if isManager() || (isActive() && resource.data.userId == request.auth.uid);
+      allow create: if false;
+      allow update: if (isManager() || (isActive() && resource.data.userId == request.auth.uid)) && validateNotificationSchema(request.resource.data);
+      allow delete: if isManager() || (isActive() && resource.data.userId == request.auth.uid);
     }
 
     // ==========================================
     // 14. App Packages Collection
     // ==========================================
     match /packages/{packageId} {
-      // Public read access; write only by staff
       allow read: if true;
-      allow write: if isStaff();
+      allow create, update: if isManager();
+      allow delete: if isSuperAdmin();
     }
 
     // ==========================================
     // 15. App Visas Collection
     // ==========================================
     match /visas/{visaId} {
-      // Public read access; write only by staff
       allow read: if true;
-      allow write: if isStaff();
+      allow create, update: if isManager();
+      allow delete: if isSuperAdmin();
+    }
+
+    // ==========================================
+    // 16. Audit Logs Collection
+    // ==========================================
+    match /audit_logs/{logId} {
+      allow read: if isSuperAdmin();
+      allow create, update, delete: if false;
+    }
+
+    // ==========================================
+    // 17. Theme Collection
+    // ==========================================
+    match /theme/{themeId} {
+      allow read: if true;
+      allow write: if isAdmin();
     }
   }
 }

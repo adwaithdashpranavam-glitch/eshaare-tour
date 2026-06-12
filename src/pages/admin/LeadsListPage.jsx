@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { collection, onSnapshot, addDoc, updateDoc, doc } from "firebase/firestore";
+import { collection, onSnapshot, addDoc, updateDoc, doc, query, where } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 import { 
   DndContext, 
@@ -221,9 +221,14 @@ export const LeadsListPage = () => {
   });
 
   useEffect(() => {
-    // Realtime Listener
+    if (!user) return;
+    // Realtime Listener with role filtering
     const leadsRef = collection(db, "leads");
-    const unsubscribe = onSnapshot(leadsRef, (snapshot) => {
+    let q = query(leadsRef, where("isDeleted", "==", false));
+    if (isSales) {
+      q = query(leadsRef, where("isDeleted", "==", false), where("assignedToId", "==", user.uid));
+    }
+    const unsubscribe = onSnapshot(q, (snapshot) => {
       const items = snapshot.docs
         .map(doc => ({ id: doc.id, ...doc.data() }))
         .filter(l => !l.isDeleted);

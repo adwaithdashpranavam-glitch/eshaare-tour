@@ -4,10 +4,26 @@ import { db } from "../../lib/firebase";
 import { Settings, Shield, HelpCircle, Save, Plus, Trash2, Database, Loader2 } from "lucide-react";
 import { VISA_REQUIREMENTS } from "../../utils/constants";
 import { seedVisaTypes } from "../../lib/firestore";
+import { useAuth } from "../../contexts/AuthContext";
 import toast from "react-hot-toast";
 
 export const SettingsPage = () => {
+  const { userProfile } = useAuth();
   const [subTab, setSubTab] = useState("general");
+
+  const isAuthorized = userProfile?.role === "super_admin" || userProfile?.role === "admin";
+
+  if (!isAuthorized) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[50vh] text-center space-y-4 font-sans">
+        <Shield className="h-16 w-16 text-danger animate-pulse" />
+        <h1 className="text-xl font-bold text-white uppercase tracking-wide">Access Denied</h1>
+        <p className="text-xs text-on-primary-container/60 max-w-md leading-relaxed">
+          You do not have the required permissions to access System Settings. Only Super Admins and Admins can view or modify system configurations.
+        </p>
+      </div>
+    );
+  }
 
   // General settings state
   const [generalSettings, setGeneralSettings] = useState({

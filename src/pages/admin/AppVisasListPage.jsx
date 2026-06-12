@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Plus, Edit, Trash2, Loader2, Globe, AlertCircle, RefreshCw } from "lucide-react";
 import { getVisas, deleteVisa, saveVisa } from "../../lib/firestore";
 import LoadingSpinner from "../../components/ui/LoadingSpinner";
+import { useAuth } from "../../contexts/AuthContext";
 import toast from "react-hot-toast";
 
 const DEFAULT_VISAS = [
@@ -90,6 +91,7 @@ const DEFAULT_VISAS = [
 ];
 
 export const AppVisasListPage = () => {
+  const { userProfile } = useAuth();
   const navigate = useNavigate();
   const [visas, setVisas] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -98,6 +100,8 @@ export const AppVisasListPage = () => {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
   const [seeding, setSeeding] = useState(false);
+
+  const canModifyCMS = ["super_admin", "admin", "manager"].includes(userProfile?.role);
 
   useEffect(() => {
     const unsubscribe = getVisas(
@@ -123,6 +127,10 @@ export const AppVisasListPage = () => {
 
   const handleDeleteConfirm = async () => {
     if (!deleteTarget) return;
+    if (!canModifyCMS) {
+      toast.error("Unauthorized operation");
+      return;
+    }
     setDeleting(true);
     try {
       await deleteVisa(deleteTarget.id);
@@ -137,6 +145,10 @@ export const AppVisasListPage = () => {
   };
 
   const handleSeedDefaults = async () => {
+    if (!canModifyCMS) {
+      toast.error("Unauthorized operation");
+      return;
+    }
     setSeeding(true);
     try {
       for (const visa of DEFAULT_VISAS) {
@@ -162,7 +174,7 @@ export const AppVisasListPage = () => {
           </p>
         </div>
         <div className="flex gap-2">
-          {visas.length === 0 && (
+          {canModifyCMS && visas.length === 0 && (
             <button
               onClick={handleSeedDefaults}
               disabled={seeding}
@@ -176,13 +188,15 @@ export const AppVisasListPage = () => {
               <span>Seed Defaults</span>
             </button>
           )}
-          <button
-            onClick={() => navigate("/admin/app/visa/new")}
-            className="px-4 py-2 bg-gradient-to-r from-secondary-container to-secondary-container text-on-primary-fixed font-bold text-xs rounded-button flex items-center space-x-1.5 shadow-sm transition-all hover:-translate-y-0.5"
-          >
-            <Plus className="h-4 w-4" />
-            <span>Add Visa</span>
-          </button>
+          {canModifyCMS && (
+            <button
+              onClick={() => navigate("/admin/app/visa/new")}
+              className="px-4 py-2 bg-gradient-to-r from-secondary-container to-secondary-container text-on-primary-fixed font-bold text-xs rounded-button flex items-center space-x-1.5 shadow-sm transition-all hover:-translate-y-0.5"
+            >
+              <Plus className="h-4 w-4" />
+              <span>Add Visa</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -233,7 +247,7 @@ export const AppVisasListPage = () => {
                 <th className="px-6 py-4">Processing Time</th>
                 <th className="px-6 py-4">Price</th>
                 <th className="px-6 py-4">Requirements Count</th>
-                <th className="px-6 py-4 text-right">Actions</th>
+                {canModifyCMS && <th className="px-6 py-4 text-right">Actions</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant/15 bg-transparent">
@@ -263,24 +277,26 @@ export const AppVisasListPage = () => {
                       {(v.requirements || []).length} Requirements
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end space-x-2">
-                      <button
-                        onClick={() => navigate(`/admin/app/visa/${v.id}/edit`)}
-                        className="p-1.5 bg-white/5 border border-on-primary-fixed-variant hover:border-secondary hover:text-secondary text-on-primary-container rounded transition-colors"
-                        title="Edit Visa"
-                      >
-                        <Edit className="h-3.5 w-3.5" />
-                      </button>
-                      <button
-                        onClick={() => setDeleteTarget(v)}
-                        className="p-1.5 bg-white/5 border border-on-primary-fixed-variant hover:border-error-red hover:text-error-red text-on-primary-container rounded transition-colors"
-                        title="Delete Visa"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                  </td>
+                  {canModifyCMS && (
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex items-center justify-end space-x-2">
+                        <button
+                          onClick={() => navigate(`/admin/app/visa/${v.id}/edit`)}
+                          className="p-1.5 bg-white/5 border border-on-primary-fixed-variant hover:border-secondary hover:text-secondary text-on-primary-container rounded transition-colors"
+                          title="Edit Visa"
+                        >
+                          <Edit className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          onClick={() => setDeleteTarget(v)}
+                          className="p-1.5 bg-white/5 border border-on-primary-fixed-variant hover:border-error-red hover:text-error-red text-on-primary-container rounded transition-colors"
+                          title="Delete Visa"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>
