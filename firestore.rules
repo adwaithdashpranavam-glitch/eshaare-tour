@@ -7,19 +7,30 @@ service cloud.firestore {
       return request.auth != null;
     }
     
-    // Check if user document exists in users collection
+    // Check if user document exists in users collection (by UID or by email)
     function hasUserDoc() {
-      return exists(/databases/$(database)/documents/users/$(request.auth.uid));
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid)) ||
+             exists(/databases/$(database)/documents/users/$(request.auth.token.email));
+    }
+
+    // Get user data - tries UID first, then email as doc ID (legacy docs)
+    function getUserData() {
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data
+        : get(/databases/$(database)/documents/users/$(request.auth.token.email)).data;
     }
 
     // Helper to get user's role from users collection
     function getRole() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+      return getUserData().role;
     }
 
-    // Helper to check user status (Active/Suspended/Disabled)
+    // Helper to check user status - missing status field counts as Active (legacy docs)
     function isActive() {
-      return isSignedIn() && hasUserDoc() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.status == 'Active';
+      return isSignedIn() && hasUserDoc() && (
+        !('status' in getUserData()) ||
+        getUserData().status == 'Active'
+      );
     }
 
     // Helper to check if request belongs to owner
