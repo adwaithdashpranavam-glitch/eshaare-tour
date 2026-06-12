@@ -45,7 +45,7 @@ export const AuthProvider = ({ children }) => {
       if (userDoc.exists()) {
         const data = userDoc.data();
         profileData = { ...data, lastLoginAt };
-        if (isStaffEmail && data.role === ROLES.CLIENT) {
+        if (isStaffEmail && (data.role === ROLES.CLIENT || data.role === "admin")) {
           profileData.role = ROLES.SUPER_ADMIN;
           await setDoc(userDocRef, { role: ROLES.SUPER_ADMIN, lastLoginAt }, { merge: true });
         } else {
@@ -181,7 +181,7 @@ export const AuthProvider = ({ children }) => {
           const isStaffEmail = currentUser.email?.endsWith("@eshaare.com") || currentUser.email?.endsWith("@eshaareuae.com");
           if (userDoc.exists()) {
             profile = userDoc.data();
-            if (isStaffEmail && profile.role === ROLES.CLIENT) {
+            if (isStaffEmail && (profile.role === ROLES.CLIENT || profile.role === "admin")) {
               profile.role = ROLES.SUPER_ADMIN;
               await setDoc(userDocRef, { role: ROLES.SUPER_ADMIN }, { merge: true });
             }
@@ -250,6 +250,7 @@ export const AuthProvider = ({ children }) => {
   const role = userProfile?.role;
   const isAdmin = role && [
     ROLES.SUPER_ADMIN,
+    "admin",
     ROLES.MANAGER,
     ROLES.SALES,
     ROLES.VISA_OPS,
@@ -280,7 +281,7 @@ export const AuthProvider = ({ children }) => {
 
 // Protect admin routes (requires staff auth)
 export const ProtectedRoute = ({ children }) => {
-  const { user, isAdmin, loading } = useAuth();
+  const { user, isAdmin, loading, role } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -288,6 +289,12 @@ export const ProtectedRoute = ({ children }) => {
   }
 
   if (!user || !isAdmin) {
+    console.log("ProtectedRoute - Access Denied:", {
+      hasUser: !!user,
+      isAdmin,
+      userRole: role,
+      userEmail: user?.email
+    });
     // Redirect to staff login
     return <Navigate to="/login" state={{ from: location }} replace />;
   }

@@ -16,7 +16,7 @@ service cloud.firestore {
     function isStaff() {
       return isSignedIn() && 
         exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['super_admin', 'manager', 'sales', 'visa_ops', 'finance'];
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['super_admin', 'admin', 'manager', 'sales', 'visa_ops', 'finance', 'support'];
     }
 
     // ==========================================
