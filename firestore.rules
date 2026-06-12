@@ -144,7 +144,11 @@ service cloud.firestore {
     // 1. Users Collection
     // ==========================================
     match /users/{userId} {
-      allow read: if isSignedIn() && (request.auth.uid == userId || isManager());
+      allow read: if isSignedIn() && (
+        request.auth.uid == userId || 
+        (request.auth.token.email != null && request.auth.token.email.lower() == userId.lower()) || 
+        isManager()
+      );
       allow list: if isManager();
       
       // Regular customers create their user doc on sign-up (role must be client, status must be Active)
