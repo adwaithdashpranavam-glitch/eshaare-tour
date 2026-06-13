@@ -45,32 +45,92 @@ export const PortalApplicationsPage = () => {
     return () => unsubscribe();
   }, [user]);
 
-  // Fetch CRM cases from 'visa_cases'
+  // Fetch CRM cases from both 'visa_cases' (CRM-originated) and 'bookings' (app-originated)
   useEffect(() => {
-    if (!userProfile?.email) {
+    if (!user?.uid && !userProfile?.email) {
       setLoadingCases(false);
       return;
     }
 
-    const casesRef = collection(db, "visa_cases");
-    const q = query(casesRef, where("travellerEmail", "==", userProfile.email.toLowerCase()));
-
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      // Sort cases by createdAt desc
-      setCases(items.sort((a, b) => {
-        const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt);
-        const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
-        return dateB - dateA;
+    const mergeAndSort = (casesArr, bookingsArr) => {
+      // Normalize bookings to the visa_cases shape
+      const normalizedBookings = bookingsArr.map(b => ({
+        id: b.id,
+        caseNo: b.bookingId || b.id,
+        travellerName: b.travellerName || b.clientName || userProfile?.name || "",
+        travellerEmail: b.clientEmail || b.travellerEmail || "",
+        visaType: b.serviceType || b.visaType || "Visa Booking",
+        destination: b.destination || b.country || "",
+        stage: b.bookingStatus || b.status || "Submitted",
+        createdAt: b.createdAt,
+        source: "booking"
       }));
-      setLoadingCases(false);
-    }, (error) => {
-      console.error("Error fetching cases:", error);
-      setLoadingCases(false);
-    });
 
-    return () => unsubscribe();
-  }, [userProfile]);
+      // Deduplicate: visa_cases entries created from Android have the same ID as booking
+      const visaCaseIds = new Set(casesArr.map(c => c.id));
+      const uniqueBookings = normalizedBookings.filter(b => !visaCaseIds.has(b.id));
+
+      const merged = [...casesArr, ...uniqueBookings];
+      return merged.sort((a, b) => {
+        const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt || 0);
+        const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt || 0);
+        return dateB - dateA;
+      });
+    };
+
+    let casesDocs = [];
+    let bookingsDocs = [];
+    let casesLoaded = false;
+    let bookingsLoaded = false;
+
+    const updateCases = () => {
+      if (casesLoaded && bookingsLoaded) {
+        setCases(mergeAndSort(casesDocs, bookingsDocs));
+        setLoadingCases(false);
+      }
+    };
+
+    // Query 1: visa_cases by travellerEmail
+    let unsubCases = () => {};
+    if (userProfile?.email) {
+      const casesRef = collection(db, "visa_cases");
+      const qCases = query(casesRef, where("travellerEmail", "==", userProfile.email.toLowerCase()));
+      unsubCases = onSnapshot(qCases, (snapshot) => {
+        casesDocs = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        casesLoaded = true;
+        updateCases();
+      }, (error) => {
+        console.error("Error fetching visa_cases:", error);
+        casesLoaded = true;
+        updateCases();
+      });
+    } else {
+      casesLoaded = true;
+    }
+
+    // Query 2: bookings by clientUid (from Android app)
+    let unsubBookings = () => {};
+    if (user?.uid) {
+      const bookingsRef = collection(db, "bookings");
+      const qBookings = query(bookingsRef, where("clientUid", "==", user.uid));
+      unsubBookings = onSnapshot(qBookings, (snapshot) => {
+        bookingsDocs = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        bookingsLoaded = true;
+        updateCases();
+      }, (error) => {
+        console.error("Error fetching bookings:", error);
+        bookingsLoaded = true;
+        updateCases();
+      });
+    } else {
+      bookingsLoaded = true;
+    }
+
+    return () => {
+      unsubCases();
+      unsubBookings();
+    };
+  }, [user, userProfile]);
 
   const handleOpenEdit = (draft) => {
     setSelectedDraft(draft);

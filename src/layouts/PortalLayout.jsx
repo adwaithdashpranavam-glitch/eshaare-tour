@@ -26,7 +26,6 @@ export const PortalLayout = () => {
   const navItems = [
     { label: "Dashboard", path: "/portal/dashboard", icon: LayoutDashboard },
     { label: "Applications", path: "/portal/applications", icon: FileText },
-    { label: "Documents", path: "/portal/documents", icon: FolderOpen },
     { label: "Appointments", path: "/portal/appointments", icon: Calendar },
     { label: "Payments", path: "/portal/payments", icon: CreditCard },
     { label: "Messages", path: "/portal/messages", icon: MessageSquare },

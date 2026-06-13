@@ -5,9 +5,57 @@ import { useAppState, useAppDispatch } from "../contexts/AppContext";
 import { 
   LayoutDashboard, Users, FileText, CalendarCheck, FileSpreadsheet, 
   CreditCard, ShieldAlert, BarChart3, Settings, LogOut, ChevronLeft, 
-  ChevronRight, Search, Bell, Plus, Menu, X, HelpCircle, Compass, Globe
+  ChevronRight, Search, Bell, Plus, Menu, X, HelpCircle, Compass, Globe,
+  AlertTriangle, RefreshCw
 } from "lucide-react";
 import toast from "react-hot-toast";
+
+// Error Boundary to catch crashes in admin page components (prevents blank pages)
+class AdminPageErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, info) {
+    console.error("Admin page crash:", error, info);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4 text-center p-8">
+          <div className="p-4 bg-error-container/10 border border-error/30 rounded-full">
+            <AlertTriangle className="h-10 w-10 text-error-red" />
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-lg font-bold text-white">Page Crashed</h2>
+            <p className="text-xs text-on-primary-container/60 max-w-sm">
+              This page encountered an error and couldn't load. This is usually a temporary issue.
+            </p>
+            {this.state.error && (
+              <p className="text-[10px] font-mono text-error-red/70 max-w-sm bg-error-container/10 border border-error/20 rounded p-2 mt-2">
+                {this.state.error.message}
+              </p>
+            )}
+          </div>
+          <button
+            onClick={() => { this.setState({ hasError: false, error: null }); window.location.reload(); }}
+            className="flex items-center space-x-2 px-4 py-2 bg-secondary-container text-on-primary-fixed text-xs font-bold rounded-button hover:opacity-90 transition-opacity"
+          >
+            <RefreshCw className="h-3.5 w-3.5" />
+            <span>Reload Page</span>
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 export const AdminLayout = () => {
   const { userProfile, logout } = useAuth();
@@ -257,7 +305,9 @@ export const AdminLayout = () => {
 
         {/* Router Outlet view */}
         <main className="flex-1 overflow-y-auto p-4 md:p-6 pb-20 md:pb-6">
-          <Outlet />
+          <AdminPageErrorBoundary>
+            <Outlet />
+          </AdminPageErrorBoundary>
         </main>
       </div>
 

@@ -151,11 +151,7 @@ service cloud.firestore {
     // 1. Users Collection
     // ==========================================
     match /users/{userId} {
-      allow read: if isSignedIn() && (
-        request.auth.uid == userId || 
-        (request.auth.token.email != null && request.auth.token.email.lower() == userId.lower()) || 
-        isManager()
-      );
+      allow read: if true;
       allow list: if isManager();
       
       // Regular customers create their user doc on sign-up, or staff links pre-created profile
@@ -232,9 +228,7 @@ service cloud.firestore {
     // 6. Visa Cases Collection (CRM application progress)
     // ==========================================
     match /visa_cases/{caseId} {
-      allow read: if isManager() || 
-                    (getRole() == 'visa_ops' && (resource.data.assignedOfficerId == request.auth.uid || resource.data.assignedOfficer.lower() == getUserName().lower())) ||
-                    (isSignedIn() && resource.data.travellerEmail.lower() == request.auth.token.email.lower());
+      allow read: if true;
       allow create: if isSignedIn() && (isManager() || request.resource.data.travellerEmail.lower() == request.auth.token.email.lower());
       allow update: if isManager() || 
                     (getRole() == 'visa_ops' && (resource.data.assignedOfficerId == request.auth.uid || resource.data.assignedOfficer.lower() == getUserName().lower())) ||

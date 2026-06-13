@@ -49,35 +49,77 @@ export const PortalDashboard = () => {
   }, []);
 
   useEffect(() => {
-    if (!userProfile?.email) return;
+    if (!userProfile?.email && !auth.currentUser?.uid) return;
 
-    const casesRef = collection(db, "visa_cases");
-    const q = query(casesRef, where("travellerEmail", "==", userProfile.email.toLowerCase()));
+    let casesDocs = [];
+    let bookingsDocs = [];
+    let casesLoaded = false;
+    let bookingsLoaded = false;
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      if (!snapshot.empty) {
-        const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setActiveCases(items);
+    const merge = () => {
+      if (!casesLoaded || !bookingsLoaded) return;
+      const caseIds = new Set(casesDocs.map(c => c.id));
+      const uniqueBookings = bookingsDocs
+        .filter(b => !caseIds.has(b.id))
+        .map(b => ({
+          id: b.id,
+          caseNo: b.bookingId || b.id,
+          visaType: b.serviceType || b.visaType || "Visa Booking",
+          destination: b.destination || b.country || "",
+          stage: b.bookingStatus || b.status || "Submitted",
+          checklist: b.checklist || []
+        }));
+      const allCases = [...casesDocs, ...uniqueBookings];
+      setActiveCases(allCases);
 
-        // Calculate pending docs count
-        const totalPending = items.reduce((acc, curr) => {
-          const pending = curr.checklist?.filter(d => d.status === "Pending" || d.status === "Rejected").length || 0;
-          return acc + pending;
-        }, 0);
-        setPendingDocsCount(totalPending);
-      } else {
-        setActiveCases([]);
-        setPendingDocsCount(0);
-      }
+      const totalPending = allCases.reduce((acc, curr) => {
+        const pending = curr.checklist?.filter(d => d.status === "Pending" || d.status === "Rejected").length || 0;
+        return acc + pending;
+      }, 0);
+      setPendingDocsCount(totalPending);
       setLoading(false);
-    }, (error) => {
-      console.warn("Error fetching traveller details:", error);
-      setActiveCases([]);
-      setPendingDocsCount(0);
-      setLoading(false);
-    });
+    };
 
-    return () => unsubscribe();
+    // Query 1: visa_cases by travellerEmail
+    let unsubCases = () => {};
+    if (userProfile?.email) {
+      const casesRef = collection(db, "visa_cases");
+      const q = query(casesRef, where("travellerEmail", "==", userProfile.email.toLowerCase()));
+      unsubCases = onSnapshot(q, (snapshot) => {
+        casesDocs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        casesLoaded = true;
+        merge();
+      }, (error) => {
+        console.warn("Error fetching traveller details:", error);
+        casesLoaded = true;
+        merge();
+      });
+    } else {
+      casesLoaded = true;
+    }
+
+    // Query 2: bookings by clientUid (from Android app)
+    let unsubBookings = () => {};
+    if (auth.currentUser?.uid) {
+      const bookingsRef = collection(db, "bookings");
+      const qB = query(bookingsRef, where("clientUid", "==", auth.currentUser.uid));
+      unsubBookings = onSnapshot(qB, (snapshot) => {
+        bookingsDocs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        bookingsLoaded = true;
+        merge();
+      }, (error) => {
+        console.warn("Error fetching bookings:", error);
+        bookingsLoaded = true;
+        merge();
+      });
+    } else {
+      bookingsLoaded = true;
+    }
+
+    return () => {
+      unsubCases();
+      unsubBookings();
+    };
   }, [userProfile]);
 
   return (
@@ -97,10 +139,9 @@ export const PortalDashboard = () => {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
         <KPICard title="Active Cases" value={activeCases.length} icon="FileText" color="green" />
         <KPICard title="Draft Applications" value={draftsCount} icon="Edit3" color="gold" />
-        <KPICard title="Pending Uploads" value={pendingDocsCount} icon="UploadCloud" color={pendingDocsCount > 0 ? "orange" : "green"} />
         <KPICard title="New Notifications" value={unreadNotificationsCount} icon="Bell" color={unreadNotificationsCount > 0 ? "red" : "gold"} />
       </div>
 
@@ -145,9 +186,9 @@ export const PortalDashboard = () => {
                 <FileText className="h-5 w-5 text-secondary" />
                 <span>Applications</span>
               </button>
-              <button onClick={() => navigate("/portal/documents")} className="p-4 bg-primary-container hover:bg-primary-container/80 border border-outline-variant/10 rounded hover:border-secondary/25 transition-all text-on-primary-container font-semibold space-y-2 flex flex-col justify-center items-center">
-                <UploadCloud className="h-5 w-5 text-secondary" />
-                <span>Documents</span>
+              <button onClick={() => navigate("/portal/settings")} className="p-4 bg-primary-container hover:bg-primary-container/80 border border-outline-variant/10 rounded hover:border-secondary/25 transition-all text-on-primary-container font-semibold space-y-2 flex flex-col justify-center items-center">
+                <Settings className="h-5 w-5 text-secondary" />
+                <span>Settings</span>
               </button>
               <button onClick={() => navigate("/portal/appointments")} className="p-4 bg-primary-container hover:bg-primary-container/80 border border-outline-variant/10 rounded hover:border-secondary/25 transition-all text-on-primary-container font-semibold space-y-2 flex flex-col justify-center items-center">
                 <Calendar className="h-5 w-5 text-secondary" />

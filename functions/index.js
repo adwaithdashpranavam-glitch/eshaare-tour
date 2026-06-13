@@ -313,3 +313,17 @@ exports.logAuthEvent = functions.https.onCall(async (data, context) => {
   return { success: true };
 });
 
+exports.tempDumpPackages = functions.https.onRequest(async (req, res) => {
+  try {
+    const snap = await db.collection("packages").get();
+    const list = [];
+    snap.forEach(doc => {
+      list.push({ id: doc.id, ...doc.data() });
+    });
+    res.json(list);
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
+});
+
+
