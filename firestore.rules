@@ -85,11 +85,15 @@ service cloud.firestore {
     }
 
     function validatePaymentSchema(data) {
-      let allowedFields = ['id', 'clientUid', 'clientEmail', 'amount', 'currency', 'status', 'createdAt', 'updatedAt', 'purpose', 'transactionId', 'paymentMethod'];
+      let allowedFields = [
+        'id', 'clientUid', 'clientEmail', 'amount', 'currency', 'status', 
+        'createdAt', 'updatedAt', 'purpose', 'transactionId', 'paymentMethod',
+        'orderId', 'invoiceNo', 'clientName', 'service', 'method', 'ref', 'date', 'dueDate'
+      ];
       return data.keys().hasOnly(allowedFields) &&
              data.clientEmail is string &&
              (data.clientUid == null || data.clientUid is string) &&
-             (data.status in ['Pending', 'Completed', 'Failed', 'Refunded']);
+             (data.status in ['Pending', 'Completed', 'Failed', 'Refunded', 'Paid']);
     }
 
     function validateAppointmentSchema(data) {
