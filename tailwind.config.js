@@ -70,7 +70,7 @@ module.exports = {
       spacing: {
         "unit": "8px",
         "gutter": "24px",
-        "container-max": "1280px",
+        "container-max": "1520px",
         "margin-desktop": "64px",
         "margin-mobile": "20px",
         "section-gap": "120px"

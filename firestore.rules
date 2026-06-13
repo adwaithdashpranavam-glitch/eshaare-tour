@@ -10,14 +10,15 @@ service cloud.firestore {
     // Check if user document exists in users collection (by UID or by email)
     function hasUserDoc() {
       return exists(/databases/$(database)/documents/users/$(request.auth.uid)) ||
-             exists(/databases/$(database)/documents/users/$(request.auth.token.email));
+             (request.auth.token != null && request.auth.token.email != null &&
+              exists(/databases/$(database)/documents/users/$(request.auth.token.email.lower())));
     }
 
     // Get user data - tries UID first, then email as doc ID (legacy docs)
     function getUserData() {
       return exists(/databases/$(database)/documents/users/$(request.auth.uid))
         ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data
-        : get(/databases/$(database)/documents/users/$(request.auth.token.email)).data;
+        : get(/databases/$(database)/documents/users/$(request.auth.token.email.lower())).data;
     }
 
     // Helper to get user's role from users collection

@@ -25,6 +25,7 @@ import TrackApplicationPage from "./pages/public/TrackApplicationPage";
 import ResourcesPage from "./pages/public/ResourcesPage";
 import AppointmentBookingPage from "./pages/public/AppointmentBookingPage";
 import GlobePage from "./pages/public/GlobePage";
+import CustomisePackagePage from "./pages/public/CustomisePackagePage";
 import ScrollToTop from "./components/ui/ScrollToTop";
 
 // Auth Pages
@@ -99,6 +100,7 @@ function App() {
                 <Route path="appointment" element={<AppointmentBookingPage />} />
                 <Route path="globe" element={<GlobePage />} />
                 <Route path="visa-eligibility" element={<VisaEligibilityPage />} />
+                <Route path="packages/customise" element={<CustomisePackagePage />} />
 
                 {/* CLIENT TRAVELLER PORTAL */}
                 <Route

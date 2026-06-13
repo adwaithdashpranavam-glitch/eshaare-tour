@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import foxLogo from "../assets/fox-logo.png";
 import { useAuth } from "../contexts/AuthContext";
 import {
   MapPin,
@@ -57,6 +58,25 @@ export const PublicLayout = () => {
   const [openSearch, setOpenSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const searchInputRef = useRef(null);
+
+  // Tooltip state for WhatsApp FAB
+  const [showTooltip, setShowTooltip] = useState(false);
+
+  // Auto-show and hide tooltip on page load
+  useEffect(() => {
+    const showTimer = setTimeout(() => {
+      setShowTooltip(true);
+    }, 1500);
+
+    const hideTimer = setTimeout(() => {
+      setShowTooltip(false);
+    }, 9500);
+
+    return () => {
+      clearTimeout(showTimer);
+      clearTimeout(hideTimer);
+    };
+  }, []);
 
   // Scroll handler for top header
   useEffect(() => {
@@ -122,6 +142,7 @@ export const PublicLayout = () => {
             "Japan Packages",
             "Honeymoon Packages",
             "Luxury Tours",
+            "Customise Package",
           ],
         },
         {
@@ -173,6 +194,7 @@ export const PublicLayout = () => {
   // Slug conversion mapping helper
   const toSlug = (text) => {
     const t = text.trim();
+    if (t === "Customise Package") return "/packages/customise";
     if (t === "Home") return "/";
     if (t === "About Us") return "/about";
     if (t === "Contact Us" || t === "Request Callback") return "/contact";
@@ -334,10 +356,10 @@ export const PublicLayout = () => {
           } ${user ? "top-8" : "top-0"}`}
       >
 
-        <div className="max-w-[95rem] mx-auto px-4 xl:px-6 h-16 flex items-center justify-between">
+        <div className="max-w-[95rem] mx-auto px-2 xl:px-4 h-16 flex items-center justify-between">
 
           {/* Logo with MapPin */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1 sm:gap-3 min-w-0">
             {location.pathname && location.pathname !== "/" && (
               <button
                 onClick={() => navigate(-1)}
@@ -347,19 +369,29 @@ export const PublicLayout = () => {
                 <ArrowLeft className="w-5 h-5 stroke-[2.5]" />
               </button>
             )}
+            <Link
+              to="/"
+              className="flex items-center gap-1 sm:gap-2 group shrink-0 -ml-2 lg:-ml-20 xl:-ml-24"
+            >
+              <img
+                src={foxLogo}
+                alt="Eshaare Tour"
+                className="h-12 sm:h-14 md:h-16 lg:h-20 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+              />
 
-            <Link to="/" className="flex items-center gap-2 group shrink-0">
-              <div className="relative">
-                <MapPin className="h-5 w-5 text-[#1D503A]" />
-                <div className="absolute -top-1 -right-2 w-2 h-2 bg-[#1D503A] rounded-full animate-pulse" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold tracking-tight leading-none">
-                  <span className="text-[#1D503A]">ESHAARE</span>
-                  <span className="text-[#1D503A] ml-1">TOUR</span>
+              {/* Brand Text */}
+              <div className="leading-none -ml-2.5 md:-ml-4">
+                <h1
+                  className="text-xl sm:text-xl md:text-3xl lg:text-4xl text-[#1D503A]"
+                  style={{
+                    fontFamily: "'Great Vibes', cursive",
+                  }}
+                >
+                  Eshaare Tour
                 </h1>
-                <p className="text-[10px] tracking-wider text-gray-800 font-semibold mt-1">
-                  TOURS & EVENTS
+
+                <p className="text-[5px] sm:text-[6px] md:text-[7px] lg:text-[8px] tracking-[0.25em] uppercase text-gray-600 mt-0">
+                  Connecting Dreams Into Destinations
                 </p>
               </div>
             </Link>
@@ -704,17 +736,38 @@ export const PublicLayout = () => {
         </footer>
       )}
 
-      {/* WhatsApp FAB */}
+      {/* WhatsApp FAB with Fox Mascot & Auto-fading Speech Bubble */}
       {!isPortal && (
-        <a
-          href="https://wa.me/971501234567"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="fixed bottom-8 right-8 w-16 h-16 bg-whatsapp-green text-white rounded-full flex items-center justify-center shadow-2xl hover:scale-110 z-[100] transition-transform animate-pulse"
-          title="Chat on WhatsApp"
-        >
-          <span className="material-symbols-outlined text-3xl">chat</span>
-        </a>
+        <div className="fixed bottom-8 right-8 z-[100] flex items-center">
+          {/* Fading Speech Bubble */}
+          <div
+            className={`mr-3.5 bg-white text-gray-800 text-xs font-semibold py-3 px-4 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] border border-gray-100 relative transition-all duration-500 ease-out transform origin-right whitespace-nowrap
+              ${showTooltip ? "opacity-100 translate-x-0 scale-100" : "opacity-0 translate-x-4 scale-90 pointer-events-none"}`}
+          >
+            Hey, how can I help you? 24/7 service
+            {/* Little tail pointing to the button */}
+            <div className="absolute top-1/2 -translate-y-1/2 left-full w-0 h-0 border-y-[6px] border-y-transparent border-l-[8px] border-l-white drop-shadow-[2px_0_1px_rgba(0,0,0,0.02)]" />
+          </div>
+
+          {/* Fox Button */}
+          <a
+            href="https://wa.me/971501234567"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-16 h-16 bg-white border border-[#1D503A]/15 rounded-full flex items-center justify-center shadow-[0_8px_32px_rgba(0,0,0,0.15)] hover:scale-110 transition-transform duration-300 relative group-btn"
+            title="Chat with Eshaare Support"
+          >
+            <img
+              src={foxLogo}
+              alt="Eshaare Support"
+              className="w-12 h-12 object-contain"
+            />
+            {/* Pulsing online badge */}
+            <div className="absolute bottom-0 right-0 w-4.5 h-4.5 bg-green-500 rounded-full border-2 border-white flex items-center justify-center shadow-sm">
+              <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
+            </div>
+          </a>
+        </div>
       )}
 
       {/* FIGMA DESIGN FIXED BOTTOM NAVBAR */}

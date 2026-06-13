@@ -7,14 +7,33 @@ service firebase.storage {
       return request.auth != null;
     }
     
-    // Helper to fetch user's role from Firestore users collection
-    function getRole() {
-      return firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role;
+    // Check if user document exists in users collection (by UID or by email)
+    function hasUserDoc() {
+      return isSignedIn() && (
+        firestore.exists(/databases/(default)/documents/users/$(request.auth.uid)) ||
+        (request.auth.token != null && request.auth.token.email != null &&
+         firestore.exists(/databases/(default)/documents/users/$(request.auth.token.email)))
+      );
     }
 
-    // Helper to check if user's account is Active
+    // Get user data - tries UID first, then email as doc ID (legacy docs)
+    function getUserData() {
+      return firestore.exists(/databases/(default)/documents/users/$(request.auth.uid))
+        ? firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data
+        : firestore.get(/databases/(default)/documents/users/$(request.auth.token.email)).data;
+    }
+
+    // Helper to fetch user's role from Firestore users collection
+    function getRole() {
+      return getUserData().role;
+    }
+
+    // Helper to check if user's account is Active (missing status field counts as Active)
     function isActive() {
-      return firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.status == 'Active';
+      return isSignedIn() && hasUserDoc() && (
+        !getUserData().keys().hasAny(['status']) ||
+        getUserData().status == 'Active'
+      );
     }
     
     // Check if user is owner of the folder
@@ -59,6 +78,12 @@ service firebase.storage {
     match /chats/{userId}/{allPaths=**} {
       allow read: if isOwner(userId) || canAccessChatDocs();
       allow write: if (isOwner(userId) || canAccessChatDocs()) && request.resource.size < 15 * 1024 * 1024;
+    }
+
+    // 5. Staff Profile Pictures
+    match /staff_pics/{allPaths=**} {
+      allow read: if true;
+      allow write: if isManager();
     }
   }
 }
