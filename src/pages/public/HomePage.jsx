@@ -112,54 +112,52 @@ export const HomePage = () => {
     ]
   };
 
-  // ─── Inquiry Form ────────────────────────────────────────────────────────
-  const [formData, setFormData] = useState({
-    name: "",
-    phone: "",
-    email: "",
-    nationality: "",
-    destination: "Schengen",
-    travelDate: "",
+  // ─── Contact Us Form ─────────────────────────────────────────────────────
+  const [form, setForm] = useState({
+    date: "",
+    destination: "",
+    adults: 1,
     message: ""
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+  const update = (field, value) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleFormSubmit = async (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
       const generatedNo = await generateLeadNo();
       const submission = {
         leadNo: generatedNo,
-        contactName: formData.name,
-        contactPhone: formData.phone.startsWith("+") ? formData.phone : `+971${formData.phone}`,
-        contactEmail: formData.email,
-        nationality: formData.nationality,
-        destinationCountry: formData.destination,
+        contactName: "Web Enquiry",
+        contactPhone: "",
+        contactEmail: "",
+        nationality: "",
+        destinationCountry: form.destination,
         serviceType: "Visa",
-        travelStart: formData.travelDate,
+        travelStart: form.date,
         source: "website",
         stage: "New",
         priority: "Medium",
         ownerId: null,
-        notes: formData.message,
+        notes: `Adults: ${form.adults}\nMessage: ${form.message}`,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       };
       await createLead(submission);
       toast.success(`Request sent! reference number: ${generatedNo}`);
-      setFormData({
-        name: "", phone: "", email: "", nationality: "",
-        destination: "Schengen", travelDate: "", message: ""
+      setForm({
+        date: "",
+        destination: "",
+        adults: 1,
+        message: ""
       });
     } catch (err) {
       console.error(err);
-      toast.error("Failed to submit inquiry. Please try again.");
+      toast.error("Failed to submit enquiry. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -492,11 +490,11 @@ export const HomePage = () => {
   // ─────────────────────────────────────────────────────────────────────────
 
   return (
-    <div className="bg-surface min-h-screen">
+    <div className="relative min-h-screen">
       <InteractiveCanvas />
 
       {/* HERO SLIDER SECTION */}
-      <section className="relative overflow-hidden h-[91vh] min-h-[500px]">
+      <section className="relative z-10 overflow-hidden h-[91vh] min-h-[500px]">
         {slides.map((slide, index) => (
           <div
             key={index}
@@ -619,7 +617,7 @@ export const HomePage = () => {
       {/* ─── SERVICE CARDS — VERTICAL SCROLL CAROUSEL ──────────────────────── */}
       <section
         ref={sectionRef}
-        className="relative overflow-hidden py-[90px] px-margin-mobile md:px-margin-desktop bg-surface"
+        className="relative z-10 overflow-hidden py-[90px] px-margin-mobile md:px-margin-desktop bg-transparent"
       >
         <div className="max-w-container-max mx-auto space-y-12 relative z-10">
 
@@ -837,7 +835,7 @@ export const HomePage = () => {
       {/* ──────────────────────────────────────────────────────────────────── */}
 
       {/* FEATURED TOUR PACKAGES (BENTO GRID) */}
-      <section className="relative overflow-hidden py-[90px] px-margin-mobile md:px-margin-desktop bg-surface-container-low">
+      <section className="relative z-10 overflow-hidden py-[90px] px-margin-mobile md:px-margin-desktop bg-transparent">
         <div className="max-w-container-max mx-auto space-y-12 relative z-10">
           <div className="grid grid-cols-1 md:grid-cols-[140px_1fr_140px] items-center md:items-end gap-4 w-full">
             <div className="hidden md:block w-[140px]" /> {/* Left spacer to center the header text */}
@@ -952,7 +950,7 @@ export const HomePage = () => {
       </section>
 
       {/* CONTINENTS BAR TAB FILTER */}
-      <section className="relative overflow-hidden py-[120px] px-margin-mobile md:px-margin-desktop bg-surface">
+      <section className="relative z-10 overflow-hidden py-[120px] px-margin-mobile md:px-margin-desktop bg-transparent">
         <div className="max-w-container-max mx-auto space-y-12 relative z-10">
           <div
             data-animate="global-coverage"
@@ -1001,7 +999,7 @@ export const HomePage = () => {
       </section>
 
       {/* ABOUT SECTION */}
-      <section className="relative overflow-hidden py-[90px] px-margin-mobile md:px-margin-desktop bg-surface-container-low">
+      <section className="relative z-10 overflow-hidden py-[90px] px-margin-mobile md:px-margin-desktop bg-transparent">
         <div className="max-w-container-max mx-auto grid grid-cols-1 md:grid-cols-2 gap-[64px] items-center relative z-10">
           <div
             data-animate="about-eshaare"
@@ -1043,7 +1041,7 @@ export const HomePage = () => {
       </section>
 
       {/* ─── MEET OUR SPECIALISTS — PREMIUM CAROUSEL ─── */}
-      <section className="relative overflow-hidden py-[90px] px-margin-mobile md:px-margin-desktop bg-surface">
+      <section className="relative z-10 overflow-hidden py-[90px] px-margin-mobile md:px-margin-desktop bg-transparent">
         <div className="max-w-container-max mx-auto space-y-12 relative z-10">
           <div
             data-animate="specialists"
@@ -1243,91 +1241,119 @@ export const HomePage = () => {
       </section>
 
       {/* LEAD INQUIRY SECTION */}
-      <section id="enquire" className="relative overflow-hidden py-[120px] px-margin-mobile md:px-margin-desktop bg-surface-container-low">
-        <div className="max-w-container-max mx-auto bg-surface-container-lowest rounded-3xl overflow-hidden premium-shadow border border-outline-variant/10 grid grid-cols-1 md:grid-cols-3 relative z-10">
-
-          <div className="bg-primary-container p-12 text-on-primary-container flex flex-col justify-between gap-8">
-            <div className="space-y-4">
-              <h2 className="font-headline-lg text-headline-lg text-white">Contact Us</h2>
-              <p className="text-on-primary-container text-body-sm leading-relaxed">
-                Submit your travel inquiry and one of our visa consultants will contact you within 2 hours.
-              </p>
+      <section id="enquire" className="relative z-10 w-full bg-[#FCFBF8]/45 backdrop-blur-[2px] py-20 md:py-28 font-['Assistant',ui-sans-serif,system-ui]">
+        <div className="max-w-7xl mx-auto px-6">
+          {/* Header */}
+          <div className="text-center mb-14">
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <div className="h-px w-10 bg-[#D4AF37]/40" />
+              <span className="size-1.5 rotate-45 bg-[#D4AF37]" />
+              <div className="h-px w-10 bg-[#D4AF37]/40" />
             </div>
-            <div className="space-y-6">
-              <div className="flex items-center gap-3">
-                <span className="material-symbols-outlined text-secondary-fixed text-2xl">call</span>
-                <div>
-                  <p className="text-white/60 text-xs">Call or WhatsApp</p>
-                  <p className="text-white font-bold text-body-md">+971 50 123 4567</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="material-symbols-outlined text-secondary-fixed text-2xl">mail</span>
-                <div>
-                  <p className="text-white/60 text-xs">Email Support</p>
-                  <p className="text-white font-bold text-body-md">support@eshaaretours.com</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="material-symbols-outlined text-secondary-fixed text-2xl">pin_drop</span>
-                <div>
-                  <p className="text-white/60 text-xs">Location</p>
-                  <p className="text-white font-bold text-body-md">Business Bay, Dubai, UAE</p>
-                </div>
-              </div>
-            </div>
-            <p className="text-on-primary-container/70 text-body-sm">Operational Hours: Monday - Saturday, 9:00 AM - 6:00 PM GST</p>
+            <h2 className="font-['Cormorant_Garamond',ui-serif,Georgia] italic text-4xl md:text-5xl text-[#1D503A]">
+              We'd Love to Hear From You
+            </h2>
+            <p className="mt-3 text-[11px] uppercase tracking-[0.3em] text-[#1D503A]/60">
+              Tell us your dream — we'll plan the journey
+            </p>
           </div>
-
-          <div className="md:col-span-2 p-12 space-y-6">
-            <h3 className="font-headline-md text-headline-md text-primary">Request an Eligibility Assessment</h3>
-            <form onSubmit={handleFormSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="flex flex-col gap-2">
-                <label className="font-label-md text-label-md text-on-surface-variant">Full Name *</label>
-                <input type="text" name="name" required placeholder="e.g. Jane Doe" value={formData.name} onChange={handleInputChange} className="w-full bg-surface-container border border-outline-variant/15 rounded-lg px-4 py-3 text-body-sm focus:outline-none" />
+          {/* Card */}
+          <div className="grid md:grid-cols-2 rounded-[4px] overflow-hidden ring-1 ring-[#D4AF37]/20 shadow-[0_30px_80px_-30px_rgba(29,80,58,0.25)] bg-white">
+            {/* Image side */}
+            <div className="relative min-h-[340px] md:min-h-full">
+              <img
+                src="/stamps-collage.jpg"
+                alt="Vintage travel postage stamps from around the world"
+                className="absolute inset-0 w-full h-full object-cover"
+                loading="lazy"
+              />
+              <div className="absolute inset-0 bg-gradient-to-tr from-[#1D503A]/30 via-transparent to-transparent" />
+              <div className="absolute top-5 left-5 size-3 border-t border-l border-white/70" />
+              <div className="absolute bottom-5 right-5 size-3 border-b border-r border-white/70" />
+              <div className="absolute bottom-6 left-6 right-6 text-white">
+                <p className="font-['Cormorant_Garamond',ui-serif,Georgia] italic text-2xl leading-tight drop-shadow-lg">
+                  Collect passports,<br />not regrets.
+                </p>
               </div>
-              <div className="flex flex-col gap-2">
-                <label className="font-label-md text-label-md text-on-surface-variant">WhatsApp Number *</label>
-                <input type="tel" name="phone" required placeholder="e.g. 501234567" value={formData.phone} onChange={handleInputChange} className="w-full bg-surface-container border border-outline-variant/15 rounded-lg px-4 py-3 text-body-sm focus:outline-none" />
-              </div>
-              <div className="flex flex-col gap-2">
-                <label className="font-label-md text-label-md text-on-surface-variant">Email Address *</label>
-                <input type="email" name="email" required placeholder="e.g. jane.doe@example.com" value={formData.email} onChange={handleInputChange} className="w-full bg-surface-container border border-outline-variant/15 rounded-lg px-4 py-3 text-body-sm focus:outline-none" />
-              </div>
-              <div className="flex flex-col gap-2">
-                <label className="font-label-md text-label-md text-on-surface-variant">Your Nationality *</label>
-                <input type="text" name="nationality" required placeholder="e.g. Indian, Jordanian" value={formData.nationality} onChange={handleInputChange} className="w-full bg-surface-container border border-outline-variant/15 rounded-lg px-4 py-3 text-body-sm focus:outline-none" />
-              </div>
-              <div className="flex flex-col gap-2">
-                <label className="font-label-md text-label-md text-on-surface-variant">Destination Country *</label>
-                <select name="destination" required value={formData.destination} onChange={handleInputChange} className="w-full bg-surface-container border border-outline-variant/15 rounded-lg px-4 py-3 text-body-sm focus:outline-none">
-                  <option value="Schengen">Schengen Europe</option>
-                  <option value="UK">United Kingdom</option>
-                  <option value="USA">United States</option>
-                  <option value="UAE">United Arab Emirates</option>
-                  <option value="Saudi">Saudi Arabia</option>
-                  <option value="Japan">Japan</option>
-                  <option value="Other">Other Country</option>
-                </select>
-              </div>
-              <div className="flex flex-col gap-2">
-                <label className="font-label-md text-label-md text-on-surface-variant">Travel Start Date</label>
-                <input type="date" name="travelDate" value={formData.travelDate} onChange={handleInputChange} className="w-full bg-surface-container border border-outline-variant/15 rounded-lg px-4 py-3 text-body-sm focus:outline-none" />
-              </div>
-              <div className="flex flex-col gap-2 md:col-span-2">
-                <label className="font-label-md text-label-md text-on-surface-variant">Additional Message</label>
-                <textarea name="message" rows={3} placeholder="Tell us about your visa history, travel companion counts, or urgent requirements..." value={formData.message} onChange={handleInputChange} className="w-full bg-surface-container border border-outline-variant/15 rounded-lg px-4 py-3 text-body-sm focus:outline-none" />
-              </div>
-              <button type="submit" disabled={isSubmitting} className="w-full bg-primary text-on-primary py-4 rounded-xl font-bold hover:opacity-90 transition-opacity md:col-span-2 disabled:opacity-50">
-                {isSubmitting ? "Submitting Inquiry..." : "Submit Inquiry"}
+            </div>
+            {/* Form side */}
+            <form
+              onSubmit={onSubmit}
+              className="p-8 md:p-12 flex flex-col gap-6 bg-[#FCFBF8]"
+            >
+              <Field label="When do you need it?">
+                <input
+                  type="date"
+                  required
+                  value={form.date}
+                  onChange={(e) => update("date", e.target.value)}
+                  className="contact-input"
+                />
+              </Field>
+              <Field label="Where you want to go?">
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Paris, Tokyo, Bali..."
+                  value={form.destination}
+                  onChange={(e) => update("destination", e.target.value)}
+                  className="contact-input"
+                />
+              </Field>
+              <Field label="Count here (no of adults)">
+                <input
+                  type="number"
+                  min={1}
+                  max={20}
+                  required
+                  value={form.adults}
+                  onChange={(e) => update("adults", Number(e.target.value))}
+                  className="contact-input"
+                />
+              </Field>
+              <Field label="Write here">
+                <textarea
+                  rows={3}
+                  placeholder="We'd love to mail you or text you..."
+                  value={form.message}
+                  onChange={(e) => update("message", e.target.value)}
+                  className="contact-input resize-none pt-2"
+                />
+              </Field>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="group relative mt-2 inline-flex items-center justify-center gap-2 bg-[#1D503A] text-white px-8 py-4 rounded-[2px] text-sm uppercase tracking-[0.25em] font-semibold hover:bg-[#143d2c] transition-colors disabled:opacity-50"
+              >
+                <span>{isSubmitting ? "Sending..." : "Send Enquiry"}</span>
+                <span className="size-1.5 rotate-45 bg-[#D4AF37] transition-transform group-hover:translate-x-1" />
               </button>
             </form>
           </div>
         </div>
+        <style>{`
+          .contact-input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid rgba(29,80,58,0.2);
+            padding: 8px 0;
+            font-size: 15px;
+            color: #1D503A;
+            outline: none;
+            transition: border-color 200ms;
+          }
+          .contact-input:focus {
+            border-bottom-color: #D4AF37;
+          }
+          .contact-input::placeholder {
+            color: rgba(29,80,58,0.4);
+          }
+        `}</style>
       </section>
 
       {/* TESTIMONIALS SECTION */}
-      <section className="relative overflow-hidden py-[120px] px-margin-mobile md:px-margin-desktop bg-surface">
+      <section className="relative z-10 overflow-hidden py-[120px] px-margin-mobile md:px-margin-desktop bg-transparent">
         <div className="max-w-container-max mx-auto bg-primary-container p-12 rounded-3xl relative overflow-hidden space-y-12 z-10">
           <div className="absolute -top-24 -right-24 w-64 h-64 bg-secondary/10 rounded-full blur-3xl"></div>
           <div className="text-center space-y-3 max-w-xl mx-auto relative z-10">
@@ -1364,5 +1390,16 @@ export const HomePage = () => {
     </div>
   );
 };
+
+function Field({ label, children }) {
+  return (
+    <label className="block">
+      <span className="block text-[10px] uppercase tracking-[0.22em] text-[#1D503A]/60 mb-2">
+        {label}
+      </span>
+      {children}
+    </label>
+  );
+}
 
 export default HomePage;
