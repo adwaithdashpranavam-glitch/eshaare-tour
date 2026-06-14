@@ -15,7 +15,8 @@ import {
   Globe,
   Search,
   CalendarDays,
-  User
+  User,
+  Send
 } from "lucide-react";
 
 export const PublicLayout = () => {
@@ -371,7 +372,7 @@ export const PublicLayout = () => {
             )}
             <Link
               to="/"
-              className="flex items-center gap-1 sm:gap-2 group shrink-0 -ml-2 lg:-ml-20 xl:-ml-24"
+              className="flex items-center gap-1 sm:gap-2 group shrink-0"
             >
               <img
                 src={foxLogo}
@@ -630,12 +631,12 @@ export const PublicLayout = () => {
 
       {/* Footer matching figma style colorings */}
       {!isPortal && (
-        <footer className="bg-primary-container text-on-primary-container pt-16 pb-32">
+        <footer className="relative z-10 bg-primary-container text-on-primary-container pt-16 pb-48">
           <div className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop grid grid-cols-1 md:grid-cols-4 gap-gutter mb-12">
             {/* Brand Col */}
             <div className="flex flex-col gap-4">
-              <Link to="/" className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-white text-3xl font-bold">location_on</span>
+              <Link to="/" className="flex items-center gap-2 text-white">
+                <MapPin className="h-6 w-6 text-white stroke-[2.5]" />
                 <span className="font-headline-md font-bold text-white tracking-tight">
                   ESHAAR TOUR
                 </span>
@@ -650,22 +651,22 @@ export const PublicLayout = () => {
               <h4 className="text-white font-headline-md text-body-lg font-semibold">Services</h4>
               <ul className="flex flex-col gap-2.5 text-body-sm">
                 <li>
-                  <Link to="/visa-services" className="text-on-primary-container/80 hover:text-secondary-fixed transition-colors">
+                  <Link to="/visa-services" className="text-on-primary-container/80 hover:text-[#D4AF37] transition-colors">
                     Visa Services
                   </Link>
                 </li>
                 <li>
-                  <Link to="/packages" className="text-on-primary-container/80 hover:text-[#1D503A] transition-colors">
+                  <Link to="/packages" className="text-on-primary-container/80 hover:text-[#D4AF37] transition-colors">
                     Tour Packages
                   </Link>
                 </li>
                 <li>
-                  <Link to="/destinations" className="text-on-primary-container/80 hover:text-[#1D503A] transition-colors">
+                  <Link to="/destinations" className="text-on-primary-container/80 hover:text-[#D4AF37] transition-colors">
                     Destinations
                   </Link>
                 </li>
                 <li>
-                  <Link to="/resources" className="text-on-primary-container/80 hover:text-[#1D503A] transition-colors">
+                  <Link to="/resources" className="text-on-primary-container/80 hover:text-[#D4AF37] transition-colors">
                     Documentation Guide
                   </Link>
                 </li>
@@ -677,22 +678,22 @@ export const PublicLayout = () => {
               <h4 className="text-white font-headline-md text-body-lg font-semibold">Support</h4>
               <ul className="flex flex-col gap-2.5 text-body-sm">
                 <li>
-                  <Link to="/track" className="text-on-primary-container/80 hover:text-[#1D503A] transition-colors">
+                  <Link to="/track" className="text-on-primary-container/80 hover:text-[#D4AF37] transition-colors">
                     Track Application
                   </Link>
                 </li>
                 <li>
-                  <Link to="/contact" className="text-on-primary-container/80 hover:text-[#1D503A] transition-colors">
+                  <Link to="/contact" className="text-on-primary-container/80 hover:text-[#D4AF37] transition-colors">
                     Contact Support
                   </Link>
                 </li>
                 <li>
-                  <Link to="/login" className="text-on-primary-container/80 hover:text-[#1D503A] transition-colors">
+                  <Link to="/login" className="text-on-primary-container/80 hover:text-[#D4AF37] transition-colors">
                     Staff Login
                   </Link>
                 </li>
                 <li>
-                  <Link to="/portal/login" className="text-on-primary-container/80 hover:text-[#1D503A] transition-colors">
+                  <Link to="/portal/login" className="text-on-primary-container/80 hover:text-[#D4AF37] transition-colors">
                     Client Portal
                   </Link>
                 </li>
@@ -705,20 +706,21 @@ export const PublicLayout = () => {
               <p className="text-body-sm leading-relaxed text-on-primary-container/80">
                 Subscribe to get the latest visa news updates and luxury tour package offers.
               </p>
-              <form onSubmit={handleNewsletterSubmit} className="flex gap-2">
+              <form onSubmit={handleNewsletterSubmit} className="flex gap-2 items-center">
                 <input
                   type="email"
                   required
-                  className="flex-grow px-3 py-2 bg-surface-container-lowest text-on-surface placeholder:text-on-surface-variant/50 text-body-sm rounded-lg border border-outline-variant/10 focus:outline-none"
+                  className="flex-grow px-4 py-2.5 bg-white text-gray-800 placeholder:text-gray-400 text-body-sm rounded-lg border border-transparent focus:outline-none shadow-sm"
                   placeholder="Your email address"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
                 <button
                   type="submit"
-                  className="bg-[#1D503A] text-white px-4 py-2 rounded-lg font-label-md hover:bg-[#0e4a1e] transition-colors flex items-center justify-center"
+                  className="bg-[#1D503A] text-white p-3 rounded-lg hover:bg-[#143d2c] hover:scale-105 transition-all flex items-center justify-center shadow-sm shrink-0"
+                  aria-label="Subscribe"
                 >
-                  <span className="material-symbols-outlined text-lg">send</span>
+                  <Send className="h-4 w-4" />
                 </button>
               </form>
             </div>
@@ -726,11 +728,11 @@ export const PublicLayout = () => {
 
           {/* Bottom Bar */}
           <div className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between text-body-sm text-on-primary-container/60">
-            <p>Â© {new Date().getFullYear()} Eshaare Tours UAE. All rights reserved.</p>
+            <p>{"\u00A9"} {new Date().getFullYear()} Eshaare Tours UAE. All rights reserved.</p>
             <div className="flex gap-6 mt-4 md:mt-0">
-              <a href="https://instagram.com" target="_blank" rel="noreferrer" className="hover:text-secondary-fixed transition-colors">Instagram</a>
-              <a href="https://wa.me/971501234567" target="_blank" rel="noreferrer" className="hover:text-secondary-fixed transition-colors">WhatsApp</a>
-              <a href="https://facebook.com" target="_blank" rel="noreferrer" className="hover:text-secondary-fixed transition-colors">Facebook</a>
+              <a href="https://instagram.com" target="_blank" rel="noreferrer" className="hover:text-[#D4AF37] transition-colors">Instagram</a>
+              <a href="https://wa.me/971501234567" target="_blank" rel="noreferrer" className="hover:text-[#D4AF37] transition-colors">WhatsApp</a>
+              <a href="https://facebook.com" target="_blank" rel="noreferrer" className="hover:text-[#D4AF37] transition-colors">Facebook</a>
             </div>
           </div>
         </footer>

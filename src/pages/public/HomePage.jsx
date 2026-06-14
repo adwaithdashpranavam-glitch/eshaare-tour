@@ -12,8 +12,9 @@ const SERVICE_IMAGES = [
   "https://images.unsplash.com/photo-1499856871958-5b9627545d1a?auto=format&fit=crop&w=900&q=80", // Schengen – Paris/Europe
   "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=900&q=80", // UK – London
   "https://images.unsplash.com/photo-1501594907352-04cda38ebc29?auto=format&fit=crop&w=900&q=80", // USA – New York
-  "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=900&q=80", // UAE – Dubai
   "https://images.unsplash.com/photo-1586724237569-f3d0c1dee8c6?auto=format&fit=crop&w=900&q=80", // Saudi – Riyadh
+  "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=900&q=80", // UAE – Dubai
+  "https://images.unsplash.com/photo-1621680696874-edd80ce57b72?auto=format&fit=crop&w=900&q=80", // Oman – Muscat
   "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=900&q=80", // Japan – Kyoto
   "https://images.unsplash.com/photo-1556740772-1a741367b93e?auto=format&fit=crop&w=900&q=80", // Business – corporate
   "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=900&q=80", // VFS – airport
@@ -28,21 +29,27 @@ export const HomePage = () => {
   const slides = [
     {
       image: "https://images.unsplash.com/photo-1531366936337-7c912a4589a7?auto=format&fit=crop&w=1600&q=80",
-      headline: "Explore The World Without Boundaries",
-      subtext: "Premium visa processing assistance & bespoke international holiday packages. Curated specifically for UAE residents seeking seamless global travel.",
-      animated: true
+      headline: "Holiday Packages from Dubai",
+      subtext: "Book the best holiday packages from Dubai with Eshaare Tours UAE. Enjoy tailor-made vacations, family holidays, honeymoon trips, and international tours.",
+      animated: true,
+      ctaText: "Plan Your Trip Today",
+      ctaLink: "/packages"
     },
     {
       image: "https://plus.unsplash.com/premium_photo-1684407617181-275e50374e95?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-      headline: "Seamless Schengen & Global Visa Support",
-      subtext: "99% document audit accuracy, express VFS slot allocations, and tailor-made NOC employer templates for rapid embassy approvals.",
-      animated: false
+      headline: "Visa Assistance From  Dubai",
+      subtext: "Fast and reliable visa assistance from Dubai. Get expert help with Schengen, UK, USA, Canada, Australia, New Zealand, and other international visas.",
+      animated: false,
+      ctaText: "Start Your Visa Process",
+      ctaLink: "/appointment"
     },
     {
       image: "https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=1600&q=80",
-      headline: "Curated Luxury Holiday Experiences",
-      subtext: "Unlock handcrafted tour itineraries, priority entry passes, and boutique stays in Paris, Kyoto, London, and beyond.",
-      animated: false
+      headline: "Luxury Travel, Visa Assistance & Holiday Planning from Dubai",
+      subtext: "Luxury travel, visa assistance, holiday packages, flights, hotels, and customized tours from Dubai. Expert travel planning for UAE residents worldwide.",
+      animated: false,
+      ctaText: "Chat on WhatsApp",
+      ctaLink: "https://wa.me/971501234567"
     }
   ];
 
@@ -164,44 +171,80 @@ export const HomePage = () => {
   };
 
   const services = [
-    { name: "Schengen Visa", desc: "Full document audit for all 27 Schengen countries — itinerary, financials, travel history, and cover letters checked before your embassy appointment.", slug: "schengen", icon: "euro" },
-    { name: "UK Visa", desc: "Expert guidance for Standard Visitor and family visas. We prepare your financial evidence, invitation letters, and biometric appointment booking.", slug: "uk", icon: "home" },
-    { name: "USA Visa", desc: "B1/B2 tourist and business visa application support with DS-160 assistance, interview preparation, and embassy appointment scheduling.", slug: "usa", icon: "map" },
-    { name: "UAE Visa", desc: "Entry permits, tourist visas and residency setup for all nationalities. Fast processing with full document compliance checks.", slug: "uae", icon: "location_city" },
-    { name: "Saudi Visa", desc: "Tourist eVisa and business visa arrangements. We manage the online application, sponsor documentation, and health declaration forms.", slug: "saudi", icon: "mosque" },
-    { name: "Japan Visa", desc: "Tourist and transit visa assistance for UAE residents. Itinerary planning, hotel bookings, and bank statement guidance included.", slug: "japan", icon: "filter_hdr" },
-    { name: "Business Visa", desc: "Corporate immigration and business visas worldwide. NOC templates, employer letters, and trade licence submissions handled for you.", slug: "business", icon: "business_center" },
+    { name: "Schengen Visa from Dubai", desc: "Full document audit for all 27 Schengen countries — itinerary, financials, travel history, and cover letters checked before your embassy appointment.", slug: "schengen", icon: "euro" },
+    { name: "UK Visa from Dubai", desc: "Expert guidance for Standard Visitor and family visas. We prepare your financial evidence, invitation letters, and biometric appointment booking.", slug: "uk", icon: "home" },
+    { name: "USA Visa from Dubai", desc: "B1/B2 tourist and business visa application support with DS-160 assistance, interview preparation, and embassy appointment scheduling.", slug: "usa", icon: "map" },
+    { name: "Saudi Visa from Dubai", desc: "Tourist eVisa and business visa arrangements. We manage the online application, sponsor documentation, and health declaration forms.", slug: "saudi", icon: "mosque" },
+    { name: "UAE Visa from Dubai", desc: "Entry permits, tourist visas and residency setup for all nationalities. Fast processing with full document compliance checks.", slug: "uae", icon: "location_city" },
+    { name: "Oman Visa from Dubai", desc: "Tourist and transit visa assistance for road and air travel. Expert check on insurance compliance, vehicle permissions, and instant eVisa approval.", slug: "oman", icon: "explore" },
+    { name: "Japan Visa from Dubai", desc: "Tourist and transit visa assistance for UAE residents. Itinerary planning, hotel bookings, and bank statement guidance included.", slug: "japan", icon: "filter_hdr" },
+    { name: "Business Visa from Dubai", desc: "Corporate immigration and business visas worldwide. NOC templates, employer letters, and trade licence submissions handled for you.", slug: "business", icon: "business_center" },
     { name: "VFS Booking", desc: "Priority slot booking and document preparation for VFS Global centres across the UAE. Express appointments for urgent travellers.", slug: "vfs-booking", icon: "event_available" },
     { name: "Travel Insurance", desc: "Schengen-compliant global travel insurance plans with same-day policy issuance and minimum coverage guarantees.", slug: "insurance", icon: "health_and_safety" }
   ];
 
-  const packages = [
+  const testimonials = [
     {
-      title: "Magical Kerala Backwater Escape",
-      dest: "Kerala, India",
-      duration: "6 Nights / 7 Days",
-      price: "3,999",
+      name: "Aarav & Priya Mehta",
+      trip: "Honeymoon in Santorini",
+      location: "Greece · 2025",
+      quote:
+        "Every detail was thought of before we even asked. From the sunset cruise to the private villa transfer — it felt less like a trip and more like a love letter.",
+      rating: 5,
+      initials: "AM",
+    },
+    {
+      name: "Rohan Kapoor",
+      trip: "Schengen Business Tour",
+      location: "Paris · Zürich · Milan",
+      quote:
+        "Visa in 9 days. Lounge access, hotels, the lot — handled. I just packed a bag and showed up. Genuinely the smoothest travel experience I've had.",
+      rating: 5,
+      initials: "RK",
+    },
+    {
+      name: "The Sharma Family",
+      trip: "Japan in Cherry Blossom",
+      location: "Tokyo · Kyoto · Osaka",
+      quote:
+        "Our kids still talk about the bullet train and the ryokan in Kyoto. The itinerary balanced wonder for them and calm for us. We'll be back.",
+      rating: 5,
+      initials: "SF",
+    },
+  ];
+
+  const featuredPackages = [
+    {
+      title: "Kerala Backwaters",
+      location: "Kerala, India",
+      price: "$224",
+      priceSub: "/ Person",
       img: "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=800&q=80",
-      slug: "kerala-backwater-escape",
-      featured: true
+      link: "/packages/kerala-backwater-escape"
     },
     {
-      title: "Tokyo & Kyoto Cultural Escape",
-      dest: "Japan",
-      duration: "6 Nights / 7 Days",
-      price: "6,999",
-      img: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=800&q=80",
-      slug: "tokyo-kyoto-cultural",
-      featured: false
+      title: "Interlaken Holu",
+      location: "Gentrisch, Switzerland",
+      price: "$224",
+      priceSub: "/ Person",
+      img: "https://images.unsplash.com/photo-1502784444187-359ac186c5bb?q=80&w=800&auto=format&fit=crop",
+      link: "/packages"
     },
     {
-      title: "Magical London & Edinburgh",
-      dest: "United Kingdom",
-      duration: "8 Nights / 9 Days",
-      price: "5,499",
-      img: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=800&q=80",
-      slug: "magical-london-scotland",
-      featured: false
+      title: "Bespoke Honeymoon",
+      location: "Maldives Escape",
+      price: "$399",
+      priceSub: "/ Person",
+      img: "https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=800&q=80",
+      link: "/packages/customise"
+    },
+    {
+      title: "Custom Package",
+      location: "Tailor-made Journeys",
+      price: "Bespoke",
+      priceSub: "Pricing",
+      img: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=800&auto=format&fit=crop",
+      link: "/packages/customise"
     }
   ];
 
@@ -374,10 +417,22 @@ export const HomePage = () => {
   const typewriterClass = (id) =>
     `typewriter-animate ${visibleSections[id] ? "active" : ""}`;
 
+  // ─── Testimonials Carousel State ─────────────────────────────────────────
+  const [activeTestimonial, setActiveTestimonial] = useState(0);
+
+  // Auto-skip rotation timer for testimonials (every 5 seconds)
+  useEffect(() => {
+    if (testimonials.length <= 1) return;
+    const interval = setInterval(() => {
+      setActiveTestimonial((prev) => (prev + 1) % testimonials.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [testimonials.length]);
+
   // ─── Services Vertical Carousel ──────────────────────────────────────────
   const [activeSvc, setActiveSvc] = useState(0);
   const [svcAnimating, setSvcAnimating] = useState(false);
-  const SLIDE_HEIGHT = 520;
+  const SLIDE_HEIGHT = 400;
   const TOTAL_SVC = services.length;
   const carouselRef = useRef(null);
   const sectionRef = useRef(null);
@@ -477,7 +532,7 @@ export const HomePage = () => {
 
   // Touch scroll trap for the carousel window itself
   function handleCarouselTouchStart(e) {
-    dragStartY.current = e.touches[1].clientY;
+    dragStartY.current = e.touches[0].clientY;
   }
   function handleCarouselTouchEnd(e) {
     if (dragStartY.current === null) return;
@@ -521,19 +576,37 @@ export const HomePage = () => {
               >
                 {slide.subtext}
               </p>
-              <Link
-                to="/appointment"
-                className={`group inline-flex items-center gap-2 w-fit px-8 py-4 rounded-xl font-bold text-white
-                  bg-white/15 backdrop-blur-xl ring-1 ring-white/30
-                  shadow-[0_10px_30px_-10px_rgba(0,0,0,0.35)]
-                  hover:bg-white/25 hover:ring-white/50
-                  hover:shadow-[0_16px_40px_-12px_rgba(255,255,255,0.25)]
-                  transition-all duration-700 delay-700 hover:scale-105
-                  ${activeSlide === index ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
-              >
-                <span>Apply Now</span>
-                <span className="material-symbols-outlined transition-transform group-hover:translate-x-1">arrow_forward</span>
-              </Link>
+              {slide.ctaLink.startsWith("http") ? (
+                <a
+                  href={slide.ctaLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`group inline-flex items-center gap-2 w-fit px-8 py-4 rounded-xl font-bold text-white
+                    bg-white/15 backdrop-blur-xl ring-1 ring-white/30
+                    shadow-[0_10px_30px_-10px_rgba(0,0,0,0.35)]
+                    hover:bg-white/25 hover:ring-white/50
+                    hover:shadow-[0_16px_40px_-12px_rgba(255,255,255,0.25)]
+                    transition-all duration-700 delay-700 hover:scale-105
+                    ${activeSlide === index ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
+                >
+                  <span>{slide.ctaText}</span>
+                  <span className="material-symbols-outlined transition-transform group-hover:translate-x-1">arrow_forward</span>
+                </a>
+              ) : (
+                <Link
+                  to={slide.ctaLink}
+                  className={`group inline-flex items-center gap-2 w-fit px-8 py-4 rounded-xl font-bold text-white
+                    bg-white/15 backdrop-blur-xl ring-1 ring-white/30
+                    shadow-[0_10px_30px_-10px_rgba(0,0,0,0.35)]
+                    hover:bg-white/25 hover:ring-white/50
+                    hover:shadow-[0_16px_40px_-12px_rgba(255,255,255,0.25)]
+                    transition-all duration-700 delay-700 hover:scale-105
+                    ${activeSlide === index ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
+                >
+                  <span>{slide.ctaText}</span>
+                  <span className="material-symbols-outlined transition-transform group-hover:translate-x-1">arrow_forward</span>
+                </Link>
+              )}
             </div>
           </div>
         ))}
@@ -617,17 +690,17 @@ export const HomePage = () => {
       {/* ─── SERVICE CARDS — VERTICAL SCROLL CAROUSEL ──────────────────────── */}
       <section
         ref={sectionRef}
-        className="relative z-10 overflow-hidden py-[90px] px-margin-mobile md:px-margin-desktop bg-transparent"
+        className="relative z-10 overflow-hidden py-[60px] px-margin-mobile md:px-margin-desktop bg-transparent"
       >
         <div className="max-w-container-max mx-auto space-y-12 relative z-10">
 
           {/* Section header */}
           <div
             data-animate="visa-services"
-            className={`text-center max-w-xl mx-auto space-y-3 transition-opacity duration-1000 ${visibleSections["visa-services"] ? "opacity-100" : "opacity-0"}`}
+            className={`text-center max-w-3xl mx-auto space-y-3 transition-opacity duration-1000 ${visibleSections["visa-services"] ? "opacity-100" : "opacity-0"}`}
           >
-            <h2 className={`font-headline-lg text-[30px] sm:text-2xl md:text-headline-lg text-primary ${typewriterClass("visa-services")}`}>
-              Visa Services
+            <h2 className="font-headline-lg text-[26px] sm:text-[32px] md:text-[40px] text-primary leading-tight whitespace-normal break-words">
+              Visa Services From Dubai 
             </h2>
             <p className="text-on-surface-variant text-body-md">
               From Schengen visa audits to business slots, we manage the complete document checking lists for UAE residents.
@@ -680,7 +753,7 @@ export const HomePage = () => {
 
                     {/* ── Glassmorphism image card (right side, desktop) ── */}
                     <div
-                      className="absolute right-8 top-1/2 -translate-y-1/2 w-[220px] h-[340px]
+                      className="absolute right-8 top-1/2 -translate-y-1/2 w-[200px] h-[260px]
                         rounded-2xl overflow-hidden hidden md:block
                         ring-1 ring-white/20
                         shadow-[0_8px_32px_-8px_rgba(0,0,0,0.25)]"
@@ -701,16 +774,16 @@ export const HomePage = () => {
 
                     {/* ── Slide content (left side) ── */}
                     <div
-                      className="relative z-10 flex flex-col justify-between p-6 md:p-14 w-full md:max-w-[calc(100%-260px)] bg-surface/20 md:bg-transparent"
+                      className="relative z-10 flex flex-col justify-between p-6 md:p-10 w-full md:max-w-[calc(100%-260px)] bg-surface/20 md:bg-transparent"
                       style={{ minHeight: SLIDE_HEIGHT }}
                     >
                       {/* Slide counter */}
-                      <span className="text-xs font-medium text-on-surface-variant tracking-[0.15em] uppercase mb-8 block">
+                      <span className="text-xs font-medium text-on-surface-variant tracking-[0.15em] uppercase mb-4 block">
                         {String(idx + 1).padStart(2, "0")} / {String(TOTAL_SVC).padStart(2, "0")}
                       </span>
 
                       <div className="flex-1">
-                        <span className="material-symbols-outlined text-4xl text-secondary mb-6 block">
+                        <span className="material-symbols-outlined text-4xl text-secondary mb-3 block">
                           {srv.icon}
                         </span>
                         <h3 className="font-headline-lg text-headline-lg text-primary mb-4 leading-tight">
@@ -723,13 +796,17 @@ export const HomePage = () => {
 
                       <Link
                         to={`/visa-services/${srv.slug}`}
-                        className="inline-flex items-center gap-2 hover:gap-4 transition-all w-fit mt-10
+                        className="inline-flex items-center gap-2 hover:gap-4 transition-all w-fit mt-4
                           text-secondary font-bold text-body-sm
                           border border-secondary/30 px-6 py-3 rounded-xl
                           hover:bg-secondary-container hover:text-on-secondary-container
                           hover:border-secondary-container"
                       >
-                        <span>Enquire Now</span>
+                        <span>
+                          {!["vfs-booking", "insurance"].includes(srv.slug)
+                            ? "Start Your Visa Process"
+                            : "Enquire Now"}
+                        </span>
                         <span className="material-symbols-outlined text-lg">arrow_forward</span>
                       </Link>
                     </div>
@@ -753,7 +830,7 @@ export const HomePage = () => {
             </div>
 
             {/* ── RIGHT SIDEBAR: Preview thumbnails ── */}
-            <div className="hidden md:flex flex-col gap-2 pt-1">
+            <div className="hidden md:flex flex-col gap-1 pt-1">
               {services.map((srv, i) => (
                 <button
                   key={i}
@@ -767,7 +844,7 @@ export const HomePage = () => {
                       : "ring-outline-variant/20 opacity-60 hover:opacity-90 hover:scale-[1.02]"
                     }
                   `}
-                  style={{ height: 46 }}
+                  style={{ height: 34 }}
                 >
                   {/* Thumbnail image */}
                   <img
@@ -806,24 +883,24 @@ export const HomePage = () => {
               ))}
 
               {/* Minimal up/down arrows below thumbnails */}
-              <div className="flex gap-2 mt-1">
+              <div className="flex gap-1 mt-1">
                 <button
                   onClick={() => stepSvc(-1)}
                   disabled={activeSvc === 0}
                   aria-label="Previous service"
-                  className="flex-1 h-8 rounded-lg border border-outline-variant/20 flex items-center justify-center text-primary
+                  className="flex-1 h-[26px] rounded-lg border border-outline-variant/20 flex items-center justify-center text-primary
                     hover:bg-surface-container-low disabled:opacity-25 disabled:cursor-not-allowed transition-colors"
                 >
-                  <span className="material-symbols-outlined text-base">arrow_upward</span>
+                  <span className="material-symbols-outlined text-sm">arrow_upward</span>
                 </button>
                 <button
                   onClick={() => stepSvc(1)}
                   disabled={activeSvc === TOTAL_SVC - 1}
                   aria-label="Next service"
-                  className="flex-1 h-8 rounded-lg border border-outline-variant/20 flex items-center justify-center text-primary
+                  className="flex-1 h-[26px] rounded-lg border border-outline-variant/20 flex items-center justify-center text-primary
                     hover:bg-surface-container-low disabled:opacity-25 disabled:cursor-not-allowed transition-colors"
                 >
-                  <span className="material-symbols-outlined text-base">arrow_downward</span>
+                  <span className="material-symbols-outlined text-sm">arrow_downward</span>
                 </button>
               </div>
             </div>
@@ -835,117 +912,170 @@ export const HomePage = () => {
       {/* ──────────────────────────────────────────────────────────────────── */}
 
       {/* FEATURED TOUR PACKAGES (BENTO GRID) */}
-      <section className="relative z-10 overflow-hidden py-[90px] px-margin-mobile md:px-margin-desktop bg-transparent">
+      <section className="relative z-10 overflow-hidden py-[60px] px-margin-mobile md:px-margin-desktop bg-transparent">
         <div className="max-w-container-max mx-auto space-y-12 relative z-10">
-          <div className="grid grid-cols-1 md:grid-cols-[140px_1fr_140px] items-center md:items-end gap-4 w-full">
-            <div className="hidden md:block w-[140px]" /> {/* Left spacer to center the header text */}
+
+          {/* Section header */}
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 w-full">
             <div
               data-animate="holiday-packages"
-              className={`text-center space-y-2 tranasition-opacity duration-1000 ${visibleSections["holiday-packages"] ? "opacity-100" : "opacity-0"}`}
+              className={`space-y-2 transition-opacity duration-1000 ${visibleSections["holiday-packages"] ? "opacity-100" : "opacity-0"}`}
             >
-              <h2 className={`font-headline-lg text-[20px] sm:text-2xl md:text-headline-lg text-primary ${typewriterClass("holiday-packages")}`}>
+              <h2 className={`font-headline-lg text-[30px] sm:text-2xl md:text-headline-lg text-primary ${typewriterClass("holiday-packages")}`}>
                 Featured Holiday Packages
               </h2>
               <p className="text-on-surface-variant text-body-md">Explore curated luxury tours designed for UAE travellers.</p>
             </div>
-            <div className="flex md:justify-end md:w-[140px] justify-center w-full">
+            <Link
+              to="/packages"
+              className="text-secondary font-bold inline-flex items-center gap-2 hover:gap-4 transition-all text-body-sm whitespace-nowrap"
+            >
+              <span>View All Packages</span>
+              <span className="material-symbols-outlined text-lg">arrow_forward</span>
+            </Link>
+          </div>
+
+          {/* Bento Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6">
+
+            {/* Left side column: Card 1, Card 2 and bottom banner */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+
+              {/* Card 1: Kerala Backwaters */}
               <Link
-                to="/packages"
-                className="text-secondary font-bold inline-flex items-center gap-2 hover:gap-4 transition-all text-body-sm whitespace-nowrap"
+                to={featuredPackages[0].link}
+                className="relative group rounded-[24px] overflow-hidden h-[300px] shadow-lg border border-outline-variant/10 block cursor-pointer"
               >
-                <span>View All Packages</span>
-                <span className="material-symbols-outlined text-lg">arrow_forward</span>
+                <img
+                  src={featuredPackages[0].img}
+                  alt={featuredPackages[0].title}
+                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+                <div className="absolute bottom-4 left-4 right-4 bg-white/15 backdrop-blur-md border border-white/20 rounded-[18px] p-4 text-white">
+                  <div className="flex justify-between items-start">
+                    <h3 className="font-bold text-base sm:text-lg leading-tight tracking-wide">{featuredPackages[0].title}</h3>
+                    <div className="text-right flex-shrink-0">
+                      <div className="font-extrabold text-base sm:text-lg">{featuredPackages[0].price}</div>
+                      <div className="text-[10px] text-white/70 font-medium leading-none">{featuredPackages[0].priceSub}</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1 text-[11px] text-white/80 mt-2 font-medium">
+                    <span className="material-symbols-outlined text-[14px]">location_on</span>
+                    <span>{featuredPackages[0].location}</span>
+                  </div>
+                </div>
               </Link>
-            </div>
-          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 md:grid-rows-2 gap-4 md:h-[600px]">
-            <div className="relative group sm:col-span-2 md:col-span-2 md:row-span-2 min-h-[420px] md:min-h-0">
-              <div className="absolute inset-0 overflow-hidden rounded-2xl">
-                <img src={packages[0].img} alt={packages[0].title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
-              </div>
-              <div className="absolute inset-0 flex flex-col justify-end p-8 text-white z-10">
-                <span className="bg-secondary-container text-on-secondary-container text-[11px] font-bold px-3 py-1 rounded-full w-fit mb-3">{packages[0].duration}</span>
-                <h3 className="font-headline-lg text-headline-lg text-white mb-2">{packages[0].title}</h3>
-                <p className="text-white/80 text-body-sm mb-4">
-                  Experience Kerala's peaceful backwaters, luxury resorts, traditional cuisine,
-                  hill stations, and curated local experiences.
-                </p>
-                <span className="text-xl font-bold font-display">{packages[0].price} AED</span>
+              {/* Card 2: Interlaken Holu */}
+              <Link
+                to={featuredPackages[1].link}
+                className="relative group rounded-[24px] overflow-hidden h-[300px] shadow-lg border border-outline-variant/10 block cursor-pointer"
+              >
+                <img
+                  src={featuredPackages[1].img}
+                  alt={featuredPackages[1].title}
+                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+                <div className="absolute bottom-4 left-4 right-4 bg-white/15 backdrop-blur-md border border-white/20 rounded-[18px] p-4 text-white">
+                  <div className="flex justify-between items-start">
+                    <h3 className="font-bold text-base sm:text-lg leading-tight tracking-wide">{featuredPackages[1].title}</h3>
+                    <div className="text-right flex-shrink-0">
+                      <div className="font-extrabold text-base sm:text-lg">{featuredPackages[1].price}</div>
+                      <div className="text-[10px] text-white/70 font-medium leading-none">{featuredPackages[1].priceSub}</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1 text-[11px] text-white/80 mt-2 font-medium">
+                    <span className="material-symbols-outlined text-[14px]">location_on</span>
+                    <span>{featuredPackages[1].location}</span>
+                  </div>
+                </div>
+              </Link>
+
+              {/* Bottom Banner */}
+              <div className="sm:col-span-2 bg-[#1D503A] rounded-[24px] p-6 flex flex-col sm:flex-row justify-between items-center gap-4 text-white shadow-lg">
+                <div className="flex items-center gap-4">
+                  <span className="text-4xl font-black leading-none">120+</span>
+                  <div className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-white/95 leading-tight">
+                    <div>Top Destination</div>
+                    <div>In Global</div>
+                  </div>
+                </div>
                 <Link
-                  to={`/packages/${packages[0].slug}`}
-                  className="
-    bg-white text-primary 
-    px-6 py-2 
-    rounded-lg 
-    font-bold text-body-sm 
-    hover:bg-secondary-container 
-    hover:text-on-secondary-container 
-    transition-colors 
-    flex items-center gap-1
-    w-fit
-    mt-2
-  "
+                  to="/packages"
+                  className="bg-white text-[#1D503A] font-bold px-6 py-2.5 rounded-full text-xs uppercase tracking-wider hover:scale-[1.02] transition-transform flex items-center gap-2 shadow-sm"
                 >
-                  <span>View Tour</span>
-                  <span className="material-symbols-outlined text-lg">arrow_forward</span>
+                  <span>Explore Destination</span>
+                  <span className="material-symbols-outlined text-[14px] font-bold">arrow_forward</span>
                 </Link>
               </div>
+
             </div>
 
-            <div className="relative group min-h-[320px] md:min-h-0">
-              <div className="absolute inset-0 overflow-hidden rounded-2xl">
-                <img src={packages[1].img} alt={packages[1].title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
-              </div>
-              <div className="absolute inset-0 flex flex-col justify-end p-6 text-white z-10">
-                <span className="text-[10px] text-white/85 font-medium mb-1">{packages[1].duration}</span>
-                <h4 className="font-bold text-body-lg text-white mb-2">{packages[1].title}</h4>
-                <div className="flex justify-between items-center">
-                  <span className="font-bold">{packages[1].price} AED</span>
-                  <Link to={`/packages/${packages[1].slug}`} className="text-secondary-container font-bold flex items-center gap-1 text-body-sm hover:underline">
-                    <span>Details</span>
-                    <span className="material-symbols-outlined text-lg">arrow_forward</span>
-                  </Link>
+            {/* Right side column: Card 3 and Card 4 stacked vertically */}
+            <div className="flex flex-col gap-6">
+
+              {/* Card 3: Bespoke Honeymoon */}
+              <Link
+                to={featuredPackages[2].link}
+                className="relative group rounded-[24px] overflow-hidden flex-1 min-h-[180px] lg:min-h-0 shadow-lg border border-outline-variant/10 block cursor-pointer"
+              >
+                <img
+                  src={featuredPackages[2].img}
+                  alt={featuredPackages[2].title}
+                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+                <div className="absolute bottom-4 left-4 right-4 bg-white/15 backdrop-blur-md border border-white/20 rounded-[18px] p-4 text-white">
+                  <div className="flex justify-between items-start">
+                    <h3 className="font-bold text-base sm:text-lg leading-tight tracking-wide">{featuredPackages[2].title}</h3>
+                    <div className="text-right flex-shrink-0">
+                      <div className="font-extrabold text-base sm:text-lg">{featuredPackages[2].price}</div>
+                      <div className="text-[10px] text-white/70 font-medium leading-none">{featuredPackages[2].priceSub}</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1 text-[11px] text-white/80 mt-2 font-medium">
+                    <span className="material-symbols-outlined text-[14px]">location_on</span>
+                    <span>{featuredPackages[2].location}</span>
+                  </div>
                 </div>
-              </div>
+              </Link>
+
+              {/* Card 4: Custom Package */}
+              <Link
+                to="/packages/customise"
+                className="relative group rounded-[24px] overflow-hidden flex-1 min-h-[180px] lg:min-h-0 text-white border border-outline-variant/10 block cursor-pointer transition-transform hover:scale-[1.01]"
+              >
+                <img
+                  src="https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=800&q=80"
+                  alt="Customise Package"
+                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-[#0A231C]/90 group-hover:bg-[#0A231C]/85 transition-colors duration-300" />
+                <div className="relative z-10 flex flex-col justify-between h-full p-5">
+                  <div>
+                    <span className="material-symbols-outlined text-[#D4AF37] text-2xl mb-1.5">public_off</span>
+                    <h3 className="font-bold text-lg text-white mb-2">Plan your trip your way.</h3>
+                    <p className="text-white/80 text-[11px] leading-normal max-w-sm">
+                      Get a Customized Travel Package from Dubai
+                    </p>
+                  </div>
+                  <div className="bg-[#e6ebe8] text-[#1D503A] font-bold px-4 py-1.5 rounded-full text-[11px] w-fit flex items-center gap-1.5 mt-2 shadow-sm transition-colors hover:bg-white">
+                    <span>Request Custom Package</span>
+                    <span className="material-symbols-outlined text-sm font-bold">edit_note</span>
+                  </div>
+                </div>
+              </Link>
+
             </div>
 
-            <div className="relative group md:col-span-1 md:row-span-1 min-h-[320px] md:min-h-0">
-              <div className="absolute inset-0 overflow-hidden rounded-2xl">
-                <img src={packages[2].img} alt={packages[2].title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
-              </div>
-              <div className="absolute inset-0 flex flex-col justify-end p-6 text-white z-10">
-                <span className="text-[10px] text-white/85 font-medium mb-1">{packages[2].duration}</span>
-                <h4 className="font-bold text-body-lg text-white mb-2">{packages[2].title}</h4>
-                <div className="flex justify-between items-center">
-                  <span className="font-bold">{packages[2].price} AED</span>
-                  <Link to={`/packages/${packages[2].slug}`} className="text-secondary-container font-bold flex items-center gap-1 text-body-sm hover:underline">
-                    <span>Details</span>
-                    <span className="material-symbols-outlined text-lg">arrow_forward</span>
-                  </Link>
-                </div>
-              </div>
-            </div>
-
-            <div className="relative group bg-primary-container p-6 md:p-8 rounded-2xl text-on-primary-container flex flex-col justify-between sm:col-span-2 md:col-span-2 overflow-visible min-h-[320px] md:min-h-0">
-              <div className="relative z-10 flex flex-col justify-between h-full">
-                <div>
-                  <span className="material-symbols-outlined text-secondary-fixed text-4xl mb-4">public_off</span>
-                  <h4 className="font-headline-md text-headline-md text-white mb-2">Can't Find Your Package?</h4>
-                  <p className="text-on-primary-container/80 text-body-sm leading-relaxed">
-                    We build customized boutique itineraries catering to your budget, travel group, and dates. Let us coordinate flight logistics, hotels, transfers, and visas.
-                  </p>
-                </div>
-                <Link to="/packages/customise" className="bg-secondary-container text-on-secondary-container px-6 py-3 rounded-xl font-bold text-body-sm hover:scale-[1.02] transition-transform w-fit flex items-center gap-2 mt-4">
-                  <span>Request Custom Package</span>
-                  <span className="material-symbols-outlined text-lg">edit_note</span>
-                </Link>
-              </div>
-            </div>
           </div>
+
         </div>
       </section>
 
@@ -954,13 +1084,13 @@ export const HomePage = () => {
         <div className="max-w-container-max mx-auto space-y-12 relative z-10">
           <div
             data-animate="global-coverage"
-            className={`text-center max-w-xl mx-auto space-y-3 transition-opacity duration-1000 ${visibleSections["global-coverage"] ? "opacity-100" : "opacity-0"}`}
+            className={`text-center max-w-4xl mx-auto space-y-3 transition-opacity duration-1000 ${visibleSections["global-coverage"] ? "opacity-100" : "opacity-0"}`}
           >
-            <h2 className={`font-headline-lg text-[20px] sm:text-2xl md:text-headline-lg text-primary ${typewriterClass("global-coverage")}`}>
-              Global Visa Coverage
+            <h2 className="font-headline-lg text-[24px] sm:text-[30px] md:text-[38px] text-primary leading-tight whitespace-normal break-words">
+              7 Continents Visa Services From Dubai
             </h2>
             <p className="text-on-surface-variant text-body-md text-center mb-10">
-              Check countries and requirements across all seven continents.
+              At Eshaare Tours UAE, we provide visa assistance for destinations across all seven continents, helping UAE residents travel worldwide with confidence.
             </p>
           </div>
         </div>
@@ -1009,29 +1139,28 @@ export const HomePage = () => {
               About Eshaare Tours
             </h2>
             <p className="text-on-surface-variant text-body-md leading-relaxed">
-              Eshaare Tours UAE is a Dubai-based travel agency and visa consultancy helping UAE residents experience seamless international travel. We provide visa services, holiday packages, flight bookings, hotels, insurance, honeymoon trips, corporate travel, cruises, and complete travel assistance.            </p>
+              Eshaare Tours UAE is a Dubai-based travel agency and visa consultancy offering complete travel solutions for UAE residents, families, couples, tourists, students, and corporate travelers. </p>
             <p className="text-on-surface-variant text-body-md leading-relaxed">
-              With a focus on trust, transparency, and personal support, we handle everything from visa guidance to itinerary planning — making every journey simple, smooth, and memorable. </p>
-              <p className="text-on-surface-variant text-body-md leading-relaxed">
-                At Eshaare Tours UAE, we help turn travel dreams into destinations.
-                 </p>
-
-              <div className="pt-4 flex gap-6">
-                <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-secondary text-3xl">verified</span>
-                  <div>
-                    <h4 className="font-bold text-primary text-body-sm">Certified Experts</h4>
-                    <p className="text-on-surface-variant text-body-sm">UAE visa processing coordinators.</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-secondary text-3xl">hourglass_empty</span>
-                  <div>
-                    <h4 className="font-bold text-primary text-body-sm">Express Timelines</h4>
-                    <p className="text-on-surface-variant text-body-sm">Priority embassy bookings.</p>
-                  </div>
+              We provide visa assistance, Schengen visa support, holiday packages, flight and hotel bookings, travel insurance, honeymoon packages, corporate travel, cruises, airport transfers, and customized tour plans.</p>
+            <p className="text-on-surface-variant text-body-md leading-relaxed">
+              Our mission is to make travel simple, transparent, and stress-free by providing reliable guidance and personalized travel services. Eshaare Tours UAE helps you plan every journey with confidence and trust.
+            </p>
+            <div className="pt-4 flex gap-6">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-secondary text-3xl">verified</span>
+                <div>
+                  <h4 className="font-bold text-primary text-body-sm">Certified Experts</h4>
+                  <p className="text-on-surface-variant text-body-sm">UAE visa processing coordinators.</p>
                 </div>
               </div>
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-secondary text-3xl">hourglass_empty</span>
+                <div>
+                  <h4 className="font-bold text-primary text-body-sm">Express Timelines</h4>
+                  <p className="text-on-surface-variant text-body-sm">Priority embassy bookings.</p>
+                </div>
+              </div>
+            </div>
           </div>
           <div className="relative rounded-2xl overflow-hidden shadow-2xl h-[400px]">
             <img src="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=800&q=80" alt="About Eshaare Tours" className="w-full h-full object-cover" />
@@ -1045,13 +1174,13 @@ export const HomePage = () => {
         <div className="max-w-container-max mx-auto space-y-12 relative z-10">
           <div
             data-animate="specialists"
-            className={`text-center max-w-xl mx-auto space-y-3 transition-opacity duration-1000 ${visibleSections["specialists"] ? "opacity-100" : "opacity-0"}`}
+            className={`text-center max-w-3xl mx-auto space-y-3 transition-opacity duration-1000 ${visibleSections["specialists"] ? "opacity-100" : "opacity-0"}`}
           >
             <h2 className={`font-headline-lg text-[20px] sm:text-2xl md:text-headline-lg text-primary ${typewriterClass("specialists")}`}>
-              Meet Our Experts
+              Get Expert Travel Guidance
             </h2>
-            <p className="text-on-surface-variant text-body-md">
-              Our expert consultants verify bank statements, prepare travel documents, and manage your embassy submissions.
+            <p className="text-on-surface-variant text-body-md text-center">
+              Connect with our experienced travel consultants and visa specialists in Dubai. From visa assistance and holiday planning to flight bookings and luxury travel experiences, our experts are here to help you travel with confidence.
             </p>
           </div>
 
@@ -1353,38 +1482,137 @@ export const HomePage = () => {
       </section>
 
       {/* TESTIMONIALS SECTION */}
-      <section className="relative z-10 overflow-hidden py-[120px] px-margin-mobile md:px-margin-desktop bg-transparent">
-        <div className="max-w-container-max mx-auto bg-primary-container p-12 rounded-3xl relative overflow-hidden space-y-12 z-10">
-          <div className="absolute -top-24 -right-24 w-64 h-64 bg-secondary/10 rounded-full blur-3xl"></div>
-          <div className="text-center space-y-3 max-w-xl mx-auto relative z-10">
-            <h2 className="font-headline-lg text-headline-lg text-white">What Our Travellers Say</h2>
-            <p className="text-on-primary-container text-body-md">Read positive reviews from satisfied clients who booked their visa assistance through Eshaare Tours.</p>
+      <section className="relative z-10 overflow-hidden py-[120px] px-margin-mobile md:px-margin-desktop bg-transparent font-['Assistant',ui-sans-serif,system-ui]">
+        <div className="max-w-7xl mx-auto px-6">
+          {/* Header */}
+          <div className="text-center mb-14">
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <div className="h-px w-10 bg-[#D4AF37]/40" />
+              <span className="size-1.5 rotate-45 bg-[#D4AF37]" />
+              <div className="h-px w-10 bg-[#D4AF37]/40" />
+            </div>
+            <p className="text-[11px] uppercase tracking-[0.3em] text-[#1D503A]/60 mb-3 text-center">
+              Postcards from our travellers
+            </p>
+            <h2 className="font-['Cormorant_Garamond',ui-serif,Georgia] italic text-4xl md:text-5xl text-[#1D503A] text-center">
+              What Our Travellers Say
+            </h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
-            <div className="relative group bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/15 shadow-[0_8px_32px_0_rgba(0,0,0,0.2)] hover:bg-white/15 hover:border-white/25 transition-all duration-300 flex flex-col justify-between gap-6 overflow-visible">
-              <div className="relative z-10 flex flex-col justify-between gap-6 h-full">
-                <p className="text-white italic text-body-md">
-                  "Got my French Schengen visa in record time! Rakhi and Hassan made the NOC reviews and slot booking effortless. The client portal is completely state-of-the-art for tracing documents."
-                </p>
-                <div>
-                  <h4 className="text-secondary-fixed font-bold text-body-md">Sarah Al-Kamali</h4>
-                  <p className="text-white/60 text-xs uppercase tracking-widest">Abu Dhabi resident</p>
+          {/* Featured testimonial card */}
+          <div className="relative max-w-4xl mx-auto">
+            {/* Stamp-style corner ticks */}
+            <div className="absolute -top-3 -left-3 size-6 border-t-2 border-l-2 border-[#D4AF37]/60 z-10" />
+            <div className="absolute -top-3 -right-3 size-6 border-t-2 border-r-2 border-[#D4AF37]/60 z-10" />
+            <div className="absolute -bottom-3 -left-3 size-6 border-b-2 border-l-2 border-[#D4AF37]/60 z-10" />
+            <div className="absolute -bottom-3 -right-3 size-6 border-b-2 border-r-2 border-[#D4AF37]/60 z-10" />
+            
+            <div className="relative bg-white/95 backdrop-blur-md ring-1 ring-[#D4AF37]/20 shadow-[0_30px_80px_-30px_rgba(29,80,58,0.25)] px-8 md:px-16 py-12 md:py-16 rounded-[4px] overflow-hidden">
+              {/* Elegant luxury gold inner dashed frame */}
+              <div className="absolute inset-3 border border-dashed border-[#D4AF37]/25 pointer-events-none rounded-[2px]" />
+
+              {/* Circular Postmark Ink Watermark */}
+              <div className="pointer-events-none absolute -top-8 -right-8 w-48 h-48 rounded-full border border-dashed border-[#1D503A]/10 flex items-center justify-center rotate-[-15deg] select-none">
+                <div className="w-[88%] h-[88%] rounded-full border border-double border-[#1D503A]/10 flex flex-col items-center justify-center p-4 text-center">
+                  <span className="text-[9px] uppercase tracking-[0.2em] font-bold text-[#1D503A]/10">Eshaare Tours</span>
+                  <span className="my-1 text-xs uppercase font-serif italic tracking-[0.1em] font-semibold text-[#1D503A]/15 border-y border-[#1D503A]/10 py-0.5 px-2">Verified</span>
+                  <span className="text-[8px] uppercase tracking-[0.15em] font-medium text-[#1D503A]/10">Dubai Expat</span>
+                </div>
+              </div>
+
+              {/* Giant quote mark */}
+              <div className="absolute top-6 left-6 font-['Cormorant_Garamond',ui-serif,Georgia] text-[120px] leading-none text-[#D4AF37]/15 select-none pointer-events-none">
+                &ldquo;
+              </div>
+
+              <div className="relative z-10">
+                {/* Stars */}
+                <div className="flex gap-1.5 mb-6">
+                  {Array.from({ length: testimonials[activeTestimonial].rating }).map((_, i) => (
+                    <span
+                      key={i}
+                      className="size-2 rotate-45 bg-[#D4AF37] shadow-[0_0_8px_rgba(212,175,55,0.4)] inline-block"
+                    />
+                  ))}
+                </div>
+                {/* Quote */}
+                <blockquote
+                  key={activeTestimonial}
+                  className="font-['Cormorant_Garamond',ui-serif,Georgia] italic text-2xl md:text-[28px] leading-[1.45] text-[#1D503A] mb-10 animate-[fade-in_500ms_ease-out_both]"
+                >
+                  {testimonials[activeTestimonial].quote}
+                </blockquote>
+                {/* Author */}
+                <div className="flex items-center gap-5">
+                  <div className="relative">
+                    <div className="size-14 rotate-45 bg-[#1D503A] p-0.5 shadow-md flex items-center justify-center">
+                      <div className="w-full h-full border border-[#D4AF37]/40 flex items-center justify-center">
+                        <span className="-rotate-45 text-[#D4AF37] font-semibold tracking-wider text-sm">
+                          {testimonials[activeTestimonial].initials}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="font-semibold text-[#1D503A] text-base">
+                      {testimonials[activeTestimonial].name}
+                    </div>
+                    <div className="text-[11px] uppercase tracking-[0.22em] text-[#1D503A]/60 mt-1 flex items-center gap-1.5">
+                      <span>{testimonials[activeTestimonial].trip}</span>
+                      <span className="text-[#D4AF37]">•</span>
+                      <span>{testimonials[activeTestimonial].location}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-            <div className="relative group bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/15 shadow-[0_8px_32px_0_rgba(0,0,0,0.2)] hover:bg-white/15 hover:border-white/25 transition-all duration-300 flex flex-col justify-between gap-6 overflow-visible">
-              <div className="relative z-10 flex flex-col justify-between gap-6 h-full">
-                <p className="text-white italic text-body-md">
-                  "We booked a 7-day Rome & Paris tour package through Eshaare. They coordinated all flight transfers and secured Schengen appointments in Wafi mall Dubai. Exceptional service!"
-                </p>
-                <div>
-                  <h4 className="text-secondary-fixed font-bold text-body-md">Michael Richardson</h4>
-                  <p className="text-white/60 text-xs uppercase tracking-widest">UK Expat in Dubai</p>
-                </div>
-              </div>
+            {/* Selector / pagination */}
+            <div className="mt-10 flex items-center justify-center gap-6">
+              {testimonials.map((item, i) => {
+                const isActive = i === activeTestimonial;
+                return (
+                  <button
+                    key={item.name}
+                    onClick={() => setActiveTestimonial(i)}
+                    className="group flex items-center gap-3 transition-opacity"
+                    aria-label={`Read testimonial from ${item.name}`}
+                  >
+                    <span
+                      className={`size-2 rotate-45 transition-all ${
+                        isActive
+                          ? "bg-[#D4AF37] scale-125"
+                          : "bg-[#1D503A]/20 group-hover:bg-[#1D503A]/40"
+                      }`}
+                    />
+                    <span
+                      className={`text-[10px] uppercase tracking-[0.22em] transition-colors hidden sm:inline ${
+                        isActive ? "text-[#1D503A]" : "text-[#1D503A]/40 group-hover:text-[#1D503A]/70"
+                      }`}
+                    >
+                      {item.name.split(" ")[0]}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
+          </div>
+          {/* Trust footer */}
+          <div className="mt-16 flex flex-col items-center gap-4">
+            <div className="flex items-center gap-4">
+              <div className="h-px w-12 bg-[#D4AF37]/30" />
+              <div className="size-1.5 rotate-45 bg-[#D4AF37]" />
+              <div className="h-px w-12 bg-[#D4AF37]/30" />
+            </div>
+            {/* <p className="text-[11px] uppercase tracking-[0.3em] text-[#1D503A]/60 text-center">
+              4.9 / 5 · Over 2,400 journeys curated
+            </p> */}
           </div>
         </div>
+        <style>{`
+          @keyframes fade-in {
+            0% { opacity: 0; transform: translateY(8px); }
+            100% { opacity: 1; transform: translateY(0); }
+          }
+        `}</style>
       </section>
 
     </div>
