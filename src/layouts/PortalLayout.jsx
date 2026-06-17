@@ -79,7 +79,7 @@ export const PortalLayout = () => {
       <div className="h-16 flex items-center px-6 border-b border-white/10 shrink-0">
         <Link to="/portal/dashboard" className="flex items-center space-x-2" onClick={() => setMobileMenuOpen(false)}>
           <Compass className="h-5.5 w-5.5 text-[#C8A45D]" />
-          <span className="font-display font-semibold tracking-[0.15em] text-sm text-white uppercase">ESHAARE</span>
+          <span className="font-logo-serif font-semibold tracking-[0.15em] text-sm text-white uppercase">ESHAARE</span>
         </Link>
       </div>
 
@@ -93,7 +93,7 @@ export const PortalLayout = () => {
               key={item.label}
               to={item.path}
               onClick={() => setMobileMenuOpen(false)}
-              className={`flex items-center space-x-3.5 px-4 py-3 rounded-lg text-[11px] font-semibold uppercase tracking-wider transition-all duration-200 ${
+              className={`flex items-center space-x-3.5 px-4 py-3 rounded-lg text-[11px] font-medium uppercase tracking-wider transition-all duration-200 ${
                 isActive
                   ? "bg-[#C8A45D]/10 text-[#C8A45D] border-l-4 border-[#C8A45D] pl-2.5"
                   : "text-gray-400 hover:text-white hover:bg-white/5 border-l-4 border-transparent"
@@ -139,7 +139,7 @@ export const PortalLayout = () => {
 
         <Link to="/portal/dashboard" className="flex items-center space-x-2">
           <Compass className="h-5 w-5 text-[#C8A45D]" />
-          <span className="font-display font-semibold tracking-wider text-xs uppercase text-white">ESHAARE</span>
+          <span className="font-logo-serif font-semibold tracking-wider text-xs uppercase text-white">ESHAARE</span>
         </Link>
 
         <Link to="/portal/notifications" className="p-2 relative rounded-lg hover:bg-white/5 text-[#E7E1D6]">
@@ -169,7 +169,7 @@ export const PortalLayout = () => {
         <header className="hidden md:flex h-16 bg-white border-b border-[#E7E1D6] items-center justify-between px-8 z-20 sticky top-0 shadow-sm">
           {/* Left: Logo/Title */}
           <div>
-            <h2 className="font-display font-semibold text-lg text-[#1A1A1A] tracking-wider uppercase flex items-center space-x-2">
+            <h2 className="font-logo-serif font-semibold text-lg text-[#1A1A1A] tracking-wider uppercase flex items-center space-x-2">
               <span>Eshaare Concierge Portal</span>
             </h2>
           </div>

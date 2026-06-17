@@ -33,7 +33,7 @@ const PortalStatusBadge = ({ status }) => {
 
   const currentStyle = stylesMap[s] || "bg-gray-50 text-gray-600 border border-gray-200";
   return (
-    <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${currentStyle}`}>
+    <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-medium uppercase tracking-wider ${currentStyle}`}>
       {s}
     </span>
   );
@@ -70,12 +70,12 @@ export const PortalDocumentsPage = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-display font-bold text-[#1A1A1A] tracking-wide">My Documents</h1>
+          <h1 className="text-2xl font-semibold text-[#1A1A1A] tracking-wide">My Documents</h1>
           <p className="text-xs text-gray-500">Manage uploaded scans, passport bio pages, and embassy-compliant files.</p>
         </div>
         <button
           onClick={() => setIsUploadOpen(true)}
-          className="px-4 py-2.5 bg-[#C8A45D] hover:bg-[#b08e4f] text-white font-bold text-xs rounded-lg flex items-center space-x-1.5 shadow-sm transition-all"
+          className="px-4 py-2.5 bg-[#C8A45D] hover:bg-[#b08e4f] text-white font-semibold text-xs rounded-lg flex items-center space-x-1.5 shadow-sm transition-all"
         >
           <Plus className="h-4 w-4" />
           <span>Upload File</span>
@@ -100,7 +100,7 @@ export const PortalDocumentsPage = () => {
                 </div>
                 <div className="truncate">
                   <h4 className="font-semibold text-[#1A1A1A] truncate max-w-[200px]">{doc.fileName || doc.name}</h4>
-                  <span className="text-[9px] text-[#C8A45D] font-bold uppercase tracking-wider">{doc.docType || doc.type}</span>
+                  <span className="text-[9px] text-[#C8A45D] font-semibold uppercase tracking-wider">{doc.docType || doc.type}</span>
                 </div>
               </div>
 

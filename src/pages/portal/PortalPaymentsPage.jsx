@@ -33,7 +33,7 @@ const PortalStatusBadge = ({ status }) => {
 
   const currentStyle = stylesMap[s] || "bg-gray-50 text-gray-600 border border-gray-200";
   return (
-    <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${currentStyle}`}>
+    <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-medium uppercase tracking-wider ${currentStyle}`}>
       {s}
     </span>
   );
@@ -76,14 +76,14 @@ export const PortalPaymentsPage = () => {
       
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-display font-bold text-[#1A1A1A] tracking-wide">Payments & Invoices</h1>
+        <h1 className="text-2xl font-semibold text-[#1A1A1A] tracking-wide">Payments & Invoices</h1>
         <p className="text-xs text-gray-500">Manage transaction ledgers, settle outstanding billing balances and download receipt PDFs.</p>
       </div>
 
       {/* Invoices List */}
       <div className="overflow-x-auto rounded-[20px] border border-[#E7E1D6] bg-white shadow-sm">
         <table className="min-w-full divide-y divide-[#E7E1D6] text-left text-sm text-[#1A1A1A]">
-          <thead className="bg-[#F7F5F1] uppercase text-[10px] font-bold text-[#666666] tracking-wider">
+          <thead className="bg-[#F7F5F1] uppercase text-[10px] font-medium text-[#666666] tracking-wider">
             <tr>
               <th className="px-6 py-4">Receipt #</th>
               <th className="px-6 py-4">Service</th>
@@ -110,7 +110,7 @@ export const PortalPaymentsPage = () => {
             ) : (
               payments.map((p) => (
                 <tr key={p.id} className="hover:bg-[#F7F5F1]/30 transition-colors">
-                  <td className="px-6 py-4 font-mono font-bold text-[#C8A45D] text-xs">{p.invoiceNo}</td>
+                  <td className="px-6 py-4 font-mono font-semibold text-[#C8A45D] text-xs">{p.invoiceNo}</td>
                   <td className="px-6 py-4 font-semibold text-[#1A1A1A]">{p.service}</td>
                   <td className="px-6 py-4 font-mono font-semibold">{formatCurrency(p.amount)}</td>
                   <td className="px-6 py-4 text-xs text-gray-600 font-medium">{p.method}</td>
@@ -120,7 +120,7 @@ export const PortalPaymentsPage = () => {
                     {p.status !== "Paid" ? (
                       <button
                         onClick={() => handleStripePay(p.paymentLinkUrl)}
-                        className="px-3.5 py-1.5 bg-[#C8A45D] hover:bg-[#b08e4f] text-white font-bold text-[10px] uppercase rounded-lg flex items-center space-x-1 ml-auto shadow-sm transition-all"
+                        className="px-3.5 py-1.5 bg-[#C8A45D] hover:bg-[#b08e4f] text-white font-semibold text-[10px] uppercase rounded-lg flex items-center space-x-1 ml-auto shadow-sm transition-all"
                       >
                         <CreditCard className="h-3.5 w-3.5" />
                         <span>Pay Now</span>

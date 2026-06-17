@@ -31,7 +31,7 @@ const PortalStatusBadge = ({ status }) => {
 
   const currentStyle = stylesMap[s] || "bg-gray-50 text-gray-600 border border-gray-200";
   return (
-    <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${currentStyle}`}>
+    <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-medium uppercase tracking-wider ${currentStyle}`}>
       {s}
     </span>
   );
@@ -127,7 +127,7 @@ export const PortalApplicationDetailPage = () => {
       {/* Back Link */}
       <Link
         to="/portal/applications"
-        className="inline-flex items-center text-xs font-bold text-[#C8A45D] hover:text-[#b08e4f] uppercase tracking-wider space-x-1.5 transition-colors"
+        className="inline-flex items-center text-xs font-semibold text-[#C8A45D] hover:text-[#b08e4f] uppercase tracking-wider space-x-1.5 transition-colors"
       >
         <ArrowLeft className="h-4 w-4 text-[#C8A45D]" />
         <span>Back to Applications</span>
@@ -136,8 +136,8 @@ export const PortalApplicationDetailPage = () => {
       {/* Case Header */}
       <div className="bg-white p-6 border border-[#E7E1D6] rounded-[20px] shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <span className="text-[9px] font-mono font-bold text-[#C8A45D] uppercase tracking-wider">{caseData.caseNo}</span>
-          <h2 className="text-xl font-display font-semibold text-[#1A1A1A] leading-tight mt-1">
+          <span className="text-[9px] font-mono font-semibold text-[#C8A45D] uppercase tracking-wider">{caseData.caseNo}</span>
+          <h2 className="text-xl font-semibold text-[#1A1A1A] leading-tight mt-1">
             {caseData.travellerName}
           </h2>
           <p className="text-xs text-gray-500 font-medium mt-0.5">
@@ -152,7 +152,7 @@ export const PortalApplicationDetailPage = () => {
         {/* Case Progress Timeline */}
         <div className="lg:col-span-8 space-y-6">
           <div className="bg-white p-6 border border-[#E7E1D6] rounded-[20px] shadow-sm space-y-4">
-            <h3 className="text-sm font-semibold text-[#1A1A1A] border-b border-[#E7E1D6]/60 pb-2 uppercase tracking-wider font-display">
+            <h3 className="text-sm font-semibold text-[#1A1A1A] border-b border-[#E7E1D6]/60 pb-2 uppercase tracking-wider">
               Concierge Application Stage
             </h3>
             <div className="space-y-4 pt-2">
@@ -175,7 +175,7 @@ export const PortalApplicationDetailPage = () => {
                       ) : isActive ? (
                         <Clock className="h-4 w-4 text-[#C8A45D]" />
                       ) : (
-                        <span className="text-[10px] font-bold text-gray-400">{idx + 1}</span>
+                        <span className="text-[10px] font-semibold text-gray-400">{idx + 1}</span>
                       )}
                     </div>
                     <div className="flex items-center space-x-2.5">
@@ -184,14 +184,14 @@ export const PortalApplicationDetailPage = () => {
                           isCompleted
                             ? "text-gray-800"
                             : isActive
-                            ? "text-[#C8A45D] font-bold"
+                            ? "text-[#C8A45D] font-semibold"
                             : "text-gray-400"
                         }`}
                       >
                         {stage}
                       </span>
                       {isActive && (
-                        <span className="text-[9px] bg-[#C8A45D]/10 text-[#C8A45D] border border-[#C8A45D]/30 px-1.5 py-0.5 rounded font-extrabold uppercase tracking-widest">
+                        <span className="text-[9px] bg-[#C8A45D]/10 text-[#C8A45D] border border-[#C8A45D]/30 px-1.5 py-0.5 rounded font-bold uppercase tracking-widest">
                           Current
                         </span>
                       )}
@@ -206,7 +206,7 @@ export const PortalApplicationDetailPage = () => {
           <div className="bg-white p-6 border border-[#E7E1D6] rounded-[20px] shadow-sm space-y-3">
             <div className="flex items-center space-x-2 border-b border-[#E7E1D6]/60 pb-2">
               <Shield className="h-4.5 w-4.5 text-[#C8A45D]" />
-              <h3 className="text-sm font-semibold text-[#1A1A1A] font-display uppercase tracking-wider">Document Management</h3>
+              <h3 className="text-sm font-semibold text-[#1A1A1A] uppercase tracking-wider">Document Management</h3>
             </div>
             <p className="text-xs text-gray-600 leading-relaxed font-medium">
               Our travel specialists are currently assembling your visa application dossier and verifying travel certificates.
@@ -219,15 +219,15 @@ export const PortalApplicationDetailPage = () => {
         {/* Advisor contact sidebar */}
         <div className="lg:col-span-4 space-y-6">
           <div className="bg-white p-6 border border-[#E7E1D6] rounded-[20px] shadow-sm space-y-4 text-xs">
-            <h3 className="text-sm font-semibold text-[#1A1A1A] border-b border-[#E7E1D6]/60 pb-2 uppercase tracking-wider font-display">
+            <h3 className="text-sm font-semibold text-[#1A1A1A] border-b border-[#E7E1D6]/60 pb-2 uppercase tracking-wider">
               Assigned Specialist
             </h3>
             <div className="flex items-center space-x-3 py-2">
-              <div className="h-10 w-10 rounded-full bg-[#F7F5F1] border border-[#E7E1D6] text-[#C8A45D] font-bold flex items-center justify-center uppercase">
+              <div className="h-10 w-10 rounded-full bg-[#F7F5F1] border border-[#E7E1D6] text-[#C8A45D] font-semibold flex items-center justify-center uppercase">
                 {caseData.assignedOfficerName?.slice(0, 2).toUpperCase() || "VO"}
               </div>
               <div>
-                <h4 className="font-bold text-[#1A1A1A]">
+                <h4 className="font-semibold text-[#1A1A1A]">
                   {caseData.assignedOfficerName || "Visa Operations Team"}
                 </h4>
                 <span className="text-[10px] text-gray-500 font-medium">Immigration Specialist</span>
@@ -235,7 +235,7 @@ export const PortalApplicationDetailPage = () => {
             </div>
             <Link
               to="/portal/messages"
-              className="w-full block text-center py-2.5 bg-[#C8A45D] text-white hover:bg-[#b08e4f] font-bold rounded-lg uppercase tracking-wider shadow-sm transition-all"
+              className="w-full block text-center py-2.5 bg-[#C8A45D] text-white hover:bg-[#b08e4f] font-semibold rounded-lg uppercase tracking-wider shadow-sm transition-all"
             >
               Message Advisor
             </Link>

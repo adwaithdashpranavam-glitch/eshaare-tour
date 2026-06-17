@@ -132,10 +132,16 @@ button:focus, a:focus, input:focus, select:focus, textarea:focus {
 .portal-root h3, 
 .portal-root h4, 
 .portal-root h5, 
-.portal-root h6 {
-  font-family: 'Playfair Display', serif !important;
+.portal-root h6,
+.portal-root .font-display,
+.portal-root .font-serif {
+  font-family: 'Inter', sans-serif !important;
   color: #1A1A1A !important;
-  font-weight: 600;
+}
+
+/* Premium luxury portal brand font */
+.font-logo-serif {
+  font-family: 'Playfair Display', serif !important;
 }
 
 /* Premium luxury portal card style */

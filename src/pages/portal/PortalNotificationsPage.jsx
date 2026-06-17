@@ -52,13 +52,13 @@ export const PortalNotificationsPage = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-display font-bold text-[#1A1A1A] tracking-wide">Notifications</h1>
+          <h1 className="text-2xl font-semibold text-[#1A1A1A] tracking-wide">Notifications</h1>
           <p className="text-xs text-gray-500">Stay updated with your visa file progression and embassy announcements.</p>
         </div>
         {notifications.length > 0 && (
           <button
             onClick={handleMarkAllRead}
-            className="self-start sm:self-center px-4 py-2.5 bg-white border border-[#E7E1D6] hover:border-[#C8A45D] hover:text-[#C8A45D] text-gray-700 font-bold text-xs uppercase tracking-wider rounded-lg flex items-center gap-1.5 transition-colors"
+            className="self-start sm:self-center px-4 py-2.5 bg-white border border-[#E7E1D6] hover:border-[#C8A45D] hover:text-[#C8A45D] text-gray-700 font-semibold text-xs uppercase tracking-wider rounded-lg flex items-center gap-1.5 transition-colors"
           >
             <MailOpen className="h-4 w-4" />
             <span>Mark all read</span>
@@ -96,7 +96,7 @@ export const PortalNotificationsPage = () => {
                   <Bell className="h-5 w-5" />
                 </div>
                 
-                <div className="flex-1 min-w-0 space-y-1">
+                <div className="flex-grow min-w-0 space-y-1">
                   <div className="flex justify-between items-start gap-2">
                     <h4 className={`text-xs font-semibold ${notif.read ? "text-gray-400" : "text-[#1A1A1A]"}`}>
                       {notif.title}
@@ -106,14 +106,14 @@ export const PortalNotificationsPage = () => {
                     </span>
                   </div>
                   
-                  <p className={`text-xs leading-relaxed ${notif.read ? "text-gray-400" : "text-gray-600 font-medium"}`}>
+                  <p className={`text-xs leading-relaxed ${notif.read ? "text-gray-400" : "text-gray-600 font-normal"}`}>
                     {notif.message}
                   </p>
 
                   {!notif.read && (
                     <button
                       onClick={() => handleMarkRead(notif.id)}
-                      className="mt-2.5 text-[9px] font-extrabold text-[#C8A45D] hover:text-[#b08e4f] uppercase tracking-widest flex items-center gap-1.5 transition-colors"
+                      className="mt-2.5 text-[9px] font-semibold text-[#C8A45D] hover:text-[#b08e4f] uppercase tracking-widest flex items-center gap-1.5 transition-colors"
                     >
                       <Check className="h-3 w-3" />
                       <span>Mark as read</span>

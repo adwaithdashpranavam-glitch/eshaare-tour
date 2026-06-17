@@ -33,7 +33,7 @@ const PortalStatusBadge = ({ status }) => {
 
   const currentStyle = stylesMap[s] || "bg-gray-50 text-gray-600 border border-gray-200";
   return (
-    <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${currentStyle}`}>
+    <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-medium uppercase tracking-wider ${currentStyle}`}>
       {s}
     </span>
   );
@@ -105,12 +105,12 @@ export const PortalAppointmentsPage = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-display font-bold text-[#1A1A1A] tracking-wide">My Appointments</h1>
+          <h1 className="text-2xl font-semibold text-[#1A1A1A] tracking-wide">My Appointments</h1>
           <p className="text-xs text-gray-500">Schedule and review virtual or in-person advice bookings.</p>
         </div>
         <button
           onClick={() => setIsBookOpen(true)}
-          className="px-4 py-2.5 bg-[#C8A45D] hover:bg-[#b08e4f] text-white font-bold text-xs rounded-lg flex items-center space-x-1.5 shadow-sm transition-all"
+          className="px-4 py-2.5 bg-[#C8A45D] hover:bg-[#b08e4f] text-white font-semibold text-xs rounded-lg flex items-center space-x-1.5 shadow-sm transition-all"
         >
           <Plus className="h-4 w-4" />
           <span>Book Session</span>
@@ -128,7 +128,7 @@ export const PortalAppointmentsPage = () => {
                 </div>
                 <div>
                   <h4 className="font-semibold text-[#1A1A1A] text-sm">{app.time}</h4>
-                  <span className="text-[9px] text-[#C8A45D] font-bold uppercase tracking-wider">{app.type}</span>
+                  <span className="text-[9px] text-[#C8A45D] font-semibold uppercase tracking-wider">{app.type}</span>
                 </div>
               </div>
               <PortalStatusBadge status={app.status} />
@@ -136,7 +136,7 @@ export const PortalAppointmentsPage = () => {
 
             <div className="space-y-1">
               <p className="text-xs text-gray-600 truncate font-medium">{app.notes || "Initial Consultation Slot"}</p>
-              <span className="text-[10px] text-gray-400 font-semibold block">Advisor: {app.consultant || "Operations Team"}</span>
+              <span className="text-[10px] text-gray-400 font-medium block">Advisor: {app.consultant || "Operations Team"}</span>
             </div>
 
             <div className="pt-4 border-t border-gray-100 flex justify-between items-center text-xs">
@@ -144,7 +144,7 @@ export const PortalAppointmentsPage = () => {
               {app.type === "Video Call" && app.status === "Confirmed" && (
                 <button
                   onClick={() => window.open("https://meet.google.com", "_blank")}
-                  className="px-3 py-1.5 bg-[#C8A45D] hover:bg-[#b08e4f] text-white font-bold rounded-lg flex items-center space-x-1 transition-colors"
+                  className="px-3 py-1.5 bg-[#C8A45D] hover:bg-[#b08e4f] text-white font-semibold rounded-lg flex items-center space-x-1 transition-colors"
                 >
                   <Video className="h-3.5 w-3.5" />
                   <span>Join Meet</span>
@@ -174,7 +174,7 @@ export const PortalAppointmentsPage = () => {
         <form onSubmit={handleBookSubmit} className="space-y-4 text-xs">
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col space-y-1.5">
-              <label className="text-[10px] font-bold text-gray-500 uppercase">Preferred Date *</label>
+              <label className="text-[10px] font-medium text-gray-500 uppercase">Preferred Date *</label>
               <input
                 type="date"
                 required
@@ -184,7 +184,7 @@ export const PortalAppointmentsPage = () => {
               />
             </div>
             <div className="flex flex-col space-y-1.5">
-              <label className="text-[10px] font-bold text-gray-500 uppercase">Preferred Time *</label>
+              <label className="text-[10px] font-medium text-gray-500 uppercase">Preferred Time *</label>
               <select
                 className="px-3 py-2 bg-[#F7F5F1] border border-[#E7E1D6] text-[#1A1A1A] rounded focus:outline-none focus:border-[#C8A45D]"
                 value={bookingForm.time}
@@ -198,7 +198,7 @@ export const PortalAppointmentsPage = () => {
             </div>
           </div>
           <div className="flex flex-col space-y-1">
-            <label className="text-[10px] font-bold text-gray-500 uppercase">Consultation Type</label>
+            <label className="text-[10px] font-medium text-gray-500 uppercase">Consultation Type</label>
             <select
               className="px-3 py-2 bg-[#F7F5F1] border border-[#E7E1D6] text-[#1A1A1A] rounded focus:outline-none focus:border-[#C8A45D]"
               value={bookingForm.type}
@@ -211,7 +211,7 @@ export const PortalAppointmentsPage = () => {
           </div>
 
           <div className="flex flex-col space-y-1">
-            <label className="text-[10px] font-bold text-gray-500 uppercase">Notes / Special Instructions</label>
+            <label className="text-[10px] font-medium text-gray-500 uppercase">Notes / Special Instructions</label>
             <textarea
               rows={2}
               className="px-3 py-2 bg-[#F7F5F1] border border-[#E7E1D6] text-[#1A1A1A] placeholder-gray-400 rounded focus:outline-none focus:border-[#C8A45D]"
@@ -225,13 +225,13 @@ export const PortalAppointmentsPage = () => {
             <button
               type="button"
               onClick={() => setIsBookOpen(false)}
-              className="flex-1 py-2.5 bg-white border border-[#E7E1D6] text-gray-700 hover:text-[#C8A45D] font-bold rounded text-xs uppercase tracking-wider transition-colors"
+              className="flex-1 py-2.5 bg-white border border-[#E7E1D6] text-gray-700 hover:text-[#C8A45D] font-semibold rounded text-xs uppercase tracking-wider transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="flex-1 py-2.5 bg-[#C8A45D] text-white hover:bg-[#b08e4f] font-bold rounded text-xs uppercase tracking-wider shadow-sm transition-all"
+              className="flex-1 py-2.5 bg-[#C8A45D] text-white hover:bg-[#b08e4f] font-semibold rounded text-xs uppercase tracking-wider shadow-sm transition-all"
             >
               Book Slot
             </button>

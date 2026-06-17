@@ -91,12 +91,12 @@ export const PortalMessagesPage = () => {
       {/* Header */}
       <div className="px-6 py-4 bg-[#F7F5F1] border-b border-[#E7E1D6] flex items-center justify-between">
         <div className="flex items-center space-x-3.5">
-          <div className="h-10 w-10 rounded-full bg-[#E7E1D6] border border-[#C8A45D]/30 text-[#1A1A1A] flex items-center justify-center font-bold">
+          <div className="h-10 w-10 rounded-full bg-[#E7E1D6] border border-[#C8A45D]/30 text-[#1A1A1A] flex items-center justify-center font-semibold">
             R
           </div>
           <div>
-            <h3 className="text-xs font-bold text-[#1A1A1A] uppercase tracking-wider font-display">Rana G. (Visa Consultant)</h3>
-            <span className="text-[9px] text-[#C8A45D] font-extrabold flex items-center gap-1 uppercase tracking-widest">
+            <h3 className="text-xs font-semibold text-[#1A1A1A] uppercase tracking-wider">Rana G. (Visa Consultant)</h3>
+            <span className="text-[9px] text-[#C8A45D] font-semibold flex items-center gap-1 uppercase tracking-widest">
               <Sparkles className="h-3 w-3 animate-pulse" />
               <span>Dedicated Advisor</span>
             </span>
@@ -111,7 +111,7 @@ export const PortalMessagesPage = () => {
           return (
             <div key={msg.id || idx} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
               <div className={`max-w-[70%] space-y-1 ${isMe ? "text-right" : "text-left"}`}>
-                <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wider">{msg.senderName}</span>
+                <span className="text-[9px] text-gray-400 font-medium uppercase tracking-wider">{msg.senderName}</span>
                 <div 
                   className={`p-4 rounded-xl text-xs leading-relaxed ${
                     isMe 
@@ -183,7 +183,7 @@ export const PortalMessagesPage = () => {
         size="sm"
       >
         <div className="space-y-4">
-          <p className="text-xs text-gray-500 leading-relaxed font-medium">
+          <p className="text-xs text-gray-500 leading-relaxed font-normal">
             Attach document scans, bank receipt PDFs or visa pictures. Our travel concierge will receive the files in real-time.
           </p>
           <FileUpload

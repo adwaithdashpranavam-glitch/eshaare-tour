@@ -85,7 +85,7 @@ export const PortalSettingsPage = () => {
       
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-display font-bold text-[#1A1A1A] tracking-wide">Portal Settings</h1>
+        <h1 className="text-2xl font-semibold text-[#1A1A1A] tracking-wide">Portal Settings</h1>
         <p className="text-xs text-gray-500">Modify traveller bio details, password credentials, and email/WhatsApp alert channels.</p>
       </div>
 
@@ -94,14 +94,14 @@ export const PortalSettingsPage = () => {
         <div className="lg:col-span-8 space-y-6">
           {/* Profile Form */}
           <div className="bg-white border border-[#E7E1D6] rounded-[20px] p-6 shadow-sm space-y-4">
-            <h3 className="text-sm font-semibold text-[#1A1A1A] border-b border-[#E7E1D6]/60 pb-2 flex items-center space-x-2 font-display uppercase tracking-wider">
+            <h3 className="text-sm font-semibold text-[#1A1A1A] border-b border-[#E7E1D6]/60 pb-2 flex items-center space-x-2 uppercase tracking-wider">
               <User className="h-4.5 w-4.5 text-[#C8A45D]" />
               <span>Personal Details</span>
             </h3>
             <form onSubmit={handleProfileSave} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex flex-col space-y-1">
-                  <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Full Name</span>
+                  <span className="text-[10px] text-gray-500 font-medium uppercase tracking-wider">Full Name</span>
                   <input
                     type="text"
                     required
@@ -111,7 +111,7 @@ export const PortalSettingsPage = () => {
                   />
                 </div>
                 <div className="flex flex-col space-y-1">
-                  <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">WhatsApp Phone</span>
+                  <span className="text-[10px] text-gray-500 font-medium uppercase tracking-wider">WhatsApp Phone</span>
                   <input
                     type="tel"
                     required
@@ -124,7 +124,7 @@ export const PortalSettingsPage = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex flex-col space-y-1">
-                  <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Nationality</span>
+                  <span className="text-[10px] text-gray-500 font-medium uppercase tracking-wider">Nationality</span>
                   <input
                     type="text"
                     required
@@ -134,7 +134,7 @@ export const PortalSettingsPage = () => {
                   />
                 </div>
                 <div className="flex flex-col space-y-1">
-                  <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Email Address (Read-only)</span>
+                  <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Email Address (Read-only)</span>
                   <input
                     type="email"
                     readOnly
@@ -146,7 +146,7 @@ export const PortalSettingsPage = () => {
 
               <button
                 type="submit"
-                className="px-4 py-2.5 bg-[#C8A45D] hover:bg-[#b08e4f] text-white font-bold rounded-lg uppercase tracking-wider shadow-sm flex items-center space-x-1.5 ml-auto transition-all text-xs"
+                className="px-4 py-2.5 bg-[#C8A45D] hover:bg-[#b08e4f] text-white font-semibold rounded-lg uppercase tracking-wider shadow-sm flex items-center space-x-1.5 ml-auto transition-all text-xs"
               >
                 <Save className="h-4 w-4" />
                 <span>Save Info</span>
@@ -156,14 +156,14 @@ export const PortalSettingsPage = () => {
 
           {/* Password Form */}
           <div className="bg-white border border-[#E7E1D6] rounded-[20px] p-6 shadow-sm space-y-4">
-            <h3 className="text-sm font-semibold text-[#1A1A1A] border-b border-[#E7E1D6]/60 pb-2 flex items-center space-x-2 font-display uppercase tracking-wider">
+            <h3 className="text-sm font-semibold text-[#1A1A1A] border-b border-[#E7E1D6]/60 pb-2 flex items-center space-x-2 uppercase tracking-wider">
               <Lock className="h-4.5 w-4.5 text-[#C8A45D]" />
               <span>Change Password</span>
             </h3>
             <form onSubmit={handlePasswordSubmit} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="flex flex-col space-y-1">
-                  <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Current Password</span>
+                  <span className="text-[10px] text-gray-500 font-medium uppercase tracking-wider">Current Password</span>
                   <input
                     type="password"
                     required
@@ -173,7 +173,7 @@ export const PortalSettingsPage = () => {
                   />
                 </div>
                 <div className="flex flex-col space-y-1">
-                  <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">New Password</span>
+                  <span className="text-[10px] text-gray-500 font-medium uppercase tracking-wider">New Password</span>
                   <input
                     type="password"
                     required
@@ -183,7 +183,7 @@ export const PortalSettingsPage = () => {
                   />
                 </div>
                 <div className="flex flex-col space-y-1">
-                  <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Confirm Password</span>
+                  <span className="text-[10px] text-gray-500 font-medium uppercase tracking-wider">Confirm Password</span>
                   <input
                     type="password"
                     required
@@ -196,7 +196,7 @@ export const PortalSettingsPage = () => {
 
               <button
                 type="submit"
-                className="px-4 py-2.5 bg-[#C8A45D] hover:bg-[#b08e4f] text-white font-bold rounded-lg uppercase tracking-wider shadow-sm flex items-center space-x-1.5 ml-auto transition-all text-xs"
+                className="px-4 py-2.5 bg-[#C8A45D] hover:bg-[#b08e4f] text-white font-semibold rounded-lg uppercase tracking-wider shadow-sm flex items-center space-x-1.5 ml-auto transition-all text-xs"
               >
                 <Save className="h-4 w-4" />
                 <span>Change Password</span>
@@ -208,14 +208,14 @@ export const PortalSettingsPage = () => {
         {/* Notifications preferences (1/3) */}
         <div className="lg:col-span-4 space-y-6">
           <div className="bg-white border border-[#E7E1D6] rounded-[20px] p-6 shadow-sm space-y-4">
-            <h3 className="text-sm font-semibold text-[#1A1A1A] border-b border-[#E7E1D6]/60 pb-2 flex items-center space-x-2 font-display uppercase tracking-wider">
+            <h3 className="text-sm font-semibold text-[#1A1A1A] border-b border-[#E7E1D6]/60 pb-2 flex items-center space-x-2 uppercase tracking-wider">
               <Bell className="h-4.5 w-4.5 text-[#C8A45D]" />
               <span>Alert Preferences</span>
             </h3>
             
             <div className="space-y-4 pt-2 font-sans text-xs">
               <label className="flex items-center justify-between cursor-pointer">
-                <span className="text-gray-600 font-semibold">Application Status (Email)</span>
+                <span className="text-gray-600 font-medium">Application Status (Email)</span>
                 <input
                   type="checkbox"
                   className="rounded text-[#C8A45D] bg-[#F7F5F1] border-[#E7E1D6] focus:ring-[#C8A45D]"
@@ -224,7 +224,7 @@ export const PortalSettingsPage = () => {
                 />
               </label>
               <label className="flex items-center justify-between cursor-pointer">
-                <span className="text-gray-600 font-semibold">Application Status (WhatsApp)</span>
+                <span className="text-gray-600 font-medium">Application Status (WhatsApp)</span>
                 <input
                   type="checkbox"
                   className="rounded text-[#C8A45D] bg-[#F7F5F1] border-[#E7E1D6] focus:ring-[#C8A45D]"
@@ -233,7 +233,7 @@ export const PortalSettingsPage = () => {
                 />
               </label>
               <label className="flex items-center justify-between cursor-pointer">
-                <span className="text-gray-600 font-semibold">Document Reviews (Email)</span>
+                <span className="text-gray-600 font-medium">Document Reviews (Email)</span>
                 <input
                   type="checkbox"
                   className="rounded text-[#C8A45D] bg-[#F7F5F1] border-[#E7E1D6] focus:ring-[#C8A45D]"
@@ -242,7 +242,7 @@ export const PortalSettingsPage = () => {
                 />
               </label>
               <label className="flex items-center justify-between cursor-pointer">
-                <span className="text-gray-600 font-semibold">Invoice Receipts (Email)</span>
+                <span className="text-gray-600 font-medium">Invoice Receipts (Email)</span>
                 <input
                   type="checkbox"
                   className="rounded text-[#C8A45D] bg-[#F7F5F1] border-[#E7E1D6] focus:ring-[#C8A45D]"
@@ -254,7 +254,7 @@ export const PortalSettingsPage = () => {
             
             <button
               onClick={() => toast.success("Notification preferences updated")}
-              className="w-full py-2.5 bg-[#C8A45D] hover:bg-[#b08e4f] text-white font-bold rounded-lg uppercase tracking-wider shadow-sm transition-all text-xs"
+              className="w-full py-2.5 bg-[#C8A45D] hover:bg-[#b08e4f] text-white font-semibold rounded-lg uppercase tracking-wider shadow-sm transition-all text-xs"
             >
               Update Preferences
             </button>

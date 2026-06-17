@@ -35,7 +35,7 @@ const PortalStatusBadge = ({ status }) => {
 
   const currentStyle = stylesMap[s] || "bg-gray-50 text-gray-600 border border-gray-200";
   return (
-    <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${currentStyle}`}>
+    <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-medium uppercase tracking-wider ${currentStyle}`}>
       {s}
     </span>
   );
@@ -223,21 +223,21 @@ export const PortalDashboard = () => {
       <div className="bg-white border border-[#E7E1D6] rounded-[20px] p-6 sm:p-8 shadow-sm space-y-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-[#E7E1D6]/60 pb-6">
           <div className="space-y-1">
-            <span className="text-[10px] uppercase font-bold tracking-[0.2em] text-[#C8A45D] flex items-center gap-1.5">
+            <span className="text-[10px] uppercase font-semibold tracking-[0.2em] text-[#C8A45D] flex items-center gap-1.5">
               <Sparkles className="h-3.5 w-3.5" />
               <span>Premium Visa & Travel Concierge</span>
             </span>
-            <h1 className="text-2xl sm:text-3xl font-display font-semibold text-[#1A1A1A]">
+            <h1 className="text-2xl sm:text-3xl font-semibold text-[#1A1A1A]">
               Welcome back, {userProfile?.name || "Client"}
             </h1>
           </div>
 
           {primaryCase && (
             <div className="bg-[#F7F5F1] px-5 py-3.5 rounded-xl border border-[#E7E1D6] text-xs space-y-1 max-w-sm shrink-0">
-              <p className="font-bold text-[#1A1A1A]">{primaryCase.visaType} - {primaryCase.destination}</p>
+              <p className="font-semibold text-[#1A1A1A]">{primaryCase.visaType} - {primaryCase.destination}</p>
               <div className="flex items-center space-x-2">
                 <span className="text-gray-500 font-medium">Status:</span>
-                <span className="font-bold text-[#C8A45D]">{primaryCase.stage}</span>
+                <span className="font-medium text-[#C8A45D]">{primaryCase.stage}</span>
               </div>
               <p className="text-[11px] text-gray-600 font-medium pt-1 italic">{getNextActionMessage(primaryCase.stage)}</p>
             </div>
@@ -246,7 +246,7 @@ export const PortalDashboard = () => {
 
         {/* Visual Application Progress Tracker */}
         <div className="space-y-4">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Application Progress Timeline</p>
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-500">Application Progress Timeline</p>
           
           <div className="relative flex items-center justify-between w-full max-w-3xl mx-auto py-4">
             {/* Timeline Line */}
@@ -267,7 +267,7 @@ export const PortalDashboard = () => {
               return (
                 <div key={step} className="flex flex-col items-center relative z-10 space-y-2.5">
                   {/* Step Dot */}
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all duration-300 text-xs font-bold ${
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all duration-300 text-xs font-semibold ${
                     isCompleted 
                       ? "bg-[#C8A45D] border-[#C8A45D] text-white" 
                       : isCurrent 
@@ -277,7 +277,7 @@ export const PortalDashboard = () => {
                     {isCompleted ? "✓" : idx + 1}
                   </div>
                   {/* Step Title */}
-                  <span className={`text-[10px] font-bold uppercase tracking-widest ${
+                  <span className={`text-[10px] font-medium uppercase tracking-widest ${
                     isCurrent 
                       ? "text-[#C8A45D]" 
                       : isCompleted 
@@ -298,8 +298,8 @@ export const PortalDashboard = () => {
         {/* Card 1: Active Cases */}
         <div className="portal-card p-5 flex items-center justify-between">
           <div className="space-y-1.5">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-[#666666]">Active Cases</span>
-            <p className="text-3xl font-display font-semibold text-[#1A1A1A]">{activeCases.length}</p>
+            <span className="text-[10px] font-medium uppercase tracking-widest text-[#666666]">Active Cases</span>
+            <p className="text-3xl font-semibold text-[#1A1A1A]">{activeCases.length}</p>
           </div>
           <div className="p-3 rounded-xl bg-[#F7F5F1] text-[#C8A45D] border border-[#E7E1D6]">
             <FileText className="h-5.5 w-5.5" />
@@ -309,8 +309,8 @@ export const PortalDashboard = () => {
         {/* Card 2: Pending Documents */}
         <div className="portal-card p-5 flex items-center justify-between">
           <div className="space-y-1.5">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-[#666666]">Pending Documents</span>
-            <p className="text-3xl font-display font-semibold text-[#1A1A1A]">{pendingDocsCount}</p>
+            <span className="text-[10px] font-medium uppercase tracking-widest text-[#666666]">Pending Documents</span>
+            <p className="text-3xl font-semibold text-[#1A1A1A]">{pendingDocsCount}</p>
           </div>
           <div className="p-3 rounded-xl bg-[#F7F5F1] text-[#C8A45D] border border-[#E7E1D6]">
             <UploadCloud className="h-5.5 w-5.5" />
@@ -320,8 +320,8 @@ export const PortalDashboard = () => {
         {/* Card 3: Upcoming Appointments */}
         <div className="portal-card p-5 flex items-center justify-between">
           <div className="space-y-1.5">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-[#666666]">Appointments</span>
-            <p className="text-3xl font-display font-semibold text-[#1A1A1A]">{upcomingApptsCount}</p>
+            <span className="text-[10px] font-medium uppercase tracking-widest text-[#666666]">Appointments</span>
+            <p className="text-3xl font-semibold text-[#1A1A1A]">{upcomingApptsCount}</p>
           </div>
           <div className="p-3 rounded-xl bg-[#F7F5F1] text-[#C8A45D] border border-[#E7E1D6]">
             <Calendar className="h-5.5 w-5.5" />
@@ -331,8 +331,8 @@ export const PortalDashboard = () => {
         {/* Card 4: Unread Messages */}
         <div className="portal-card p-5 flex items-center justify-between">
           <div className="space-y-1.5">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-[#666666]">Unread Messages</span>
-            <p className="text-3xl font-display font-semibold text-[#1A1A1A]">{unreadMessagesCount}</p>
+            <span className="text-[10px] font-medium uppercase tracking-widest text-[#666666]">Unread Messages</span>
+            <p className="text-3xl font-semibold text-[#1A1A1A]">{unreadMessagesCount}</p>
           </div>
           <div className={`p-3 rounded-xl border transition-colors ${
             unreadMessagesCount > 0 
@@ -351,8 +351,8 @@ export const PortalDashboard = () => {
         <div className="lg:col-span-8 space-y-6">
           <div className="bg-white border border-[#E7E1D6] rounded-[20px] p-6 shadow-sm space-y-5">
             <div className="flex justify-between items-center border-b border-[#E7E1D6]/60 pb-3">
-              <h3 className="text-base font-semibold text-[#1A1A1A] font-display">Active Application Portfolios</h3>
-              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{activeCases.length} Cases</span>
+              <h3 className="text-base font-semibold text-[#1A1A1A]">Active Application Portfolios</h3>
+              <span className="text-[10px] font-medium text-gray-400 uppercase tracking-widest">{activeCases.length} Cases</span>
             </div>
 
             <div className="space-y-4">
@@ -369,7 +369,7 @@ export const PortalDashboard = () => {
                         {getCountryFlag(c.destination || c.visaType)}
                       </div>
                       <div className="space-y-1">
-                        <span className="text-[9px] font-mono font-bold text-[#C8A45D] uppercase tracking-wider">{c.caseNo}</span>
+                        <span className="text-[9px] font-mono font-semibold text-[#C8A45D] uppercase tracking-wider">{c.caseNo}</span>
                         <h4 className="text-sm font-semibold text-[#1A1A1A]">{c.visaType}</h4>
                         <span className="text-[10px] text-gray-500 block">
                           Updated: {formatShortDate(updatedDate)}
@@ -403,7 +403,7 @@ export const PortalDashboard = () => {
         {/* Modern Quick Actions Column (1/3 Width) */}
         <div className="lg:col-span-4 space-y-6">
           <div className="bg-white border border-[#E7E1D6] rounded-[20px] p-6 shadow-sm space-y-4">
-            <h3 className="text-sm font-semibold text-[#1A1A1A] border-b border-[#E7E1D6]/60 pb-2 uppercase tracking-wider font-display">Concierge Services</h3>
+            <h3 className="text-sm font-semibold text-[#1A1A1A] border-b border-[#E7E1D6]/60 pb-2 uppercase tracking-wider">Concierge Services</h3>
             
             <div className="space-y-3">
               {/* Service 1: New Application */}
