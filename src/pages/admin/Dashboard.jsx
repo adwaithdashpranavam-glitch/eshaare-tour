@@ -47,26 +47,16 @@ export const Dashboard = () => {
 
   // Funnel & Chart Data
   const funnelData = [
-    { name: "New", count: 32, fill: "#378ADD" },
-    { name: "Contacted", count: 24, fill: "#627555" },
-    { name: "Qualified", count: 18, fill: "#7A8F6B" },
-    { name: "Won", count: 12, fill: "#1D9E75" }
+    { name: "Total Leads", count: stats.totalLeads, fill: "#378ADD" },
+    { name: "New", count: stats.newLeads, fill: "#627555" }
   ];
 
-  const revenueData = [
-    { date: "May 10", amt: 12000 },
-    { date: "May 15", amt: 18000 },
-    { date: "May 20", amt: 24000 },
-    { date: "May 25", amt: 35000 },
-    { date: "May 30", amt: 45000 }
-  ];
+  const revenueData = [];
 
   const casesPieData = [
-    { name: "Docs Pending", value: 5, color: "#627555" },
-    { name: "Verification", value: 4, color: "#378ADD" },
-    { name: "Submitted", value: 12, color: "#7A8F6B" },
-    { name: "Awaiting Decision", value: 3, color: "#627555" }
-  ];
+    { name: "Docs Pending", value: kpis.pendingDocs, color: "#627555" },
+    { name: "Other Active", value: Math.max(0, kpis.activeCases - kpis.pendingDocs), color: "#378ADD" }
+  ].filter(d => d.value > 0);
 
   const [recentLeads, setRecentLeads] = useState([]);
   const [upcomingAppointments, setUpcomingAppointments] = useState([]);
