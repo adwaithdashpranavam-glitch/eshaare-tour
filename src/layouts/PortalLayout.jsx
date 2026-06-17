@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import { 
-  LayoutDashboard, FileText, FolderOpen, Calendar, 
-  CreditCard, MessageSquare, Settings, LogOut, Bell, Menu, X
+import {
+  LayoutDashboard, FileText, FolderOpen, Calendar,
+  CreditCard, MessageSquare, Settings, LogOut, Bell, Menu, X,
+  UserCircle, Users
 } from "lucide-react";
 import toast from "react-hot-toast";
 import foxLogo from "../assets/fox-logo.png";
@@ -21,6 +22,8 @@ export const PortalLayout = () => {
 
   const navItems = [
     { label: "Dashboard", path: "/portal/dashboard", icon: LayoutDashboard },
+    { label: "My Profile", path: "/portal/profile", icon: UserCircle },
+    { label: "Family Members", path: "/portal/family", icon: Users },
     { label: "Applications", path: "/portal/applications", icon: FileText },
     { label: "Documents", path: "/portal/documents", icon: FolderOpen },
     { label: "Payments", path: "/portal/payments", icon: CreditCard },
@@ -38,6 +41,10 @@ export const PortalLayout = () => {
     const path = location.pathname;
     if (path.startsWith("/portal/dashboard")) {
       return ["Dashboard"];
+    } else if (path.startsWith("/portal/profile")) {
+      return ["Dashboard", "My Profile"];
+    } else if (path.startsWith("/portal/family")) {
+      return ["Dashboard", "Family Members"];
     } else if (path.startsWith("/portal/applications/")) {
       return ["Dashboard", "Applications", "Application Details"];
     } else if (path.startsWith("/portal/applications")) {
