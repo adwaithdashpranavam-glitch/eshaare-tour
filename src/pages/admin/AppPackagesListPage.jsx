@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Plus, Edit, Trash2, Loader2, Compass, AlertCircle, ArrowUpDown, RefreshCw } from "lucide-react";
 import { getPackages, deletePackage, savePackage } from "../../lib/firestore";
 import LoadingSpinner from "../../components/ui/LoadingSpinner";
+import { useAuth } from "../../contexts/AuthContext";
 import toast from "react-hot-toast";
 
 const DEFAULT_PACKAGES = [
@@ -61,6 +62,7 @@ const DEFAULT_PACKAGES = [
 ];
 
 export const AppPackagesListPage = () => {
+  const { userProfile } = useAuth();
   const navigate = useNavigate();
   const [packages, setPackages] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -69,6 +71,8 @@ export const AppPackagesListPage = () => {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
   const [seeding, setSeeding] = useState(false);
+
+  const canModifyCMS = ["super_admin", "admin", "manager"].includes(userProfile?.role);
 
   useEffect(() => {
     const unsubscribe = getPackages(
@@ -95,6 +99,10 @@ export const AppPackagesListPage = () => {
 
   const handleDeleteConfirm = async () => {
     if (!deleteTarget) return;
+    if (!canModifyCMS) {
+      toast.error("Unauthorized operation");
+      return;
+    }
     setDeleting(true);
     try {
       await deletePackage(deleteTarget.id);
@@ -109,6 +117,10 @@ export const AppPackagesListPage = () => {
   };
 
   const handleSeedDefaults = async () => {
+    if (!canModifyCMS) {
+      toast.error("Unauthorized operation");
+      return;
+    }
     setSeeding(true);
     try {
       for (const pkg of DEFAULT_PACKAGES) {
@@ -134,7 +146,7 @@ export const AppPackagesListPage = () => {
           </p>
         </div>
         <div className="flex gap-2">
-          {packages.length === 0 && (
+          {canModifyCMS && packages.length === 0 && (
             <button
               onClick={handleSeedDefaults}
               disabled={seeding}
@@ -148,13 +160,15 @@ export const AppPackagesListPage = () => {
               <span>Seed Defaults</span>
             </button>
           )}
-          <button
-            onClick={() => navigate("/admin/app/packages/new")}
-            className="px-4 py-2 bg-gradient-to-r from-secondary-container to-secondary-container text-on-primary-fixed font-bold text-xs rounded-button flex items-center space-x-1.5 shadow-sm transition-all hover:-translate-y-0.5"
-          >
-            <Plus className="h-4 w-4" />
-            <span>Add Package</span>
-          </button>
+          {canModifyCMS && (
+            <button
+              onClick={() => navigate("/admin/app/packages/new")}
+              className="px-4 py-2 bg-gradient-to-r from-secondary-container to-secondary-container text-on-primary-fixed font-bold text-xs rounded-button flex items-center space-x-1.5 shadow-sm transition-all hover:-translate-y-0.5"
+            >
+              <Plus className="h-4 w-4" />
+              <span>Add Package</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -206,7 +220,7 @@ export const AppPackagesListPage = () => {
                 <th className="px-6 py-4">Duration</th>
                 <th className="px-6 py-4">Category</th>
                 <th className="px-6 py-4">Rating</th>
-                <th className="px-6 py-4 text-right">Actions</th>
+                {canModifyCMS && <th className="px-6 py-4 text-right">Actions</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant/15 bg-transparent">
@@ -240,24 +254,26 @@ export const AppPackagesListPage = () => {
                   <td className="px-6 py-4 font-mono text-xs">
                     ⭐ {p.rating || "4.8"} ({p.reviewCount || "100"})
                   </td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end space-x-2">
-                      <button
-                        onClick={() => navigate(`/admin/app/packages/${p.id}/edit`)}
-                        className="p-1.5 bg-white/5 border border-on-primary-fixed-variant hover:border-secondary hover:text-secondary text-on-primary-container rounded transition-colors"
-                        title="Edit Package"
-                      >
-                        <Edit className="h-3.5 w-3.5" />
-                      </button>
-                      <button
-                        onClick={() => setDeleteTarget(p)}
-                        className="p-1.5 bg-white/5 border border-on-primary-fixed-variant hover:border-error-red hover:text-error-red text-on-primary-container rounded transition-colors"
-                        title="Delete Package"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                  </td>
+                  {canModifyCMS && (
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex items-center justify-end space-x-2">
+                        <button
+                          onClick={() => navigate(`/admin/app/packages/${p.id}/edit`)}
+                          className="p-1.5 bg-white/5 border border-on-primary-fixed-variant hover:border-secondary hover:text-secondary text-on-primary-container rounded transition-colors"
+                          title="Edit Package"
+                        >
+                          <Edit className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          onClick={() => setDeleteTarget(p)}
+                          className="p-1.5 bg-white/5 border border-on-primary-fixed-variant hover:border-error-red hover:text-error-red text-on-primary-container rounded transition-colors"
+                          title="Delete Package"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>

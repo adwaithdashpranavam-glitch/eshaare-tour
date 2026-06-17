@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import foxLogo from "../assets/fox-logo.png";
 import { useAuth } from "../contexts/AuthContext";
 import {
   MapPin,
@@ -14,26 +15,70 @@ import {
   Globe,
   Search,
   CalendarDays,
-  User
+  User,
+  Send
 } from "lucide-react";
 
 export const PublicLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, userProfile } = useAuth();
+  const { user, userProfile, isAdmin, loading } = useAuth();
   const userName = userProfile?.name || user?.displayName || user?.email || "Customer";
   const isPortal = location.pathname.startsWith("/portal");
+
+  // Redirect admin users to admin dashboard if they land on the home page root
+  useEffect(() => {
+    if (user && isAdmin && !loading && location.pathname === "/") {
+      navigate("/admin/dashboard", { replace: true });
+    }
+  }, [user, isAdmin, loading, location.pathname, navigate]);
+
+  const getMonogram = (name) => {
+    if (!name) return "";
+    let cleanName = name;
+    if (name.includes("@")) {
+      cleanName = name.split("@")[0];
+    }
+    const parts = cleanName.trim().split(/[\s._-]+/).filter(Boolean);
+    if (parts.length === 0) return "";
+    if (parts.length === 1) {
+      return parts[0].slice(0, 2).toUpperCase();
+    }
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  };
+
+  const userMonogram = getMonogram(userName);
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [scrolled, setScrolled] = useState(false);
   const [mobileExpanded, setMobileExpanded] = useState(null);
   const [mobileSubExpanded, setMobileSubExpanded] = useState(null);
+  const [mobileSubSubExpanded, setMobileSubSubExpanded] = useState(null);
 
   // Search state matching figma
   const [openSearch, setOpenSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const searchInputRef = useRef(null);
+
+  // Tooltip state for WhatsApp FAB
+  const [showTooltip, setShowTooltip] = useState(false);
+
+  // Auto-show and hide tooltip on page load
+  useEffect(() => {
+    const showTimer = setTimeout(() => {
+      setShowTooltip(true);
+    }, 1500);
+
+    const hideTimer = setTimeout(() => {
+      setShowTooltip(false);
+    }, 9500);
+
+    return () => {
+      clearTimeout(showTimer);
+      clearTimeout(hideTimer);
+    };
+  }, []);
 
   // Scroll handler for top header
   useEffect(() => {
@@ -64,9 +109,11 @@ export const PublicLayout = () => {
     if (mobileExpanded === title) {
       setMobileExpanded(null);
       setMobileSubExpanded(null);
+      setMobileSubSubExpanded(null);
     } else {
       setMobileExpanded(title);
       setMobileSubExpanded(null);
+      setMobileSubSubExpanded(null);
     }
   };
 
@@ -78,13 +125,42 @@ export const PublicLayout = () => {
         {
           title: "Visa Services",
           links: [
-            "Schengen Visa",
-            "UAE Visa",
             "UK Visa",
             "USA Visa",
-            "Canada Visa",
-            "Australia Visa",
-            "Saudi Visa",
+            {
+              title: "Schengen Visa",
+              links: [
+                "France Visa",
+                "Italy Visa",
+                "Germany Visa",
+                "Spain Visa",
+                "Netherlands Visa",
+                "Switzerland Visa"
+              ]
+            },
+            {
+              title: "GCC / Middle East Visa",
+              links: [
+                "UAE Visa",
+                "Saudi Arabia Visa",
+                "Oman Visa"
+              ]
+            },
+            {
+              title: "Asia Visa",
+              links: [
+                "Japan Visa",
+                "Korea Visa",
+                "Vietnam Visa"
+              ]
+            },
+            {
+              title: "Oceania Visa",
+              links: [
+                "Australia Visa",
+                "New Zealand Visa"
+              ]
+            }
           ],
         },
         {
@@ -99,6 +175,7 @@ export const PublicLayout = () => {
             "Japan Packages",
             "Honeymoon Packages",
             "Luxury Tours",
+            "Customise Package",
           ],
         },
         {
@@ -150,6 +227,7 @@ export const PublicLayout = () => {
   // Slug conversion mapping helper
   const toSlug = (text) => {
     const t = text.trim();
+    if (t === "Customise Package") return "/packages/customise";
     if (t === "Home") return "/";
     if (t === "About Us") return "/about";
     if (t === "Contact Us" || t === "Request Callback") return "/contact";
@@ -159,18 +237,14 @@ export const PublicLayout = () => {
 
     // Visas
     if (t === "Visa Services") return "/visa-services";
-    if (
-      t === "Schengen Visa" ||
-      t === "UK Visa" ||
-      t === "USA Visa" ||
-      t === "Japan Visa" ||
-      t === "UAE Visa" ||
-      t === "Canada Visa" ||
-      t === "Australia Visa" ||
-      t === "Saudi Visa"
-    ) {
-      const slug = t.toLowerCase().split(" ")[0];
-      return `/visa-services/${slug}`;
+    if (t.endsWith(" Visa")) {
+      const name = t.replace(" Visa", "").toLowerCase().trim();
+      if (name === "saudi arabia" || name === "saudi") return "/visa-services/saudi";
+      if (name === "new zealand") return "/visa-services/new-zealand";
+      if (name === "gcc / middle east") return "/visa-services/gcc-middle-east";
+      if (name === "asia") return "/visa-services/asia";
+      if (name === "oceania") return "/visa-services/oceania";
+      return `/visa-services/${name.replace(/\s+/g, "-")}`;
     }
 
     // Packages
@@ -289,13 +363,13 @@ export const PublicLayout = () => {
       `}</style>
 
       {/* Welcome Banner if authenticated */}
-      {user && (
+      {user && !isPortal && (
         <div className="fixed top-0 left-0 w-full z-50 h-8 bg-gradient-to-r from-[#2B2723] via-[#1D503A] to-[#2B2723] text-gray-300 text-xs px-4 xl:px-8 flex items-center justify-between border-b border-amber-500/10 font-medium tracking-wide shadow-sm">
           <div className="flex items-center gap-1.5">
             <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
             <span>
               Welcome,{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#1D503A] to-amber-300 font-extrabold uppercase tracking-wider">
+              <span className="text-amber-300 font-extrabold uppercase tracking-wider">
                 {userName}
               </span>
             </span>
@@ -304,6 +378,7 @@ export const PublicLayout = () => {
       )}
 
       {/* Sticky Top Navbar */}
+      {!isPortal && (
       <header
         className={`fixed left-0 w-full z-50 transition-all duration-300 ${scrolled
           ? "bg-white/95 backdrop-blur-md shadow-md border-b border-gray-100"
@@ -311,10 +386,10 @@ export const PublicLayout = () => {
           } ${user ? "top-8" : "top-0"}`}
       >
 
-        <div className="max-w-[95rem] mx-auto px-4 xl:px-6 h-16 flex items-center justify-between">
+        <div className="max-w-[95rem] mx-auto px-2 xl:px-4 h-16 flex items-center justify-between">
 
           {/* Logo with MapPin */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1 sm:gap-3 min-w-0">
             {location.pathname && location.pathname !== "/" && (
               <button
                 onClick={() => navigate(-1)}
@@ -324,19 +399,29 @@ export const PublicLayout = () => {
                 <ArrowLeft className="w-5 h-5 stroke-[2.5]" />
               </button>
             )}
+            <Link
+              to="/"
+              className="flex items-center gap-1 sm:gap-2 group shrink-0"
+            >
+              <img
+                src={foxLogo}
+                alt="Eshaare Tour"
+                className="h-12 sm:h-14 md:h-16 lg:h-20 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+              />
 
-            <Link to="/" className="flex items-center gap-2 group shrink-0">
-              <div className="relative">
-                <MapPin className="h-5 w-5 text-[#1D503A]" />
-                <div className="absolute -top-1 -right-2 w-2 h-2 bg-[#1D503A] rounded-full animate-pulse" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold tracking-tight leading-none">
-                  <span className="text-[#1D503A]">ESHAARE</span>
-                  <span className="text-[#1D503A] ml-1">TOUR</span>
+              {/* Brand Text */}
+              <div className="leading-none -ml-2.5 md:-ml-4">
+                <h1
+                  className="text-xl sm:text-xl md:text-3xl lg:text-4xl text-[#1D503A]"
+                  style={{
+                    fontFamily: "'Great Vibes', cursive",
+                  }}
+                >
+                  Eshaare Tour
                 </h1>
-                <p className="text-[10px] tracking-wider text-gray-800 font-semibold mt-1">
-                  TOURS & EVENTS
+
+                <p className="text-[5px] sm:text-[6px] md:text-[7px] lg:text-[8px] tracking-[0.25em] uppercase text-gray-600 mt-0">
+                  Connecting Dreams Into Destinations
                 </p>
               </div>
             </Link>
@@ -367,15 +452,44 @@ export const PublicLayout = () => {
                               </Link>
 
                               <div className="absolute top-0 left-full -ml-1 w-60 bg-white border border-gray-100 shadow-xl rounded-xl opacity-0 invisible group-hover/sub:opacity-100 group-hover/sub:visible transition-all duration-300 py-2">
-                                {sub.links.map((link) => (
-                                  <Link
-                                    key={link}
-                                    to={toSlug(link)}
-                                    className="block px-5 py-2.5 hover:bg-orange-50/50 hover:text-[#1D503A] text-sm text-gray-600 transition-colors"
-                                  >
-                                    {link}
-                                  </Link>
-                                ))}
+                                {sub.links.map((link) => {
+                                  const isObject = typeof link === "object" && link !== null;
+                                  const title = isObject ? link.title : link;
+                                  if (isObject) {
+                                    return (
+                                      <div key={title} className="relative group/subsub">
+                                        <Link
+                                          to={toSlug(title)}
+                                          className="px-5 py-2.5 hover:bg-orange-50/50 hover:text-[#1D503A] flex items-center justify-between text-sm text-gray-600 transition-colors"
+                                        >
+                                          {title}
+                                          <ChevronRight className="w-3.5 h-3.5 text-gray-400 group-hover/subsub:text-[#1D503A]" />
+                                        </Link>
+
+                                        <div className="absolute top-0 left-full -ml-1 w-60 bg-white border border-gray-100 shadow-xl rounded-xl opacity-0 invisible group-hover/subsub:opacity-100 group-hover/subsub:visible transition-all duration-300 py-2">
+                                          {link.links.map((subLink) => (
+                                            <Link
+                                              key={subLink}
+                                              to={toSlug(subLink)}
+                                              className="block px-5 py-2.5 hover:bg-orange-50/50 hover:text-[#1D503A] text-sm text-gray-600 transition-colors"
+                                            >
+                                              {subLink}
+                                            </Link>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    );
+                                  }
+                                  return (
+                                    <Link
+                                      key={title}
+                                      to={toSlug(title)}
+                                      className="block px-5 py-2.5 hover:bg-orange-50/50 hover:text-[#1D503A] text-sm text-gray-600 transition-colors"
+                                    >
+                                      {title}
+                                    </Link>
+                                  );
+                                })}
                               </div>
                             </>
                           ) : (
@@ -413,29 +527,31 @@ export const PublicLayout = () => {
               </Link>
             ) : (
               <Link
-                to="/portal"
+                to={isAdmin ? "/admin" : "/portal"}
                 className="h-9 border border-gray-300 hover:bg-gray-100 text-gray-800 px-6 rounded-full font-semibold text-sm flex items-center justify-center transition-all duration-300"
               >
-                Dashboard
+                {isAdmin ? "Admin Portal" : "Dashboard"}
               </Link>
             )}
 
             <Link
               to="/appointment"
-              className="group relative flex items-center gap-2 h-9 bg-[#1D503A] border border-[#1D503A] text-white px-5 rounded-full font-semibold text-sm hover:bg-[#0e4a1e] transition-all duration-300 overflow-hidden shadow-md"
+              className="group relative flex items-center gap-2 h-9 bg-[#1D503A] border border-[#1D503A] text-white px-3 rounded-full font-semibold text-sm hover:bg-[#0e4a1e] transition-all duration-300 overflow-hidden shadow-md"
             >
               <Phone className="h-4 w-4" />
               <span>Enquire Now</span>
             </Link>
 
-            {/* Profile Avatar / ES monogram */}
-            <Link
-              to="/portal"
-              className="h-11 w-11 rounded-full border border-gray-200 shadow-sm bg-orange-50 flex items-center justify-center font-bold text-xs text-[#1D503A] hover:bg-orange-100/50 transition-colors"
-              title="User Portal"
-            >
-              ES
-            </Link>
+            {/* Profile Avatar / user monogram */}
+            {user && (
+              <Link
+                to={isAdmin ? "/admin" : "/portal"}
+                className="h-11 w-11 rounded-full border border-gray-200 shadow-sm bg-orange-50 flex items-center justify-center font-bold text-xs text-[#1D503A] hover:bg-orange-100/50 transition-colors shrink-0"
+                title={`${isAdmin ? "Admin Portal" : "User Portal"}: ${userName}`}
+              >
+                {userMonogram}
+              </Link>
+            )}
           </div>
 
           {/* Mobile Hamburg Trigger */}
@@ -451,9 +567,10 @@ export const PublicLayout = () => {
 
         </div>
       </header>
+      )}
 
       {/* Mobile Menu Drawer */}
-      {mobileMenuOpen && (
+      {mobileMenuOpen && !isPortal && (
         <div className="fixed inset-0 z-50 lg:hidden bg-black/40 backdrop-blur-sm pt-20">
           <div className="bg-white max-h-[calc(100vh-80px)] overflow-y-auto shadow-xl p-4 flex flex-col gap-2">
             {navData.map((navItem) => (
@@ -478,11 +595,12 @@ export const PublicLayout = () => {
                             {sub.links && sub.links.length > 0 ? (
                               <>
                                 <button
-                                  onClick={() =>
+                                  onClick={() => {
                                     setMobileSubExpanded(
                                       mobileSubExpanded === sub.title ? null : sub.title
-                                    )
-                                  }
+                                    );
+                                    setMobileSubSubExpanded(null);
+                                  }}
                                   className="w-full py-2.5 flex items-center justify-between text-sm font-semibold text-gray-700 hover:text-[#1D503A]"
                                 >
                                   <span>{sub.title}</span>
@@ -494,16 +612,56 @@ export const PublicLayout = () => {
 
                                 {mobileSubExpanded === sub.title && (
                                   <div className="pl-4 pr-4 py-1 flex flex-col gap-1 border-l-2 border-orange-100 ml-2">
-                                    {sub.links.map((link) => (
-                                      <Link
-                                        key={link}
-                                        to={toSlug(link)}
-                                        onClick={() => setMobileMenuOpen(false)}
-                                        className="py-2 text-[13px] text-gray-600 hover:text-[#1D503A] block"
-                                      >
-                                        {link}
-                                      </Link>
-                                    ))}
+                                    {sub.links.map((link) => {
+                                      const isObject = typeof link === "object" && link !== null;
+                                      const title = isObject ? link.title : link;
+                                      if (isObject) {
+                                        return (
+                                          <div key={title} className="w-full">
+                                            <button
+                                              onClick={() =>
+                                                setMobileSubSubExpanded(
+                                                  mobileSubSubExpanded === title ? null : title
+                                                )
+                                              }
+                                              className="w-full py-2 flex items-center justify-between text-[13px] font-semibold text-gray-700 hover:text-[#1D503A]"
+                                            >
+                                              <span>{title}</span>
+                                              <ChevronDown
+                                                className={`w-3 h-3 transition-transform ${
+                                                  mobileSubSubExpanded === title ? "rotate-180" : ""
+                                                }`}
+                                              />
+                                            </button>
+
+                                            {mobileSubSubExpanded === title && (
+                                              <div className="pl-4 pr-4 py-1 flex flex-col gap-1 border-l border-orange-100 ml-2">
+                                                {link.links.map((subLink) => (
+                                                  <Link
+                                                    key={subLink}
+                                                    to={toSlug(subLink)}
+                                                    onClick={() => setMobileMenuOpen(false)}
+                                                    className="py-1.5 text-[12px] text-gray-600 hover:text-[#1D503A] block"
+                                                  >
+                                                    {subLink}
+                                                  </Link>
+                                                ))}
+                                              </div>
+                                            )}
+                                          </div>
+                                        );
+                                      }
+                                      return (
+                                        <Link
+                                          key={title}
+                                          to={toSlug(title)}
+                                          onClick={() => setMobileMenuOpen(false)}
+                                          className="py-2 text-[13px] text-gray-600 hover:text-[#1D503A] block"
+                                        >
+                                          {title}
+                                        </Link>
+                                      );
+                                    })}
                                   </div>
                                 )}
                               </>
@@ -545,11 +703,11 @@ export const PublicLayout = () => {
                 </Link>
               ) : (
                 <Link
-                  to="/portal"
+                  to={isAdmin ? "/admin" : "/portal"}
                   className="border border-gray-300 text-gray-800 py-3 rounded-full text-center font-semibold text-sm hover:bg-gray-50"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  Dashboard
+                  {isAdmin ? "Admin Portal" : "Dashboard"}
                 </Link>
               )}
 
@@ -567,18 +725,18 @@ export const PublicLayout = () => {
       )}
 
       {/* Main Page Layout Content */}
-      <main className={isPortal ? "flex-grow pt-24" : `flex-grow pb-24 md:pb-8 ${user ? "pt-24" : "pt-16"}`}>
+      <main className={isPortal ? "flex-grow" : `flex-grow pb-24 md:pb-8 ${user ? "pt-24" : "pt-16"}`}>
         <Outlet />
       </main>
 
       {/* Footer matching figma style colorings */}
       {!isPortal && (
-        <footer className="bg-primary-container text-on-primary-container pt-16 pb-32">
+        <footer className="relative z-10 bg-primary-container text-on-primary-container pt-16 pb-48">
           <div className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop grid grid-cols-1 md:grid-cols-4 gap-gutter mb-12">
             {/* Brand Col */}
             <div className="flex flex-col gap-4">
-              <Link to="/" className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-white text-3xl font-bold">location_on</span>
+              <Link to="/" className="flex items-center gap-2 text-white">
+                <MapPin className="h-6 w-6 text-white stroke-[2.5]" />
                 <span className="font-headline-md font-bold text-white tracking-tight">
                   ESHAAR TOUR
                 </span>
@@ -593,22 +751,22 @@ export const PublicLayout = () => {
               <h4 className="text-white font-headline-md text-body-lg font-semibold">Services</h4>
               <ul className="flex flex-col gap-2.5 text-body-sm">
                 <li>
-                  <Link to="/visa-services" className="text-on-primary-container/80 hover:text-secondary-fixed transition-colors">
+                  <Link to="/visa-services" className="text-on-primary-container/80 hover:text-[#D4AF37] transition-colors">
                     Visa Services
                   </Link>
                 </li>
                 <li>
-                  <Link to="/packages" className="text-on-primary-container/80 hover:text-[#1D503A] transition-colors">
+                  <Link to="/packages" className="text-on-primary-container/80 hover:text-[#D4AF37] transition-colors">
                     Tour Packages
                   </Link>
                 </li>
                 <li>
-                  <Link to="/destinations" className="text-on-primary-container/80 hover:text-[#1D503A] transition-colors">
+                  <Link to="/destinations" className="text-on-primary-container/80 hover:text-[#D4AF37] transition-colors">
                     Destinations
                   </Link>
                 </li>
                 <li>
-                  <Link to="/resources" className="text-on-primary-container/80 hover:text-[#1D503A] transition-colors">
+                  <Link to="/resources" className="text-on-primary-container/80 hover:text-[#D4AF37] transition-colors">
                     Documentation Guide
                   </Link>
                 </li>
@@ -620,22 +778,22 @@ export const PublicLayout = () => {
               <h4 className="text-white font-headline-md text-body-lg font-semibold">Support</h4>
               <ul className="flex flex-col gap-2.5 text-body-sm">
                 <li>
-                  <Link to="/track" className="text-on-primary-container/80 hover:text-[#1D503A] transition-colors">
+                  <Link to="/track" className="text-on-primary-container/80 hover:text-[#D4AF37] transition-colors">
                     Track Application
                   </Link>
                 </li>
                 <li>
-                  <Link to="/contact" className="text-on-primary-container/80 hover:text-[#1D503A] transition-colors">
+                  <Link to="/contact" className="text-on-primary-container/80 hover:text-[#D4AF37] transition-colors">
                     Contact Support
                   </Link>
                 </li>
                 <li>
-                  <Link to="/login" className="text-on-primary-container/80 hover:text-[#1D503A] transition-colors">
+                  <Link to="/login" className="text-on-primary-container/80 hover:text-[#D4AF37] transition-colors">
                     Staff Login
                   </Link>
                 </li>
                 <li>
-                  <Link to="/portal/login" className="text-on-primary-container/80 hover:text-[#1D503A] transition-colors">
+                  <Link to="/portal/login" className="text-on-primary-container/80 hover:text-[#D4AF37] transition-colors">
                     Client Portal
                   </Link>
                 </li>
@@ -648,20 +806,21 @@ export const PublicLayout = () => {
               <p className="text-body-sm leading-relaxed text-on-primary-container/80">
                 Subscribe to get the latest visa news updates and luxury tour package offers.
               </p>
-              <form onSubmit={handleNewsletterSubmit} className="flex gap-2">
+              <form onSubmit={handleNewsletterSubmit} className="flex gap-2 items-center">
                 <input
                   type="email"
                   required
-                  className="flex-grow px-3 py-2 bg-surface-container-lowest text-on-surface placeholder:text-on-surface-variant/50 text-body-sm rounded-lg border border-outline-variant/10 focus:outline-none"
+                  className="flex-grow px-4 py-2.5 bg-white text-gray-800 placeholder:text-gray-400 text-body-sm rounded-lg border border-transparent focus:outline-none shadow-sm"
                   placeholder="Your email address"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
                 <button
                   type="submit"
-                  className="bg-[#1D503A] text-white px-4 py-2 rounded-lg font-label-md hover:bg-[#0e4a1e] transition-colors flex items-center justify-center"
+                  className="bg-[#1D503A] text-white p-3 rounded-lg hover:bg-[#143d2c] hover:scale-105 transition-all flex items-center justify-center shadow-sm shrink-0"
+                  aria-label="Subscribe"
                 >
-                  <span className="material-symbols-outlined text-lg">send</span>
+                  <Send className="h-4 w-4" />
                 </button>
               </form>
             </div>
@@ -669,115 +828,138 @@ export const PublicLayout = () => {
 
           {/* Bottom Bar */}
           <div className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between text-body-sm text-on-primary-container/60">
-            <p>Â© {new Date().getFullYear()} Eshaare Tours UAE. All rights reserved.</p>
+            <p>{"\u00A9"} {new Date().getFullYear()} Eshaare Tours UAE. All rights reserved.</p>
             <div className="flex gap-6 mt-4 md:mt-0">
-              <a href="https://instagram.com" target="_blank" rel="noreferrer" className="hover:text-secondary-fixed transition-colors">Instagram</a>
-              <a href="https://wa.me/971501234567" target="_blank" rel="noreferrer" className="hover:text-secondary-fixed transition-colors">WhatsApp</a>
-              <a href="https://facebook.com" target="_blank" rel="noreferrer" className="hover:text-secondary-fixed transition-colors">Facebook</a>
+              <a href="https://instagram.com" target="_blank" rel="noreferrer" className="hover:text-[#D4AF37] transition-colors">Instagram</a>
+              <a href="https://wa.me/971501234567" target="_blank" rel="noreferrer" className="hover:text-[#D4AF37] transition-colors">WhatsApp</a>
+              <a href="https://facebook.com" target="_blank" rel="noreferrer" className="hover:text-[#D4AF37] transition-colors">Facebook</a>
             </div>
           </div>
         </footer>
       )}
 
-      {/* WhatsApp FAB */}
+      {/* WhatsApp FAB with Fox Mascot & Auto-fading Speech Bubble */}
       {!isPortal && (
-        <a
-          href="https://wa.me/971501234567"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="fixed bottom-8 right-8 w-16 h-16 bg-whatsapp-green text-white rounded-full flex items-center justify-center shadow-2xl hover:scale-110 z-[100] transition-transform animate-pulse"
-          title="Chat on WhatsApp"
-        >
-          <span className="material-symbols-outlined text-3xl">chat</span>
-        </a>
+        <div className="fixed bottom-8 right-8 z-[100] flex items-center">
+          {/* Fading Speech Bubble */}
+          <div
+            className={`mr-3.5 bg-white text-gray-800 text-xs font-semibold py-3 px-4 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] border border-gray-100 relative transition-all duration-500 ease-out transform origin-right whitespace-nowrap
+              ${showTooltip ? "opacity-100 translate-x-0 scale-100" : "opacity-0 translate-x-4 scale-90 pointer-events-none"}`}
+          >
+            Hey, how can I help you? 24/7 service
+            {/* Little tail pointing to the button */}
+            <div className="absolute top-1/2 -translate-y-1/2 left-full w-0 h-0 border-y-[6px] border-y-transparent border-l-[8px] border-l-white drop-shadow-[2px_0_1px_rgba(0,0,0,0.02)]" />
+          </div>
+
+          {/* Fox Button */}
+          <a
+            href="https://wa.me/971501234567"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-16 h-16 bg-white border border-[#1D503A]/15 rounded-full flex items-center justify-center shadow-[0_8px_32px_rgba(0,0,0,0.15)] hover:scale-110 transition-transform duration-300 relative group-btn"
+            title="Chat with Eshaare Support"
+          >
+            <img
+              src={foxLogo}
+              alt="Eshaare Support"
+              className="w-12 h-12 object-contain"
+            />
+            {/* Pulsing online badge */}
+            <div className="absolute bottom-0 right-0 w-4.5 h-4.5 bg-green-500 rounded-full border-2 border-white flex items-center justify-center shadow-sm">
+              <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
+            </div>
+          </a>
+        </div>
       )}
 
       {/* FIGMA DESIGN FIXED BOTTOM NAVBAR */}
-      <div className="fixed bottom-1 left-1/2 z-[9999] w-[75%] max-w-2xl -translate-x-1/2 rounded-full border border-white/10 bg-white/90 shadow-[0_8px_24px_rgba(0,0,0,0.15)] backdrop-blur-xl">
-        <div className="grid grid-cols-5 items-center py-1">
+      {!isPortal && (
+        <div className="fixed bottom-1 left-1/2 z-[9999] w-[75%] max-w-2xl -translate-x-1/2 rounded-full border border-white/10 bg-white/90 shadow-[0_8px_24px_rgba(0,0,0,0.15)] backdrop-blur-xl">
+          <div className="grid grid-cols-5 items-center py-1">
 
-          {/* GLOBE */}
-          <Link
-            to="/globe"
-            className="flex flex-col items-center justify-center gap-1 text-xs text-gray-700 transition hover:text-[#1D503A]"
-          >
-            <Globe size={17} />
-            <span>Globe</span>
-          </Link>
+            {/* GLOBE */}
+            <Link
+              to="/globe"
+              className="flex flex-col items-center justify-center gap-1 text-xs text-gray-700 transition hover:text-[#1D503A]"
+            >
+              <Globe size={17} />
+              <span>Globe</span>
+            </Link>
 
-          {/* HOME */}
-          <Link
-            to="/"
-            className="flex flex-col items-center justify-center gap-1 text-xs text-gray-700 transition hover:text-[#1D503A]"
-          >
-            <Home size={17} />
-            <span>Home</span>
-          </Link>
+            {/* HOME */}
+            <Link
+              to="/"
+              className="flex flex-col items-center justify-center gap-1 text-xs text-gray-700 transition hover:text-[#1D503A]"
+            >
+              <Home size={17} />
+              <span>Home</span>
+            </Link>
 
-          {/* SEARCH (SIRI-STYLE GLOWING ORB) */}
-          <button
-            onClick={() => setOpenSearch(true)}
-            className="-mt-8 mx-auto relative siri-orb-float flex h-14 w-14 items-center justify-center rounded-full
-              bg-black overflow-hidden shadow-[0_0_25px_rgba(34,211,238,0.3)] border border-white/20
-              transition-all duration-300 hover:scale-110 hover:shadow-[0_0_35px_rgba(34,211,238,0.6)] active:scale-95 group-btn"
-          >
-            {/* Morphing colored background blobs */}
-            <div className="absolute inset-0 z-0 scale-110 opacity-70">
-              {/* Cyan blob */}
-              <div
-                className="absolute w-[110%] h-[110%] -top-[5%] -left-[5%] bg-gradient-to-br from-cyan-400 to-blue-500 blur-[8px]"
-                style={{
-                  animation: "orb-morph-1 8s infinite linear",
-                }}
-              />
-              {/* Pink/Magenta blob */}
-              <div
-                className="absolute w-[120%] h-[120%] -bottom-[10%] -right-[10%] bg-gradient-to-tr from-pink-500 to-rose-500 blur-[10px]"
-                style={{
-                  animation: "orb-morph-2 10s infinite linear",
-                }}
-              />
-              {/* Green/Yellow blob */}
-              <div
-                className="absolute w-[90%] h-[90%] top-[10%] left-[10%] bg-gradient-to-r from-emerald-400 to-teal-500 blur-[8px]"
-                style={{
-                  animation: "orb-morph-3 12s infinite ease-in-out",
-                }}
-              />
-            </div>
+            {/* SEARCH (SIRI-STYLE GLOWING ORB) */}
+            <button
+              onClick={() => setOpenSearch(true)}
+              className="-mt-8 mx-auto relative siri-orb-float flex h-14 w-14 items-center justify-center rounded-full
+                bg-black overflow-hidden shadow-[0_0_25px_rgba(34,211,238,0.3)] border border-white/20
+                transition-all duration-300 hover:scale-110 hover:shadow-[0_0_35px_rgba(34,211,238,0.6)] active:scale-95 group-btn"
+            >
+              {/* Morphing colored background blobs */}
+              <div className="absolute inset-0 z-0 scale-110 opacity-70">
+                {/* Cyan blob */}
+                <div
+                  className="absolute w-[110%] h-[110%] -top-[5%] -left-[5%] bg-gradient-to-br from-cyan-400 to-blue-500 blur-[8px]"
+                  style={{
+                    animation: "orb-morph-1 8s infinite linear",
+                  }}
+                />
+                {/* Pink/Magenta blob */}
+                <div
+                  className="absolute w-[120%] h-[120%] -bottom-[10%] -right-[10%] bg-gradient-to-tr from-pink-500 to-rose-500 blur-[10px]"
+                  style={{
+                    animation: "orb-morph-2 10s infinite linear",
+                  }}
+                />
+                {/* Green/Yellow blob */}
+                <div
+                  className="absolute w-[90%] h-[90%] top-[10%] left-[10%] bg-gradient-to-r from-emerald-400 to-teal-500 blur-[8px]"
+                  style={{
+                    animation: "orb-morph-3 12s infinite ease-in-out",
+                  }}
+                />
+              </div>
 
-            {/* Glowing White Core */}
-            <div className="absolute w-6 h-6 rounded-full bg-white blur-[4px] opacity-80 z-10 animate-pulse" />
+              {/* Glowing White Core */}
+              <div className="absolute w-6 h-6 rounded-full bg-white blur-[4px] opacity-80 z-10 animate-pulse" />
 
-            {/* Search Icon and Text */}
-            <div className="relative z-20 flex flex-col items-center justify-center text-white select-none pointer-events-none">
-              <Search size={16} className="drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]" />
-              <span className="mt-0.5 text-[8px] font-extrabold uppercase tracking-wider drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]">
-                Search
-              </span>
-            </div>
-          </button>
+              {/* Search Icon and Text */}
+              <div className="relative z-20 flex flex-col items-center justify-center text-white select-none pointer-events-none">
+                <Search size={16} className="drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]" />
+                <span className="mt-0.5 text-[8px] font-extrabold uppercase tracking-wider drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]">
+                  Search
+                </span>
+              </div>
+            </button>
 
-          {/* EVENTS */}
-          <Link
-            to="/packages"
-            className="flex flex-col items-center justify-center gap-1 text-xs text-gray-700 transition hover:text-[#1D503A]"
-          >
-            <CalendarDays size={17} />
-            <span>Events</span>
-          </Link>
+            {/* EVENTS */}
+            <Link
+              to="/packages"
+              className="flex flex-col items-center justify-center gap-1 text-xs text-gray-700 transition hover:text-[#1D503A]"
+            >
+              <CalendarDays size={17} />
+              <span>Events</span>
+            </Link>
 
-          {/* ACCOUNT */}
-          <Link
-            to={user ? "/portal" : "/portal/login"}
-            className="flex flex-col items-center justify-center gap-1 text-xs text-gray-700 transition hover:text-[#1D503A]"
-          >
-            <User size={17} />
-            <span>Account</span>
-          </Link>
+            {/* ACCOUNT */}
+            <Link
+              to={user ? (isAdmin ? "/admin" : "/portal") : "/portal/login"}
+              className="flex flex-col items-center justify-center gap-1 text-xs text-gray-700 transition hover:text-[#1D503A]"
+            >
+              <User size={17} />
+              <span>{isAdmin ? "Admin" : "Account"}</span>
+            </Link>
 
+          </div>
         </div>
-      </div>
+      )}
 
       {/* FIGMA DESIGN SEARCH POPUP */}
       {openSearch && (

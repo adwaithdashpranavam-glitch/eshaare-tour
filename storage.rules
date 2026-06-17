@@ -1,0 +1,102 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Helper function: Check if user is signed in
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    // Check if user document exists in users collection (by UID or by email)
+    function hasUserDoc() {
+      return isSignedIn() && getUserData() != null;
+    }
+
+    // Get user data - tries UID first, then email as doc ID (legacy docs)
+    function getUserData() {
+      let uidPath = /databases/(default)/documents/users/$(request.auth.uid);
+      return firestore.exists(uidPath)
+        ? firestore.get(uidPath).data
+        : (request.auth.token != null && request.auth.token.email != null && firestore.exists(/databases/(default)/documents/users/$(request.auth.token.email.lower()))
+          ? firestore.get(/databases/(default)/documents/users/$(request.auth.token.email.lower())).data
+          : null);
+    }
+
+    // Helper to fetch user's role from Firestore users collection
+    function getRole() {
+      let userData = getUserData();
+      return userData != null ? userData.role : null;
+    }
+
+    // Helper to check if user's account is Active (missing status field counts as Active)
+    function isActive() {
+      let userData = getUserData();
+      return isSignedIn() && userData != null && (
+        !('status' in userData) ||
+        userData.status == 'Active'
+      );
+    }
+    
+    // Check if user is owner of the folder
+    function isOwner(userId) {
+      let userData = getUserData();
+      return isSignedIn() && userData != null && 
+             (!('status' in userData) || userData.status == 'Active') &&
+             request.auth.uid == userId;
+    }
+
+    // Roles allowed to access travel documents (passports, statements, etc.)
+    function canAccessTravelDocs() {
+      let userData = getUserData();
+      return isSignedIn() && userData != null && 
+             (!('status' in userData) || userData.status == 'Active') &&
+             userData.role in ['super_admin', 'admin', 'manager', 'sales', 'visa_ops'];
+    }
+
+    // Roles allowed to access support chat attachments
+    function canAccessChatDocs() {
+      let userData = getUserData();
+      return isSignedIn() && userData != null && 
+             (!('status' in userData) || userData.status == 'Active') &&
+             userData.role in ['super_admin', 'admin', 'manager', 'support'];
+    }
+
+    // Check if user is manager or admin
+    function isManager() {
+      let userData = getUserData();
+      return isSignedIn() && userData != null && 
+             (!('status' in userData) || userData.status == 'Active') &&
+             userData.role in ['super_admin', 'admin', 'manager'];
+    }
+
+    // 1. Documents Collection uploads
+    match /documents/{documentId}/{allPaths=**} {
+      allow read: if (isSignedIn() && request.auth.uid == documentId) || canAccessTravelDocs();
+      allow write: if ((isSignedIn() && request.auth.uid == documentId) || canAccessTravelDocs()) && request.resource.size < 15 * 1024 * 1024;
+    }
+    
+    // 2. Travellers documents (PortalUploadModal)
+    match /travellers/{travellerId}/{allPaths=**} {
+      allow read: if isOwner(travellerId) || canAccessTravelDocs();
+      allow write: if (isOwner(travellerId) || canAccessTravelDocs()) && request.resource.size < 15 * 1024 * 1024;
+    }
+    
+    // 3. Public Visa Banners
+    match /visa_banners/{allPaths=**} {
+      allow read: if true;
+      allow write: if isManager();
+    }
+
+    // 4. Chat attachments
+    match /chats/{userId}/{allPaths=**} {
+      allow read: if isOwner(userId) || canAccessChatDocs();
+      allow write: if (isOwner(userId) || canAccessChatDocs()) && request.resource.size < 15 * 1024 * 1024;
+    }
+
+    // 5. Staff Profile Pictures
+    match /staff_pics/{allPaths=**} {
+      allow read: if true;
+      allow write: if isManager();
+    }
+  }
+}

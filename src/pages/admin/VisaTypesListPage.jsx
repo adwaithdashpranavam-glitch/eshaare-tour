@@ -4,9 +4,11 @@ import { GripVertical, Plus, Edit, Trash2, Loader2, Eye, Globe, ArrowUpDown, Ale
 import { getVisaTypes, saveVisaType, deleteVisaType, updateVisaTypeSortOrders } from "../../lib/firestore";
 import { formatShortDate } from "../../utils/formatters";
 import LoadingSpinner from "../../components/ui/LoadingSpinner";
+import { useAuth } from "../../contexts/AuthContext";
 import toast from "react-hot-toast";
 
 export const VisaTypesListPage = () => {
+  const { userProfile } = useAuth();
   const navigate = useNavigate();
   const [visaTypes, setVisaTypes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -16,6 +18,8 @@ export const VisaTypesListPage = () => {
   const [deleting, setDeleting] = useState(false);
   
   const draggedIdx = useRef(null);
+
+  const canModifyCMS = ["super_admin", "admin", "manager"].includes(userProfile?.role);
 
   // Subscriptions to live visa types list
   useEffect(() => {
@@ -46,6 +50,10 @@ export const VisaTypesListPage = () => {
 
   // Toggle isPublished state
   const handleTogglePublish = async (visa) => {
+    if (!canModifyCMS) {
+      toast.error("Unauthorized operation");
+      return;
+    }
     const nextStatus = !visa.isPublished;
     try {
       await saveVisaType(visa.id, { isPublished: nextStatus });
@@ -58,6 +66,7 @@ export const VisaTypesListPage = () => {
 
   // Drag Handlers for Native HTML5 Drag and Drop
   const handleDragStart = (e, index) => {
+    if (!canModifyCMS) return;
     draggedIdx.current = index;
     e.dataTransfer.effectAllowed = "move";
     e.dataTransfer.setData("text/html", e.target);
@@ -66,6 +75,7 @@ export const VisaTypesListPage = () => {
 
   const handleDragOver = (e, index) => {
     e.preventDefault();
+    if (!canModifyCMS) return;
     if (draggedIdx.current === null || draggedIdx.current === index) return;
     
     const reorderedItems = [...visaTypes];
@@ -77,6 +87,7 @@ export const VisaTypesListPage = () => {
   };
 
   const handleDragEnd = async (e) => {
+    if (!canModifyCMS) return;
     e.currentTarget.classList.remove("opacity-50", "border-dashed", "border-secondary");
     draggedIdx.current = null;
     
@@ -98,6 +109,10 @@ export const VisaTypesListPage = () => {
   // Delete Handlers
   const handleDeleteConfirm = async () => {
     if (!deleteTarget) return;
+    if (!canModifyCMS) {
+      toast.error("Unauthorized operation");
+      return;
+    }
     setDeleting(true);
     try {
       await deleteVisaType(deleteTarget.id);
@@ -121,13 +136,15 @@ export const VisaTypesListPage = () => {
             Create, edit, and reorder public-facing visa pages. Reorder items using the drag handles to set display order.
           </p>
         </div>
-        <button
-          onClick={() => navigate("/admin/visa-types/new")}
-          className="px-4 py-2 bg-gradient-to-r from-secondary-container to-secondary-container text-on-primary-fixed font-bold text-xs rounded-button flex items-center space-x-1.5 shadow-sm transition-all hover:-translate-y-0.5"
-        >
-          <Plus className="h-4 w-4" />
-          <span>Add Visa Page</span>
-        </button>
+        {canModifyCMS && (
+          <button
+            onClick={() => navigate("/admin/visa-types/new")}
+            className="px-4 py-2 bg-gradient-to-r from-secondary-container to-secondary-container text-on-primary-fixed font-bold text-xs rounded-button flex items-center space-x-1.5 shadow-sm transition-all hover:-translate-y-0.5"
+          >
+            <Plus className="h-4 w-4" />
+            <span>Add Visa Page</span>
+          </button>
+        )}
       </div>
 
       {error && (
@@ -215,15 +232,21 @@ export const VisaTypesListPage = () => {
                   >
                     {/* Reorder grip */}
                     <td className="px-4 py-4 text-center">
-                      <div 
-                        draggable
-                        onDragStart={(e) => handleDragStart(e, index)}
-                        onDragEnd={handleDragEnd}
-                        className="cursor-grab active:cursor-grabbing p-1 rounded hover:bg-white/5 text-on-primary-container/40 hover:text-secondary inline-block transition-colors"
-                        title="Drag to reorder"
-                      >
-                        <GripVertical className="h-4.5 w-4.5" />
-                      </div>
+                      {canModifyCMS ? (
+                        <div 
+                          draggable
+                          onDragStart={(e) => handleDragStart(e, index)}
+                          onDragEnd={handleDragEnd}
+                          className="cursor-grab active:cursor-grabbing p-1 rounded hover:bg-white/5 text-on-primary-container/40 hover:text-secondary inline-block transition-colors"
+                          title="Drag to reorder"
+                        >
+                          <GripVertical className="h-4.5 w-4.5" />
+                        </div>
+                      ) : (
+                        <div className="p-1 text-on-primary-container/20 inline-block">
+                          <GripVertical className="h-4.5 w-4.5" />
+                        </div>
+                      )}
                     </td>
 
                     {/* Visa Name & tagline */}
@@ -244,7 +267,10 @@ export const VisaTypesListPage = () => {
                       <div className="flex items-center space-x-2">
                         <button
                           onClick={() => handleTogglePublish(v)}
+                          disabled={!canModifyCMS}
                           className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-200 focus:outline-none ${
+                            !canModifyCMS ? "opacity-50 cursor-not-allowed" : ""
+                          } ${
                             v.isPublished ? "bg-success-green" : "bg-on-primary-fixed-variant"
                           }`}
                         >
@@ -279,20 +305,24 @@ export const VisaTypesListPage = () => {
                             <Eye className="h-3.5 w-3.5" />
                           </a>
                         )}
-                        <button
-                          onClick={() => navigate(`/admin/visa-types/${v.id}/edit`)}
-                          className="p-1.5 bg-white/5 border border-on-primary-fixed-variant hover:border-secondary hover:text-secondary text-on-primary-container rounded transition-colors"
-                          title="Edit Content"
-                        >
-                          <Edit className="h-3.5 w-3.5" />
-                        </button>
-                        <button
-                          onClick={() => setDeleteTarget(v)}
-                          className="p-1.5 bg-white/5 border border-on-primary-fixed-variant hover:border-error-red hover:text-error-red text-on-primary-container rounded transition-colors"
-                          title="Delete Page"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
+                        {canModifyCMS && (
+                          <>
+                            <button
+                              onClick={() => navigate(`/admin/visa-types/${v.id}/edit`)}
+                              className="p-1.5 bg-white/5 border border-on-primary-fixed-variant hover:border-secondary hover:text-secondary text-on-primary-container rounded transition-colors"
+                              title="Edit Content"
+                            >
+                              <Edit className="h-3.5 w-3.5" />
+                            </button>
+                            <button
+                              onClick={() => setDeleteTarget(v)}
+                              className="p-1.5 bg-white/5 border border-on-primary-fixed-variant hover:border-error-red hover:text-error-red text-on-primary-container rounded transition-colors"
+                              title="Delete Page"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          </>
+                        )}
                       </div>
                     </td>
                   </tr>

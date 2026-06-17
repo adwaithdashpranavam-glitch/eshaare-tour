@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { db } from "../../lib/firebase";
-import { CreditCard, DollarSign, Download, ExternalLink } from "lucide-react";
+import { CreditCard, Download } from "lucide-react";
 import StatusBadge from "../../components/ui/StatusBadge";
 import { formatCurrency, formatShortDate } from "../../utils/formatters";
 import LoadingSpinner from "../../components/ui/LoadingSpinner";
@@ -14,21 +14,21 @@ export const PortalPaymentsPage = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!userProfile?.name) return;
+    if (!userProfile?.email) return;
 
     const pRef = collection(db, "payments");
-    const q = query(pRef, where("clientName", "==", userProfile.name));
+    const q = query(pRef, where("clientEmail", "==", userProfile.email.toLowerCase()));
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       if (!snapshot.empty) {
         setPayments(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      } else {
+        setPayments([]);
       }
       setLoading(false);
     }, (error) => {
-      console.warn("Using mock traveller payments fallback lists:", error);
-      setPayments([
-        { id: "1", invoiceNo: "PAY-20260601-001", service: "Schengen Visa Booking", amount: 450, method: "Card", date: new Date(), status: "Paid", paymentLinkUrl: "https://stripe.com" }
-      ]);
+      console.warn("Error fetching payments lists:", error);
+      setPayments([]);
       setLoading(false);
     });
 
@@ -41,29 +41,29 @@ export const PortalPaymentsPage = () => {
   };
 
   return (
-    <div className="space-y-6 font-sans">
+    <div className="space-y-8 font-sans">
       
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-display font-bold text-white tracking-wide">Payments & Invoices</h1>
-        <p className="text-xs text-on-primary-container/50">Manage transaction ledgers, settle outstanding billing balances and download receipt PDFs.</p>
+        <h1 className="text-2xl font-semibold text-[#1A1A1A]">Payments & Invoices</h1>
+        <p className="text-xs text-[#6B7280]">Manage transaction ledgers, settle outstanding billing balances and download receipt PDFs.</p>
       </div>
 
       {/* Invoices List */}
-      <div className="overflow-x-auto rounded-card border border-on-primary-fixed-variant bg-primary-container/40">
-        <table className="min-w-full divide-y divide-outline-variant/15 text-left text-sm text-on-primary-container">
-          <thead className="bg-primary-container/80 uppercase text-xs font-semibold text-on-primary-container/60 tracking-wider">
+      <div className="overflow-x-auto rounded-[24px] border border-[#E5E7EB] bg-white shadow-sm">
+        <table className="min-w-full divide-y divide-[#E5E7EB] text-left text-sm text-[#1A1A1A]">
+          <thead className="bg-[#F8F6F2] uppercase text-[10px] font-bold text-[#6B7280] tracking-wider">
             <tr>
-              <th className="px-6 py-4">Receipt #</th>
-              <th className="px-6 py-4">Service</th>
-              <th className="px-6 py-4">Amount</th>
-              <th className="px-6 py-4">Method</th>
-              <th className="px-6 py-4">Date</th>
-              <th className="px-6 py-4">Status</th>
-              <th className="px-6 py-4 text-right">Actions</th>
+              <th className="px-6 py-4.5">Receipt #</th>
+              <th className="px-6 py-4.5">Service</th>
+              <th className="px-6 py-4.5">Amount</th>
+              <th className="px-6 py-4.5">Method</th>
+              <th className="px-6 py-4.5">Date</th>
+              <th className="px-6 py-4.5">Status</th>
+              <th className="px-6 py-4.5 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-outline-variant/15 bg-transparent">
+          <tbody className="divide-y divide-[#E5E7EB]/50 bg-transparent text-xs">
             {loading ? (
               <tr>
                 <td colSpan={7} className="py-8">
@@ -72,32 +72,32 @@ export const PortalPaymentsPage = () => {
               </tr>
             ) : payments.length === 0 ? (
               <tr>
-                <td colSpan={7} className="text-center py-8 text-xs text-on-primary-container/40 italic">
+                <td colSpan={7} className="text-center py-8 text-xs text-gray-400 italic">
                   No invoices or payments recorded.
                 </td>
               </tr>
             ) : (
               payments.map((p) => (
-                <tr key={p.id} className="hover:bg-white/5 transition-colors">
-                  <td className="px-6 py-4 font-mono font-bold text-secondary text-xs">{p.invoiceNo}</td>
-                  <td className="px-6 py-4 font-semibold text-white">{p.service}</td>
-                  <td className="px-6 py-4 font-mono font-semibold">{formatCurrency(p.amount)}</td>
-                  <td className="px-6 py-4 text-xs font-mono">{p.method}</td>
-                  <td className="px-6 py-4 text-xs font-mono">{formatShortDate(p.date || p.createdAt)}</td>
+                <tr key={p.id} className="hover:bg-[#F8F6F2]/30 transition-colors">
+                  <td className="px-6 py-4 font-mono font-bold text-[#C6A969] text-xs">{p.invoiceNo}</td>
+                  <td className="px-6 py-4 font-semibold text-[#1A1A1A]">{p.service}</td>
+                  <td className="px-6 py-4 font-mono font-bold text-[#0F3D2E]">{formatCurrency(p.amount)}</td>
+                  <td className="px-6 py-4 text-xs font-mono text-[#6B7280]">{p.method}</td>
+                  <td className="px-6 py-4 text-xs font-mono text-gray-500">{formatShortDate(p.date || p.createdAt)}</td>
                   <td className="px-6 py-4"><StatusBadge status={p.status} /></td>
                   <td className="px-6 py-4 text-right">
                     {p.status !== "Paid" ? (
                       <button
                         onClick={() => handleStripePay(p.paymentLinkUrl)}
-                        className="px-3.5 py-1.5 bg-gradient-to-r from-secondary-container to-secondary-container text-on-primary-fixed font-bold text-[10px] uppercase rounded flex items-center space-x-1 ml-auto shadow-sm"
+                        className="px-4 py-2 bg-[#0F3D2E] text-white hover:bg-[#0F3D2E]/90 font-bold text-[10px] uppercase rounded-xl flex items-center space-x-1.5 ml-auto shadow-sm transition-colors"
                       >
-                        <CreditCard className="h-3 w-3" />
+                        <CreditCard className="h-3 w-3 text-[#C6A969]" />
                         <span>Pay Now</span>
                       </button>
                     ) : (
                       <button
                         onClick={() => toast.success("Invoice PDF download started")}
-                        className="p-1 rounded bg-white/5 border border-on-primary-fixed-variant text-secondary hover:text-white"
+                        className="p-2 rounded-xl bg-[#F8F6F2] hover:bg-[#0F3D2E]/5 border border-[#E5E7EB] text-[#0F3D2E] hover:text-[#C6A969] transition-all ml-auto block"
                         title="Download PDF"
                       >
                         <Download className="h-4 w-4" />

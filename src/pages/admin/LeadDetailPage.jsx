@@ -35,20 +35,9 @@ export const LeadDetailPage = () => {
       }
       setLoading(false);
     }, (error) => {
-      console.warn("Using mock lead data fallback:", error);
-      setLead({
-        id: id,
-        leadNo: "LD-20260601-001",
-        contactName: "Amit Sharma",
-        contactPhone: "+971501112222",
-        contactEmail: "amit@gmail.com",
-        nationality: "Indian",
-        destination: "Schengen",
-        source: "WhatsApp",
-        stage: "New",
-        assignedTo: "Sales Officer",
-        createdAt: { seconds: 1780327362 }
-      });
+      console.warn("Error loading lead details:", error);
+      toast.error("Error loading lead details: " + error.message);
+      navigate("/admin/leads");
       setLoading(false);
     });
 

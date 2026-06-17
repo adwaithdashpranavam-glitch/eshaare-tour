@@ -83,37 +83,37 @@ export const PortalSettingsPage = () => {
       
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-display font-bold text-white tracking-wide">Portal Settings</h1>
-        <p className="text-[10px] text-on-primary-container/50">Modify traveller bio details, password credentials, and email/WhatsApp alert channels.</p>
+        <h1 className="text-2xl font-semibold text-[#1A1A1A]">Portal Settings</h1>
+        <p className="text-xs text-[#6B7280]">Modify traveller bio details, password credentials, and email/WhatsApp alert channels.</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start text-xs">
         {/* Profile Card (2/3) */}
         <div className="lg:col-span-8 space-y-6">
           {/* Profile Form */}
-          <div className="glass-card p-6 border border-on-primary-fixed-variant/60 space-y-4">
-            <h3 className="text-sm font-semibold text-white border-b border-on-primary-fixed-variant pb-2 flex items-center space-x-2">
-              <User className="h-4 w-4 text-secondary" />
+          <div className="bg-white border border-[#E5E7EB] rounded-[24px] p-6 shadow-sm space-y-4">
+            <h3 className="text-sm font-semibold text-[#1A1A1A] border-b border-[#E5E7EB] pb-2 flex items-center space-x-2">
+              <User className="h-4.5 w-4.5 text-[#0F3D2E]" />
               <span>Personal Details</span>
             </h3>
             <form onSubmit={handleProfileSave} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex flex-col space-y-1">
-                  <span className="text-[10px] text-on-primary-container/40 uppercase">Full Name</span>
+                  <span className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Full Name</span>
                   <input
                     type="text"
                     required
-                    className="bg-primary-container border border-on-primary-fixed-variant text-on-primary-container p-2.5 rounded focus:outline-none"
+                    className="px-3.5 py-2.5 bg-[#F8F6F2] border border-[#E5E7EB] text-[#1A1A1A] rounded-xl focus:outline-none focus:border-[#0F3D2E]"
                     value={profile.name}
                     onChange={(e) => setProfile({ ...profile, name: e.target.value })}
                   />
                 </div>
                 <div className="flex flex-col space-y-1">
-                  <span className="text-[10px] text-on-primary-container/40 uppercase">WhatsApp Phone</span>
+                  <span className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">WhatsApp Phone</span>
                   <input
                     type="tel"
                     required
-                    className="bg-primary-container border border-on-primary-fixed-variant text-on-primary-container p-2.5 rounded focus:outline-none"
+                    className="px-3.5 py-2.5 bg-[#F8F6F2] border border-[#E5E7EB] text-[#1A1A1A] rounded-xl focus:outline-none focus:border-[#0F3D2E]"
                     value={profile.phone}
                     onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
                   />
@@ -122,21 +122,21 @@ export const PortalSettingsPage = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex flex-col space-y-1">
-                  <span className="text-[10px] text-on-primary-container/40 uppercase">Nationality</span>
+                  <span className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Nationality</span>
                   <input
                     type="text"
                     required
-                    className="bg-primary-container border border-on-primary-fixed-variant text-on-primary-container p-2.5 rounded focus:outline-none"
+                    className="px-3.5 py-2.5 bg-[#F8F6F2] border border-[#E5E7EB] text-[#1A1A1A] rounded-xl focus:outline-none focus:border-[#0F3D2E]"
                     value={profile.nationality}
                     onChange={(e) => setProfile({ ...profile, nationality: e.target.value })}
                   />
                 </div>
                 <div className="flex flex-col space-y-1">
-                  <span className="text-[10px] text-on-primary-container/40 uppercase">Email Address (Read-only)</span>
+                  <span className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Email Address (Read-only)</span>
                   <input
                     type="email"
                     readOnly
-                    className="bg-primary-container/40 border border-on-primary-fixed-variant text-on-primary-container/50 p-2.5 rounded focus:outline-none cursor-not-allowed"
+                    className="px-3.5 py-2.5 bg-gray-100 border border-[#E5E7EB] text-gray-500 rounded-xl focus:outline-none cursor-not-allowed"
                     value={userProfile?.email || "traveller@example.com"}
                   />
                 </div>
@@ -144,48 +144,48 @@ export const PortalSettingsPage = () => {
 
               <button
                 type="submit"
-                className="px-4 py-2 bg-secondary-container hover:bg-secondary-container text-on-primary-fixed font-bold rounded uppercase tracking-wider shadow-sm flex items-center space-x-1.5 ml-auto"
+                className="px-4 py-2.5 bg-[#0F3D2E] hover:bg-[#0F3D2E]/90 text-white font-bold rounded-xl uppercase tracking-wider shadow-sm flex items-center space-x-1.5 ml-auto transition-colors"
               >
-                <Save className="h-4 w-4" />
+                <Save className="h-4 w-4 text-[#C6A969]" />
                 <span>Save Info</span>
               </button>
             </form>
           </div>
 
           {/* Password Form */}
-          <div className="glass-card p-6 border border-on-primary-fixed-variant/60 space-y-4">
-            <h3 className="text-sm font-semibold text-white border-b border-on-primary-fixed-variant pb-2 flex items-center space-x-2">
-              <Lock className="h-4 w-4 text-secondary" />
+          <div className="bg-white border border-[#E5E7EB] rounded-[24px] p-6 shadow-sm space-y-4">
+            <h3 className="text-sm font-semibold text-[#1A1A1A] border-b border-[#E5E7EB] pb-2 flex items-center space-x-2">
+              <Lock className="h-4.5 w-4.5 text-[#0F3D2E]" />
               <span>Change Password</span>
             </h3>
             <form onSubmit={handlePasswordSubmit} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="flex flex-col space-y-1">
-                  <span className="text-[10px] text-on-primary-container/40 uppercase">Current Password</span>
+                  <span className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Current Password</span>
                   <input
                     type="password"
                     required
-                    className="bg-primary-container border border-on-primary-fixed-variant text-on-primary-container p-2.5 rounded focus:outline-none"
+                    className="px-3.5 py-2.5 bg-[#F8F6F2] border border-[#E5E7EB] text-[#1A1A1A] rounded-xl focus:outline-none focus:border-[#0F3D2E]"
                     value={passwordForm.currentPassword}
                     onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
                   />
                 </div>
                 <div className="flex flex-col space-y-1">
-                  <span className="text-[10px] text-on-primary-container/40 uppercase">New Password</span>
+                  <span className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">New Password</span>
                   <input
                     type="password"
                     required
-                    className="bg-primary-container border border-on-primary-fixed-variant text-on-primary-container p-2.5 rounded focus:outline-none"
+                    className="px-3.5 py-2.5 bg-[#F8F6F2] border border-[#E5E7EB] text-[#1A1A1A] rounded-xl focus:outline-none focus:border-[#0F3D2E]"
                     value={passwordForm.newPassword}
                     onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
                   />
                 </div>
                 <div className="flex flex-col space-y-1">
-                  <span className="text-[10px] text-on-primary-container/40 uppercase">Confirm Password</span>
+                  <span className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Confirm Password</span>
                   <input
                     type="password"
                     required
-                    className="bg-primary-container border border-on-primary-fixed-variant text-on-primary-container p-2.5 rounded focus:outline-none"
+                    className="px-3.5 py-2.5 bg-[#F8F6F2] border border-[#E5E7EB] text-[#1A1A1A] rounded-xl focus:outline-none focus:border-[#0F3D2E]"
                     value={passwordForm.confirmPassword}
                     onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
                   />
@@ -194,10 +194,10 @@ export const PortalSettingsPage = () => {
 
               <button
                 type="submit"
-                className="px-4 py-2 bg-on-primary-fixed-variant border border-on-primary-fixed-variant hover:border-secondary hover:text-secondary text-on-primary-container font-bold rounded uppercase tracking-wider flex items-center space-x-1.5 ml-auto transition-colors"
+                className="px-4 py-2.5 bg-[#F8F6F2] hover:bg-gray-100 text-[#1A1A1A] border border-[#E5E7EB] font-bold rounded-xl uppercase tracking-wider flex items-center space-x-1.5 ml-auto transition-colors"
               >
-                <Save className="h-4 w-4" />
-                <span>Change Password</span>
+                <Save className="h-4 w-4 text-[#C6A969]" />
+                <span>Update Password</span>
               </button>
             </form>
           </div>
@@ -205,45 +205,45 @@ export const PortalSettingsPage = () => {
 
         {/* Notifications preferences (1/3) */}
         <div className="lg:col-span-4 space-y-6">
-          <div className="glass-card p-6 border border-on-primary-fixed-variant/60 space-y-4">
-            <h3 className="text-sm font-semibold text-white border-b border-on-primary-fixed-variant pb-2 flex items-center space-x-2">
-              <Bell className="h-4 w-4 text-secondary" />
+          <div className="bg-white border border-[#E5E7EB] rounded-[24px] p-6 shadow-sm space-y-4">
+            <h3 className="text-sm font-semibold text-[#1A1A1A] border-b border-[#E5E7EB] pb-2 flex items-center space-x-2">
+              <Bell className="h-4.5 w-4.5 text-[#0F3D2E]" />
               <span>Notification Toggles</span>
             </h3>
             
             <div className="space-y-4 pt-2 font-sans text-xs">
               <label className="flex items-center justify-between cursor-pointer">
-                <span className="text-on-primary-container/70">Application Status Alerts (Email)</span>
+                <span className="text-gray-600 font-medium">Application Status (Email)</span>
                 <input
                   type="checkbox"
-                  className="rounded text-secondary bg-primary-container border-on-primary-fixed-variant focus:ring-0"
+                  className="rounded-lg text-[#0F3D2E] bg-[#F8F6F2] border-[#E5E7EB] focus:ring-0 cursor-pointer h-4 w-4"
                   checked={notifs.appUpdateEmail}
                   onChange={(e) => setNotifs({ ...notifs, appUpdateEmail: e.target.checked })}
                 />
               </label>
               <label className="flex items-center justify-between cursor-pointer">
-                <span className="text-on-primary-container/70">Application Status Alerts (WhatsApp)</span>
+                <span className="text-gray-600 font-medium">Application Status (WhatsApp)</span>
                 <input
                   type="checkbox"
-                  className="rounded text-secondary bg-primary-container border-on-primary-fixed-variant focus:ring-0"
+                  className="rounded-lg text-[#0F3D2E] bg-[#F8F6F2] border-[#E5E7EB] focus:ring-0 cursor-pointer h-4 w-4"
                   checked={notifs.appUpdateWA}
                   onChange={(e) => setNotifs({ ...notifs, appUpdateWA: e.target.checked })}
                 />
               </label>
               <label className="flex items-center justify-between cursor-pointer">
-                <span className="text-on-primary-container/70">Document Reviews (Email)</span>
+                <span className="text-gray-600 font-medium">Document Reviews (Email)</span>
                 <input
                   type="checkbox"
-                  className="rounded text-secondary bg-primary-container border-on-primary-fixed-variant focus:ring-0"
+                  className="rounded-lg text-[#0F3D2E] bg-[#F8F6F2] border-[#E5E7EB] focus:ring-0 cursor-pointer h-4 w-4"
                   checked={notifs.docStatusEmail}
                   onChange={(e) => setNotifs({ ...notifs, docStatusEmail: e.target.checked })}
                 />
               </label>
               <label className="flex items-center justify-between cursor-pointer">
-                <span className="text-on-primary-container/70">Invoice Receipt updates (Email)</span>
+                <span className="text-gray-600 font-medium">Invoice updates (Email)</span>
                 <input
                   type="checkbox"
-                  className="rounded text-secondary bg-primary-container border-on-primary-fixed-variant focus:ring-0"
+                  className="rounded-lg text-[#0F3D2E] bg-[#F8F6F2] border-[#E5E7EB] focus:ring-0 cursor-pointer h-4 w-4"
                   checked={notifs.invoiceEmail}
                   onChange={(e) => setNotifs({ ...notifs, invoiceEmail: e.target.checked })}
                 />
@@ -252,7 +252,7 @@ export const PortalSettingsPage = () => {
             
             <button
               onClick={() => toast.success("Notification preferences updated")}
-              className="w-full py-2 bg-gradient-to-r from-secondary-container to-secondary-container text-on-primary-fixed font-bold rounded uppercase tracking-wider shadow-sm"
+              className="w-full py-2.5 bg-[#0F3D2E] hover:bg-[#0F3D2E]/95 text-white font-bold rounded-xl uppercase tracking-wider shadow-sm transition-colors mt-2"
             >
               Update Preferences
             </button>

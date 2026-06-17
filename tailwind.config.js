@@ -7,7 +7,7 @@ module.exports = {
       colors: {
         "primary": "#000000",
         "on-primary": "#ffffff",
-        "primary-container": "#1D503A",
+        "primary-container": "#0B1E14",
         "on-primary-container": "#EAE3D5",
         "primary-fixed": "#D4E9E0",
         "primary-fixed-dim": "#B4C5BE",
@@ -70,7 +70,7 @@ module.exports = {
       spacing: {
         "unit": "8px",
         "gutter": "24px",
-        "container-max": "1280px",
+        "container-max": "1520px",
         "margin-desktop": "64px",
         "margin-mobile": "20px",
         "section-gap": "120px"

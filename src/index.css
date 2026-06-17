@@ -98,3 +98,74 @@ button:focus, a:focus, input:focus, select:focus, textarea:focus {
   background: rgba(29, 80, 58, 0.6);
   border-color: rgba(255, 255, 255, 0.08);
 }
+
+/* Premium Typewriter Scroll Animation Styles */
+.typewriter-animate {
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+  width: 0;
+  margin: 0 auto;
+  letter-spacing: .05em;
+}
+
+.typewriter-animate.active {
+  animation: 
+    typing 2.5s steps(30, end) forwards;
+}
+
+/* Typing keyframe */
+@keyframes typing {
+  from { width: 0 }
+  to { width: 100% }
+}
+
+/* Premium Luxury Visa Concierge Styles */
+:root {
+  --portal-primary: #0F3D2E;
+  --portal-primary-light: #1E6F5C;
+  --portal-gold: #C6A969;
+  --portal-background: #F8F6F2;
+  --portal-surface: #FFFFFF;
+  --portal-text-primary: #1A1A1A;
+  --portal-text-secondary: #6B7280;
+  --portal-border: #E5E7EB;
+}
+
+/* Luxury container */
+.portal-bg {
+  background-color: var(--portal-background);
+  color: var(--portal-text-primary);
+}
+
+/* Luxury card design */
+.luxury-card {
+  background-color: var(--portal-surface);
+  border: 1px solid var(--portal-border);
+  box-shadow: 0 4px 20px rgba(15, 61, 46, 0.03), 0 1px 3px rgba(0, 0, 0, 0.01);
+  border-radius: 16px;
+  transition: all 0.25s ease;
+}
+
+.luxury-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(15, 61, 46, 0.06), 0 2px 6px rgba(0, 0, 0, 0.02);
+  border-color: rgba(198, 169, 105, 0.3);
+}
+
+/* Slim scrollbar for premium panels */
+.premium-scrollbar::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+.premium-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.premium-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(198, 169, 105, 0.2);
+  border-radius: 99px;
+}
+.premium-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(198, 169, 105, 0.4);
+}
+

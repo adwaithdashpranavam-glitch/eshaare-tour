@@ -9,7 +9,8 @@ export const ContactPage = () => {
     email: "",
     phone: "",
     subject: "General Inquiry",
-    message: ""
+    message: "",
+    honeypot: ""
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -32,7 +33,8 @@ export const ContactPage = () => {
         message: formData.message,
         source: "contact_form",
         stage: "New",
-        assignedTo: "All"
+        assignedTo: "All",
+        honeypot: formData.honeypot
       };
 
       await createLead(submission);
@@ -42,7 +44,8 @@ export const ContactPage = () => {
         email: "",
         phone: "",
         subject: "General Inquiry",
-        message: ""
+        message: "",
+        honeypot: ""
       });
     } catch (err) {
       console.error(err);
@@ -94,6 +97,16 @@ export const ContactPage = () => {
           {/* Form */}
           <div className="lg:col-span-7 bg-surface-container-lowest p-8 border border-outline-variant/10 rounded-2xl premium-shadow">
             <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Honeypot field for bot spam protection */}
+              <input
+                type="text"
+                name="honeypot"
+                style={{ display: "none" }}
+                tabIndex="-1"
+                autoComplete="off"
+                value={formData.honeypot || ""}
+                onChange={handleInputChange}
+              />
               <h3 className="font-headline-md text-headline-md text-primary mb-4">Send a Message</h3>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

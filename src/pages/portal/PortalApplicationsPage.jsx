@@ -3,7 +3,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 import { Link } from "react-router-dom";
-import { FileText, Compass, ChevronRight, Edit3, Send, Save, AlertCircle, FilePlus } from "lucide-react";
+import { FileText, ChevronRight, Edit3, Send, Save, AlertCircle, FilePlus } from "lucide-react";
 import StatusBadge from "../../components/ui/StatusBadge";
 import { formatShortDate } from "../../utils/formatters";
 import Modal from "../../components/ui/Modal";
@@ -45,32 +45,92 @@ export const PortalApplicationsPage = () => {
     return () => unsubscribe();
   }, [user]);
 
-  // Fetch CRM cases from 'visa_cases'
+  // Fetch CRM cases from both 'visa_cases' (CRM-originated) and 'bookings' (app-originated)
   useEffect(() => {
-    if (!userProfile?.email) {
+    if (!user?.uid && !userProfile?.email) {
       setLoadingCases(false);
       return;
     }
 
-    const casesRef = collection(db, "visa_cases");
-    const q = query(casesRef, where("travellerEmail", "==", userProfile.email.toLowerCase()));
-
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      // Sort cases by createdAt desc
-      setCases(items.sort((a, b) => {
-        const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt);
-        const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
-        return dateB - dateA;
+    const mergeAndSort = (casesArr, bookingsArr) => {
+      // Normalize bookings to the visa_cases shape
+      const normalizedBookings = bookingsArr.map(b => ({
+        id: b.id,
+        caseNo: b.bookingId || b.id,
+        travellerName: b.travellerName || b.clientName || userProfile?.name || "",
+        travellerEmail: b.clientEmail || b.travellerEmail || "",
+        visaType: b.serviceType || b.visaType || "Visa Booking",
+        destination: b.destination || b.country || "",
+        stage: b.bookingStatus || b.status || "Submitted",
+        createdAt: b.createdAt,
+        source: "booking"
       }));
-      setLoadingCases(false);
-    }, (error) => {
-      console.error("Error fetching cases:", error);
-      setLoadingCases(false);
-    });
 
-    return () => unsubscribe();
-  }, [userProfile]);
+      // Deduplicate: visa_cases entries created from Android have the same ID as booking
+      const visaCaseIds = new Set(casesArr.map(c => c.id));
+      const uniqueBookings = normalizedBookings.filter(b => !visaCaseIds.has(b.id));
+
+      const merged = [...casesArr, ...uniqueBookings];
+      return merged.sort((a, b) => {
+        const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt || 0);
+        const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt || 0);
+        return dateB - dateA;
+      });
+    };
+
+    let casesDocs = [];
+    let bookingsDocs = [];
+    let casesLoaded = false;
+    let bookingsLoaded = false;
+
+    const updateCases = () => {
+      if (casesLoaded && bookingsLoaded) {
+        setCases(mergeAndSort(casesDocs, bookingsDocs));
+        setLoadingCases(false);
+      }
+    };
+
+    // Query 1: visa_cases by travellerEmail
+    let unsubCases = () => {};
+    if (userProfile?.email) {
+      const casesRef = collection(db, "visa_cases");
+      const qCases = query(casesRef, where("travellerEmail", "==", userProfile.email.toLowerCase()));
+      unsubCases = onSnapshot(qCases, (snapshot) => {
+        casesDocs = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        casesLoaded = true;
+        updateCases();
+      }, (error) => {
+        console.error("Error fetching visa_cases:", error);
+        casesLoaded = true;
+        updateCases();
+      });
+    } else {
+      casesLoaded = true;
+    }
+
+    // Query 2: bookings by clientUid (from Android app)
+    let unsubBookings = () => {};
+    if (user?.uid) {
+      const bookingsRef = collection(db, "bookings");
+      const qBookings = query(bookingsRef, where("clientUid", "==", user.uid));
+      unsubBookings = onSnapshot(qBookings, (snapshot) => {
+        bookingsDocs = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        bookingsLoaded = true;
+        updateCases();
+      }, (error) => {
+        console.error("Error fetching bookings:", error);
+        bookingsLoaded = true;
+        updateCases();
+      });
+    } else {
+      bookingsLoaded = true;
+    }
+
+    return () => {
+      unsubCases();
+      unsubBookings();
+    };
+  }, [user, userProfile]);
 
   const handleOpenEdit = (draft) => {
     setSelectedDraft(draft);
@@ -135,46 +195,46 @@ export const PortalApplicationsPage = () => {
 
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-display font-bold text-white tracking-wide">My Applications</h1>
-        <p className="text-xs text-on-primary-container/50">Manage draft forms and track active visa files submitted to the ops desk.</p>
+        <h1 className="text-2xl font-semibold text-[#1A1A1A]">My Applications</h1>
+        <p className="text-xs text-[#6B7280]">Manage draft forms and track active visa files submitted to the ops desk.</p>
       </div>
 
       {/* DRAFTS SECTION */}
       <div className="space-y-4">
-        <div className="flex items-center space-x-2 border-b border-on-primary-fixed-variant/40 pb-2">
-          <FilePlus className="h-4.5 w-4.5 text-secondary" />
-          <h2 className="text-sm font-bold uppercase tracking-wider text-white">Draft Applications</h2>
+        <div className="flex items-center space-x-2 border-b border-[#E5E7EB] pb-2">
+          <FilePlus className="h-4.5 w-4.5 text-[#0F3D2E]" />
+          <h2 className="text-xs font-bold uppercase tracking-wider text-[#1A1A1A]">Draft Applications</h2>
         </div>
 
         {loadingDrafts ? (
           <LoadingSpinner message="Loading draft files..." />
         ) : drafts.length === 0 ? (
-          <div className="glass-card p-6 border border-on-primary-fixed-variant/40 text-center text-xs text-on-primary-container/40 italic">
+          <div className="bg-white border border-[#E5E7EB] p-8 rounded-[20px] text-center text-xs text-[#6B7280] italic">
             No active drafts. Start an application on any visa type page.
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {drafts.map((d) => (
-              <div key={d.id} className="glass-card p-6 border border-on-primary-fixed-variant/60 flex flex-col justify-between space-y-4 hover:border-secondary/20 transition-all">
+              <div key={d.id} className="bg-white border border-[#E5E7EB] rounded-[20px] p-6 flex flex-col justify-between space-y-4 hover:border-[#C6A969]/40 transition-all duration-200 shadow-sm">
                 <div className="flex justify-between items-start">
                   <div>
-                    <span className="text-[9px] font-bold uppercase tracking-wider bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded border border-amber-500/10">Draft</span>
-                    <h3 className="text-base font-semibold text-white mt-2">{d.visaName} Application</h3>
+                    <span className="text-[9px] font-bold uppercase tracking-wider bg-amber-500/10 text-amber-600 px-2 py-0.5 rounded border border-amber-500/10">Draft</span>
+                    <h3 className="text-base font-semibold text-[#1A1A1A] mt-2">{d.visaName} Application</h3>
                   </div>
                   <button
                     onClick={() => handleOpenEdit(d)}
-                    className="p-2 bg-[#2B2723] border border-[#4D4740] text-secondary hover:text-white rounded-lg flex items-center justify-center transition-colors"
+                    className="p-2 bg-[#F8F6F2] border border-[#E5E7EB] text-[#0F3D2E] hover:text-[#C6A969] rounded-xl flex items-center justify-center transition-colors"
                     title="Continue Application"
                   >
                     <Edit3 className="h-4.5 w-4.5" />
                   </button>
                 </div>
 
-                <div className="flex justify-between items-center pt-4 border-t border-on-primary-fixed-variant text-xs text-on-primary-container/40">
+                <div className="flex justify-between items-center pt-4 border-t border-[#E5E7EB] text-xs text-[#6B7280]">
                   <span>Created: {formatShortDate(d.createdAt?.toDate ? d.createdAt.toDate() : d.createdAt)}</span>
                   <button
                     onClick={() => handleOpenEdit(d)}
-                    className="text-secondary hover:text-[#F5F1E8] font-bold uppercase tracking-wider text-[10px] flex items-center space-x-1"
+                    className="text-[#0F3D2E] hover:text-[#C6A969] font-bold uppercase tracking-wider text-[10px] flex items-center space-x-1"
                   >
                     <span>Continue Application</span>
                     <ChevronRight className="h-3.5 w-3.5" />
@@ -188,34 +248,34 @@ export const PortalApplicationsPage = () => {
 
       {/* CRM APPLICATIONS SECTION */}
       <div className="space-y-4">
-        <div className="flex items-center space-x-2 border-b border-on-primary-fixed-variant/40 pb-2">
-          <FileText className="h-4.5 w-4.5 text-secondary" />
-          <h2 className="text-sm font-bold uppercase tracking-wider text-white">Submitted Applications</h2>
+        <div className="flex items-center space-x-2 border-b border-[#E5E7EB] pb-2">
+          <FileText className="h-4.5 w-4.5 text-[#0F3D2E]" />
+          <h2 className="text-xs font-bold uppercase tracking-wider text-[#1A1A1A]">Submitted Applications</h2>
         </div>
 
         {loadingCases ? (
           <LoadingSpinner message="Loading submitted files..." />
         ) : cases.length === 0 ? (
-          <div className="glass-card p-6 border border-on-primary-fixed-variant/40 text-center text-xs text-on-primary-container/40 italic">
+          <div className="bg-white border border-[#E5E7EB] p-8 rounded-[20px] text-center text-xs text-[#6B7280] italic">
             You do not have any visa application cases registered under your email yet.
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {cases.map((c) => (
-              <div key={c.id} className="glass-card p-6 border border-on-primary-fixed-variant/60 flex flex-col justify-between space-y-4 hover:border-secondary/20 transition-all">
+              <div key={c.id} className="bg-white border border-[#E5E7EB] rounded-[20px] p-6 flex flex-col justify-between space-y-4 hover:border-[#C6A969]/40 transition-all duration-200 shadow-sm">
                 <div className="flex justify-between items-start">
                   <div>
-                    <span className="text-[10px] font-mono text-secondary">{c.caseNo}</span>
-                    <h3 className="text-base font-semibold text-white mt-1">{c.visaType || c.destination} Case</h3>
+                    <span className="text-[10px] font-mono text-gray-400">{c.caseNo}</span>
+                    <h3 className="text-base font-semibold text-[#1A1A1A] mt-1">{c.visaType || c.destination} Case</h3>
                   </div>
                   <StatusBadge status={c.stage} />
                 </div>
 
-                <div className="flex justify-between items-center pt-4 border-t border-on-primary-fixed-variant text-xs text-on-primary-container/40">
+                <div className="flex justify-between items-center pt-4 border-t border-[#E5E7EB] text-xs text-[#6B7280]">
                   <span>Submitted: {formatShortDate(c.createdAt?.toDate ? c.createdAt.toDate() : c.createdAt)}</span>
                   <Link
                     to={`/portal/applications/${c.id}`}
-                    className="text-secondary hover:text-[#F5F1E8] font-bold uppercase tracking-wider text-[10px] flex items-center space-x-1"
+                    className="text-[#0F3D2E] hover:text-[#C6A969] font-bold uppercase tracking-wider text-[10px] flex items-center space-x-1"
                   >
                     <span>Track Details</span>
                     <ChevronRight className="h-3.5 w-3.5" />
@@ -235,13 +295,13 @@ export const PortalApplicationsPage = () => {
         size="md"
       >
         <form onSubmit={handleSubmitApplication} className="space-y-4 font-sans text-xs">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="flex flex-col space-y-1.5">
-              <label className="text-[10px] font-bold text-[#F5F1E8]/40 uppercase tracking-wider">Full Name *</label>
+              <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Full Name *</label>
               <input
                 type="text"
                 required
-                className="px-3.5 py-2.5 bg-[#2B2723] border border-[#4D4740] text-white placeholder-[#F5F1E8]/20 rounded focus:outline-none focus:border-[#7A8F6B] text-xs"
+                className="px-3.5 py-2.5 bg-[#F8F6F2] border border-[#E5E7EB] text-[#1A1A1A] placeholder-gray-400 rounded-xl focus:outline-none focus:border-[#0F3D2E] text-xs"
                 placeholder="Jane Doe"
                 name="name"
                 value={formData.name}
@@ -249,11 +309,11 @@ export const PortalApplicationsPage = () => {
               />
             </div>
             <div className="flex flex-col space-y-1.5">
-              <label className="text-[10px] font-bold text-[#F5F1E8]/40 uppercase tracking-wider">WhatsApp Phone *</label>
+              <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">WhatsApp Phone *</label>
               <input
                 type="tel"
                 required
-                className="px-3.5 py-2.5 bg-[#2B2723] border border-[#4D4740] text-white placeholder-[#F5F1E8]/20 rounded focus:outline-none focus:border-[#7A8F6B] text-xs"
+                className="px-3.5 py-2.5 bg-[#F8F6F2] border border-[#E5E7EB] text-[#1A1A1A] placeholder-gray-400 rounded-xl focus:outline-none focus:border-[#0F3D2E] text-xs"
                 placeholder="e.g. +971 50 123 4567"
                 name="phone"
                 value={formData.phone}
@@ -262,13 +322,13 @@ export const PortalApplicationsPage = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="flex flex-col space-y-1.5">
-              <label className="text-[10px] font-bold text-[#F5F1E8]/40 uppercase tracking-wider">Email Address *</label>
+              <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Email Address *</label>
               <input
                 type="email"
                 required
-                className="px-3.5 py-2.5 bg-[#2B2723] border border-[#4D4740] text-white placeholder-[#F5F1E8]/20 rounded focus:outline-none focus:border-[#7A8F6B] text-xs"
+                className="px-3.5 py-2.5 bg-[#F8F6F2] border border-[#E5E7EB] text-[#1A1A1A] placeholder-gray-400 rounded-xl focus:outline-none focus:border-[#0F3D2E] text-xs"
                 placeholder="jane@example.com"
                 name="email"
                 value={formData.email}
@@ -276,10 +336,10 @@ export const PortalApplicationsPage = () => {
               />
             </div>
             <div className="flex flex-col space-y-1.5">
-              <label className="text-[10px] font-bold text-[#F5F1E8]/40 uppercase tracking-wider">Nationality</label>
+              <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Nationality</label>
               <input
                 type="text"
-                className="px-3.5 py-2.5 bg-[#2B2723] border border-[#4D4740] text-white placeholder-[#F5F1E8]/20 rounded focus:outline-none focus:border-[#7A8F6B] text-xs"
+                className="px-3.5 py-2.5 bg-[#F8F6F2] border border-[#E5E7EB] text-[#1A1A1A] placeholder-gray-400 rounded-xl focus:outline-none focus:border-[#0F3D2E] text-xs"
                 placeholder="e.g. Indian, GCC Resident"
                 name="nationality"
                 value={formData.nationality}
@@ -289,10 +349,10 @@ export const PortalApplicationsPage = () => {
           </div>
 
           <div className="flex flex-col space-y-1.5">
-            <label className="text-[10px] font-bold text-[#F5F1E8]/40 uppercase tracking-wider">Travel Start Date</label>
+            <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Travel Start Date</label>
             <input
               type="date"
-              className="px-3.5 py-2.5 bg-[#2B2723] border border-[#4D4740] text-white rounded focus:outline-none focus:border-[#7A8F6B] text-xs"
+              className="px-3.5 py-2.5 bg-[#F8F6F2] border border-[#E5E7EB] text-[#1A1A1A] rounded-xl focus:outline-none focus:border-[#0F3D2E] text-xs"
               name="travelDate"
               value={formData.travelDate}
               onChange={handleInputChange}
@@ -300,10 +360,10 @@ export const PortalApplicationsPage = () => {
           </div>
 
           <div className="flex flex-col space-y-1.5">
-            <label className="text-[10px] font-bold text-[#F5F1E8]/40 uppercase tracking-wider">Message / Specific Requests</label>
+            <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Message / Specific Requests</label>
             <textarea
               rows={3}
-              className="px-3.5 py-2.5 bg-[#2B2723] border border-[#4D4740] text-white placeholder-[#F5F1E8]/20 rounded focus:outline-none focus:border-[#7A8F6B] text-xs"
+              className="px-3.5 py-2.5 bg-[#F8F6F2] border border-[#E5E7EB] text-[#1A1A1A] placeholder-gray-400 rounded-xl focus:outline-none focus:border-[#0F3D2E] text-xs"
               placeholder="e.g. Urgently need booking, GCC residence visa holder details..."
               name="message"
               value={formData.message}
@@ -311,22 +371,22 @@ export const PortalApplicationsPage = () => {
             />
           </div>
 
-          <div className="flex space-x-3 pt-4 border-t border-[#4D4740]">
+          <div className="flex space-x-3 pt-4 border-t border-[#E5E7EB]">
             <button
               type="button"
               onClick={handleSaveDraft}
               disabled={submitting}
-              className="flex-1 py-2.5 bg-[#2B2723] border border-[#4D4740] text-[#F5F1E8]/80 hover:text-white font-bold rounded text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 disabled:opacity-50"
+              className="flex-1 py-2.5 bg-[#F8F6F2] border border-[#E5E7EB] text-[#1A1A1A] hover:bg-gray-100 font-bold rounded-xl text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 disabled:opacity-50 transition-colors"
             >
-              <Save className="h-4 w-4" />
+              <Save className="h-4 w-4 text-[#C6A969]" />
               <span>Save Draft</span>
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="flex-1 py-2.5 bg-gradient-to-r from-[#7A8F6B] to-[#627555] text-[#1D503A] font-extrabold rounded text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-50"
+              className="flex-1 py-2.5 bg-[#0F3D2E] text-white hover:bg-[#0F3D2E]/90 font-extrabold rounded-xl text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-50 transition-colors"
             >
-              <Send className="h-4 w-4" />
+              <Send className="h-4 w-4 text-[#C6A969]" />
               <span>Submit Application</span>
             </button>
           </div>

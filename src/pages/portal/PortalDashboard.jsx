@@ -5,12 +5,11 @@ import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 import {
   FileText, UploadCloud, Calendar, DollarSign,
-  MessageSquare, HelpCircle, ChevronRight, CheckCircle2,
-  Bell, CreditCard, Settings, Compass, Briefcase
+  MessageSquare, ChevronRight, CheckCircle2,
+  Bell, CreditCard, Settings, Compass, Briefcase, Phone, Mail
 } from "lucide-react";
-import KPICard from "../../components/ui/KPICard";
 import StatusBadge from "../../components/ui/StatusBadge";
-import { formatCurrency } from "../../utils/formatters";
+import { formatCurrency, formatShortDate } from "../../utils/formatters";
 import toast from "react-hot-toast";
 import { auth } from "../../lib/firebase";
 import { getApplicationsForCustomer } from "../../lib/firestore";
@@ -23,11 +22,12 @@ export const PortalDashboard = () => {
   const [activeCases, setActiveCases] = useState([]);
   const [draftsCount, setDraftsCount] = useState(0);
   const [pendingDocsCount, setPendingDocsCount] = useState(0);
-  const [nextAppointment, setNextAppointment] = useState("No upcoming slots");
-  const [outstandingBalance, setOutstandingBalance] = useState(0);
   const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
+  const [appointmentsCount, setAppointmentsCount] = useState(0);
+  const [paymentsCount, setPaymentsCount] = useState(0);
+  const [recentNotifications, setRecentNotifications] = useState([]);
 
-  // Fetch drafts & unread notifications
+  // Fetch drafts, notifications, appointments, and payments
   useEffect(() => {
     if (!auth.currentUser?.uid) return;
 
@@ -37,142 +37,499 @@ export const PortalDashboard = () => {
     });
 
     const notifRef = collection(db, "notifications");
-    const qNotif = query(notifRef, where("userId", "==", auth.currentUser.uid), where("read", "==", false));
+    const qNotif = query(notifRef, where("userId", "==", auth.currentUser.uid));
     const unsubscribeNotif = onSnapshot(qNotif, (snapshot) => {
-      setUnreadNotificationsCount(snapshot.size);
+      const unread = snapshot.docs.filter(doc => !doc.data().read).length;
+      setUnreadNotificationsCount(unread);
+      
+      const list = snapshot.docs
+        .map(doc => ({ id: doc.id, ...doc.data() }))
+        .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0))
+        .slice(0, 3);
+      setRecentNotifications(list);
+    });
+
+    // Fetch Appointments
+    const appRef = collection(db, "appointments");
+    const qApp = query(appRef, where("email", "==", userProfile?.email?.toLowerCase() || ""));
+    const unsubscribeApp = onSnapshot(qApp, (snapshot) => {
+      setAppointmentsCount(snapshot.size);
+    });
+
+    // Fetch Payments
+    const pRef = collection(db, "payments");
+    const qPay = query(pRef, where("clientEmail", "==", userProfile?.email?.toLowerCase() || ""));
+    const unsubscribePay = onSnapshot(qPay, (snapshot) => {
+      setPaymentsCount(snapshot.size);
     });
 
     return () => {
       unsubscribeApps();
       unsubscribeNotif();
+      unsubscribeApp();
+      unsubscribePay();
     };
-  }, []);
-
-  useEffect(() => {
-    if (!userProfile?.email) return;
-
-    const casesRef = collection(db, "visa_cases");
-    const q = query(casesRef, where("travellerEmail", "==", userProfile.email.toLowerCase()));
-
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      if (!snapshot.empty) {
-        const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setActiveCases(items);
-
-        // Calculate pending docs count
-        const totalPending = items.reduce((acc, curr) => {
-          const pending = curr.checklist?.filter(d => d.status === "Pending" || d.status === "Rejected").length || 0;
-          return acc + pending;
-        }, 0);
-        setPendingDocsCount(totalPending);
-      } else {
-        setActiveCases([]);
-        setPendingDocsCount(0);
-      }
-      setLoading(false);
-    }, (error) => {
-      console.warn("Using mock traveller details:", error);
-      setActiveCases([
-        { id: "1", caseNo: "VC-20260601-002", visaType: "UK Visa", destination: "United Kingdom", stage: "Docs Pending", priority: "Normal", createdAt: new Date() }
-      ]);
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
   }, [userProfile]);
 
+  useEffect(() => {
+    if (!userProfile?.email && !auth.currentUser?.uid) return;
+
+    let casesDocs = [];
+    let bookingsDocs = [];
+    let casesLoaded = false;
+    let bookingsLoaded = false;
+
+    const merge = () => {
+      if (!casesLoaded || !bookingsLoaded) return;
+      const caseIds = new Set(casesDocs.map(c => c.id));
+      const uniqueBookings = bookingsDocs
+        .filter(b => !caseIds.has(b.id))
+        .map(b => ({
+          id: b.id,
+          caseNo: b.bookingId || b.id,
+          visaType: b.serviceType || b.visaType || "Visa Booking",
+          destination: b.destination || b.country || "",
+          stage: b.bookingStatus || b.status || "Submitted",
+          checklist: b.checklist || [],
+          createdAt: b.createdAt
+        }));
+      const allCases = [...casesDocs, ...uniqueBookings];
+      setActiveCases(allCases);
+
+      const totalPending = allCases.reduce((acc, curr) => {
+        const pending = curr.checklist?.filter(d => d.status === "Pending" || d.status === "Rejected").length || 0;
+        return acc + pending;
+      }, 0);
+      setPendingDocsCount(totalPending);
+      setLoading(false);
+    };
+
+    // Query 1: visa_cases by travellerEmail
+    let unsubCases = () => {};
+    if (userProfile?.email) {
+      const casesRef = collection(db, "visa_cases");
+      const q = query(casesRef, where("travellerEmail", "==", userProfile.email.toLowerCase()));
+      unsubCases = onSnapshot(q, (snapshot) => {
+        casesDocs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        casesLoaded = true;
+        merge();
+      }, (error) => {
+        console.warn("Error fetching traveller details:", error);
+        casesLoaded = true;
+        merge();
+      });
+    } else {
+      casesLoaded = true;
+    }
+
+    // Query 2: bookings by clientUid (from Android app)
+    let unsubBookings = () => {};
+    if (auth.currentUser?.uid) {
+      const bookingsRef = collection(db, "bookings");
+      const qB = query(bookingsRef, where("clientUid", "==", auth.currentUser.uid));
+      unsubBookings = onSnapshot(qB, (snapshot) => {
+        bookingsDocs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        bookingsLoaded = true;
+        merge();
+      }, (error) => {
+        console.warn("Error fetching bookings:", error);
+        bookingsLoaded = true;
+        merge();
+      });
+    } else {
+      bookingsLoaded = true;
+    }
+
+    return () => {
+      unsubCases();
+      unsubBookings();
+    };
+  }, [userProfile]);
+
+  // Visa tracker configuration
+  const TRACKER_STAGES = [
+    "Profile Completed",
+    "Documents Uploaded",
+    "Application Submitted",
+    "Appointment Confirmed",
+    "Under Review",
+    "Decision Pending",
+    "Passport Collection"
+  ];
+
+  // Default mock details if no applications exist
+  const sampleCase = activeCases[0] || {
+    visaType: "Schengen Tourist Visa",
+    destination: "France",
+    stage: "Under Review"
+  };
+
+  const getStageIndex = (stageName) => {
+    const idx = TRACKER_STAGES.findIndex(s => stageName.toLowerCase().includes(s.toLowerCase()) || s.toLowerCase().includes(stageName.toLowerCase()));
+    return idx !== -1 ? idx : 4; // Under Review is default
+  };
+
+  const currentStageIdx = getStageIndex(sampleCase.stage);
+  const completionPercentage = Math.round(((currentStageIdx + 1) / TRACKER_STAGES.length) * 100);
+
   return (
-    <div className="space-y-6 font-sans">
-
-      {/* Welcome Banner */}
-      <div className="glass-card p-6 border border-secondary/15 relative overflow-hidden bg-gradient-to-r from-primary-container to-primary-container">
-        <div className="relative z-10 space-y-2">
-          <h1 className="text-xl sm:text-2xl font-display font-bold text-white">
-            Good morning, {userProfile?.name || "Client"}
+    <div className="space-y-8 font-sans">
+      
+      {/* Welcome Hero Card */}
+      <div className="bg-white border border-[#E5E7EB] rounded-[24px] p-6 md:p-8 flex flex-col md:flex-row justify-between items-center gap-6 shadow-sm">
+        <div className="space-y-3 max-w-xl text-center md:text-left">
+          <span className="text-[10px] uppercase font-bold tracking-widest text-[#C6A969]">Premium Visa Concierge</span>
+          <h1 className="text-2xl md:text-3xl font-semibold text-[#1A1A1A]">
+            Good Morning, {userProfile?.name || "Client"}
           </h1>
-          <p className="text-xs text-on-primary-container/60 max-w-lg leading-relaxed">
-            Track your passport status, upload VFS documents or message your dedicated visa consultant from your secure portal dashboard.
+          <p className="text-sm text-[#6B7280] leading-relaxed">
+            Track your visa applications, appointments, documents and consultant communications from one secure portal.
           </p>
+          <div className="pt-2 text-xs font-semibold text-[#0F3D2E] flex items-center justify-center md:justify-start gap-1.5">
+            <span className="inline-block w-2.5 h-2.5 rounded-full bg-[#C6A969]"></span>
+            <span>Current Case Progress: {completionPercentage}%</span>
+          </div>
         </div>
-        <div className="absolute -bottom-16 -right-16 h-40 w-40 bg-secondary-container/5 blur-3xl rounded-full"></div>
+
+        {/* Right side: Progress Ring */}
+        <div className="flex-shrink-0 bg-[#F8F6F2] p-4 rounded-full">
+          <div className="relative w-28 h-28 flex items-center justify-center">
+            <svg className="w-full h-full transform -rotate-90">
+              <circle
+                cx="56"
+                cy="56"
+                r="46"
+                className="stroke-gray-200"
+                strokeWidth="5"
+                fill="transparent"
+              />
+              <circle
+                cx="56"
+                cy="56"
+                r="46"
+                className="stroke-[#0F3D2E]"
+                strokeWidth="6"
+                fill="transparent"
+                strokeDasharray={2 * Math.PI * 46}
+                strokeDashoffset={2 * Math.PI * 46 * (1 - completionPercentage / 100)}
+                strokeLinecap="round"
+                style={{ transition: "stroke-dashoffset 0.8s ease-in-out" }}
+              />
+            </svg>
+            <div className="absolute flex flex-col items-center justify-center text-center">
+              <span className="text-xl font-bold text-[#0F3D2E]">{completionPercentage}%</span>
+              <span className="text-[9px] text-[#6B7280] uppercase tracking-widest font-bold">Complete</span>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-        <KPICard title="Active Cases" value={activeCases.length} icon="FileText" color="green" />
-        <KPICard title="Draft Applications" value={draftsCount} icon="Edit3" color="gold" />
-        <KPICard title="Pending Uploads" value={pendingDocsCount} icon="UploadCloud" color={pendingDocsCount > 0 ? "orange" : "green"} />
-        <KPICard title="New Notifications" value={unreadNotificationsCount} icon="Bell" color={unreadNotificationsCount > 0 ? "red" : "gold"} />
+      {/* Statistics Section (4 modern KPI cards) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+        {/* Card 1 */}
+        <div className="bg-white border border-[#E5E7EB] rounded-[20px] p-5 flex flex-col justify-between hover:shadow-md transition-all duration-200">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-[#6B7280]">Active Applications</span>
+            <div className="p-2 bg-[#F8F6F2] rounded-lg text-[#0F3D2E]">
+              <FileText className="h-4.5 w-4.5" />
+            </div>
+          </div>
+          <div className="mt-4">
+            <h3 className="text-3xl font-semibold text-[#1A1A1A]">{activeCases.length.toString().padStart(2, '0')}</h3>
+            <p className="text-[10px] text-green-600 font-semibold mt-1">+1 this month</p>
+          </div>
+        </div>
+
+        {/* Card 2 */}
+        <div className="bg-white border border-[#E5E7EB] rounded-[20px] p-5 flex flex-col justify-between hover:shadow-md transition-all duration-200">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-[#6B7280]">Appointments</span>
+            <div className="p-2 bg-[#F8F6F2] rounded-lg text-[#0F3D2E]">
+              <Calendar className="h-4.5 w-4.5" />
+            </div>
+          </div>
+          <div className="mt-4">
+            <h3 className="text-3xl font-semibold text-[#1A1A1A]">{appointmentsCount.toString().padStart(2, '0')}</h3>
+            <p className="text-[10px] text-gray-500 font-semibold mt-1">Scheduled sessions</p>
+          </div>
+        </div>
+
+        {/* Card 3 */}
+        <div className="bg-white border border-[#E5E7EB] rounded-[20px] p-5 flex flex-col justify-between hover:shadow-md transition-all duration-200">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-[#6B7280]">Pending Documents</span>
+            <div className="p-2 bg-[#F8F6F2] rounded-lg text-[#C6A969]">
+              <UploadCloud className="h-4.5 w-4.5" />
+            </div>
+          </div>
+          <div className="mt-4">
+            <h3 className="text-3xl font-semibold text-[#1A1A1A]">{pendingDocsCount.toString().padStart(2, '0')}</h3>
+            <p className="text-[10px] text-[#C6A969] font-semibold mt-1">Required uploads</p>
+          </div>
+        </div>
+
+        {/* Card 4 */}
+        <div className="bg-white border border-[#E5E7EB] rounded-[20px] p-5 flex flex-col justify-between hover:shadow-md transition-all duration-200">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-[#6B7280]">Payments</span>
+            <div className="p-2 bg-[#F8F6F2] rounded-lg text-[#0F3D2E]">
+              <CreditCard className="h-4.5 w-4.5" />
+            </div>
+          </div>
+          <div className="mt-4">
+            <h3 className="text-3xl font-semibold text-[#1A1A1A]">{paymentsCount.toString().padStart(2, '0')}</h3>
+            <p className="text-[10px] text-green-600 font-semibold mt-1">Invoiced charges</p>
+          </div>
+        </div>
       </div>
 
+      {/* Main Two-Column Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Active Cases Details (2/3) */}
-        <div className="lg:col-span-8 space-y-6">
-          <div className="glass-card p-6 border border-on-primary-fixed-variant/60 space-y-4">
-            <h3 className="text-base font-semibold text-white border-b border-on-primary-fixed-variant pb-2">Active Applications</h3>
+        {/* Left Column (70%) */}
+        <div className="lg:col-span-8 space-y-8">
+          
+          {/* Visa Progress Card */}
+          <div className="bg-white border border-[#E5E7EB] rounded-[24px] p-6 shadow-sm space-y-6">
+            <div className="flex justify-between items-start border-b border-[#E5E7EB] pb-4">
+              <div>
+                <span className="text-[10px] font-bold text-[#C6A969] uppercase tracking-wider">Active File Status</span>
+                <h3 className="text-lg font-semibold text-[#1A1A1A] mt-0.5">
+                  {sampleCase.visaType} — {sampleCase.destination}
+                </h3>
+              </div>
+              <span className="text-xs font-bold text-[#0F3D2E] px-3 py-1 bg-[#0F3D2E]/10 rounded-full">
+                {sampleCase.stage}
+              </span>
+            </div>
 
-            <div className="space-y-4">
-              {activeCases.map((c) => (
-                <div key={c.id} className="p-4 bg-white/5 border border-outline-variant/10 rounded-card flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4 hover:border-secondary/20 transition-all">
-                  <div className="space-y-1">
-                    <span className="text-[9px] font-mono text-secondary">{c.caseNo}</span>
-                    <h4 className="text-sm font-semibold text-white">{c.visaType} - {c.destination}</h4>
-                    <span className="text-[10px] text-on-primary-container/50 block">Current Stage: {c.stage}</span>
-                  </div>
-                  <div className="flex items-center space-x-3 self-end sm:self-center">
-                    <StatusBadge status={c.stage} />
-                    <Link
-                      to={`/portal/applications/${c.id}`}
-                      className="p-1.5 rounded-lg bg-primary-container border border-on-primary-fixed-variant hover:border-secondary/40 text-secondary transition-all"
+            {/* Stage Timeline representation */}
+            <div className="relative pl-6 border-l-2 border-[#E5E7EB]/80 space-y-6">
+              {TRACKER_STAGES.map((stage, idx) => {
+                const isCompleted = idx < currentStageIdx;
+                const isActive = idx === currentStageIdx;
+                return (
+                  <div key={stage} className="relative flex items-center justify-between">
+                    {/* Circle bullet */}
+                    <div
+                      className={`absolute -left-[31px] w-4.5 h-4.5 rounded-full border-2 flex items-center justify-center bg-white transition-colors duration-300 ${
+                        isCompleted
+                          ? "border-[#0F3D2E] bg-[#0F3D2E]"
+                          : isActive
+                          ? "border-[#C6A969] bg-white shadow-sm"
+                          : "border-gray-300"
+                      }`}
                     >
-                      <ChevronRight className="h-4 w-4" />
-                    </Link>
+                      {isCompleted && (
+                        <CheckCircle2 className="w-2.5 h-2.5 text-white" />
+                      )}
+                    </div>
+
+                    <span
+                      className={`text-xs font-semibold transition-all ${
+                        isCompleted
+                          ? "text-gray-400"
+                          : isActive
+                          ? "text-[#0F3D2E] font-bold text-sm"
+                          : "text-[#6B7280]"
+                      }`}
+                    >
+                      {stage}
+                    </span>
+
+                    {isActive && (
+                      <span className="text-[9px] bg-[#C6A969]/10 text-[#C6A969] border border-[#C6A969]/20 px-2 py-0.5 rounded font-bold uppercase tracking-wider">
+                        Current Stage
+                      </span>
+                    )}
                   </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Recent Applications Table */}
+          <div className="bg-white border border-[#E5E7EB] rounded-[24px] p-6 shadow-sm space-y-4 overflow-hidden">
+            <div className="flex justify-between items-center border-b border-[#E5E7EB] pb-3">
+              <h3 className="text-base font-semibold text-[#1A1A1A]">Recent Applications</h3>
+              <Link to="/portal/applications" className="text-xs font-bold text-[#0F3D2E] hover:text-[#C6A969] transition-all">
+                View All
+              </Link>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-left text-xs text-[#1A1A1A]">
+                <thead>
+                  <tr className="border-b border-[#E5E7EB] text-[#6B7280] font-semibold uppercase tracking-wider">
+                    <th className="py-3 pr-4">Application</th>
+                    <th className="py-3 px-4">Country</th>
+                    <th className="py-3 px-4">Submitted Date</th>
+                    <th className="py-3 px-4">Status</th>
+                    <th className="py-3 pl-4 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#E5E7EB]/50">
+                  {activeCases.slice(0, 4).map((c) => (
+                    <tr key={c.id} className="hover:bg-[#F8F6F2]/30 transition-colors">
+                      <td className="py-3.5 pr-4 font-semibold text-[#1A1A1A]">
+                        {c.visaType}
+                      </td>
+                      <td className="py-3.5 px-4 text-[#6B7280]">
+                        {c.destination || "Worldwide"}
+                      </td>
+                      <td className="py-3.5 px-4 text-gray-500 font-mono">
+                        {formatShortDate(c.createdAt)}
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <StatusBadge status={c.stage} />
+                      </td>
+                      <td className="py-3.5 pl-4 text-right">
+                        <Link
+                          to={`/portal/applications/${c.id}`}
+                          className="inline-flex items-center text-[10px] font-bold uppercase tracking-wider text-[#0F3D2E] hover:text-[#C6A969] transition-colors"
+                        >
+                          <span>Track</span>
+                          <ChevronRight className="h-3 w-3 ml-0.5" />
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                  {activeCases.length === 0 && (
+                    <tr>
+                      <td colSpan={5} className="py-8 text-center text-gray-400 italic">
+                        No recent visa application cases found.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+
+        {/* Right Column (30%) */}
+        <div className="lg:col-span-4 space-y-8">
+          
+          {/* Quick Actions Card */}
+          <div className="bg-white border border-[#E5E7EB] rounded-[24px] p-6 shadow-sm space-y-4">
+            <h3 className="text-sm font-semibold text-[#1A1A1A] border-b border-[#E5E7EB] pb-2">Quick Actions</h3>
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              <button 
+                onClick={() => navigate("/visa-services")} 
+                className="p-4 bg-[#F8F6F2] hover:bg-[#0F3D2E]/5 rounded-xl border border-transparent hover:border-[#0F3D2E]/10 transition-all font-semibold space-y-2 flex flex-col justify-center items-center text-center"
+              >
+                <Compass className="h-5 w-5 text-[#0F3D2E]" />
+                <span>New Application</span>
+              </button>
+              
+              <button 
+                onClick={() => navigate("/portal/documents")} 
+                className="p-4 bg-[#F8F6F2] hover:bg-[#0F3D2E]/5 rounded-xl border border-transparent hover:border-[#0F3D2E]/10 transition-all font-semibold space-y-2 flex flex-col justify-center items-center text-center"
+              >
+                <UploadCloud className="h-5 w-5 text-[#C6A969]" />
+                <span>Upload Documents</span>
+              </button>
+              
+              <button 
+                onClick={() => navigate("/portal/appointments")} 
+                className="p-4 bg-[#F8F6F2] hover:bg-[#0F3D2E]/5 rounded-xl border border-transparent hover:border-[#0F3D2E]/10 transition-all font-semibold space-y-2 flex flex-col justify-center items-center text-center"
+              >
+                <Calendar className="h-5 w-5 text-[#0F3D2E]" />
+                <span>Book Session</span>
+              </button>
+              
+              <button 
+                onClick={() => navigate("/portal/messages")} 
+                className="p-4 bg-[#F8F6F2] hover:bg-[#0F3D2E]/5 rounded-xl border border-transparent hover:border-[#0F3D2E]/10 transition-all font-semibold space-y-2 flex flex-col justify-center items-center text-center"
+              >
+                <MessageSquare className="h-5 w-5 text-[#0F3D2E]" />
+                <span>Contact advisor</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Consultant Card */}
+          <div className="bg-white border border-[#E5E7EB] rounded-[24px] p-6 shadow-sm space-y-5">
+            <h3 className="text-sm font-semibold text-[#1A1A1A] border-b border-[#E5E7EB] pb-2">Your Consultant</h3>
+            <div className="flex items-center space-x-3.5">
+              {/* Luxury gold avatar styling */}
+              <div className="h-12 w-12 rounded-full bg-[#0F3D2E] text-[#C6A969] border border-[#C6A969]/30 font-bold flex items-center justify-center shadow-inner text-sm">
+                SJ
+              </div>
+              <div>
+                <h4 className="font-semibold text-sm text-[#1A1A1A]">Sarah Johnson</h4>
+                <p className="text-[10px] text-[#6B7280] font-medium mt-0.5">Senior Visa Specialist</p>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2.5 pt-1">
+              <a 
+                href="tel:+971501234567" 
+                className="flex items-center justify-center gap-2 py-2 px-4 rounded-xl border border-[#E5E7EB] hover:border-[#0F3D2E] text-xs font-semibold text-[#1A1A1A] hover:bg-[#F8F6F2]/30 transition-all"
+              >
+                <Phone className="w-3.5 h-3.5 text-[#0F3D2E]" />
+                <span>Call Concierge</span>
+              </a>
+              
+              <a 
+                href="https://wa.me/971501234567" 
+                target="_blank" 
+                rel="noreferrer" 
+                className="flex items-center justify-center gap-2 py-2 px-4 rounded-xl border border-transparent bg-[#0F3D2E] hover:bg-[#0F3D2E]/95 text-xs font-semibold text-white transition-all shadow-sm"
+              >
+                <MessageSquare className="w-3.5 h-3.5 text-[#C6A969]" />
+                <span>WhatsApp Advisor</span>
+              </a>
+
+              <a 
+                href="mailto:support@esharetour.com" 
+                className="flex items-center justify-center gap-2 py-2 px-4 rounded-xl border border-[#E5E7EB] hover:border-[#0F3D2E] text-xs font-semibold text-[#1A1A1A] hover:bg-[#F8F6F2]/30 transition-all"
+              >
+                <Mail className="w-3.5 h-3.5 text-[#6B7280]" />
+                <span>Send Email</span>
+              </a>
+            </div>
+          </div>
+
+          {/* Notifications Card */}
+          <div className="bg-white border border-[#E5E7EB] rounded-[24px] p-6 shadow-sm space-y-4">
+            <div className="flex justify-between items-center border-b border-[#E5E7EB] pb-2">
+              <h3 className="text-sm font-semibold text-[#1A1A1A]">Latest Updates</h3>
+              <Link to="/portal/notifications" className="text-[10px] font-bold text-[#0F3D2E] hover:underline">
+                View All
+              </Link>
+            </div>
+            
+            <div className="relative pl-4 border-l border-[#E5E7EB] space-y-5 py-2">
+              {recentNotifications.map((n) => (
+                <div key={n.id} className="relative space-y-0.5">
+                  <div className="absolute -left-[20.5px] top-1.5 w-2.5 h-2.5 rounded-full bg-[#C6A969]"></div>
+                  <h4 className="text-xs font-semibold text-[#1A1A1A] leading-none">{n.title}</h4>
+                  <p className="text-[10px] text-[#6B7280] leading-snug">{n.message}</p>
                 </div>
               ))}
-              {activeCases.length === 0 && (
-                <div className="text-center py-6 text-xs text-on-primary-container/40 italic">No applications active currently.</div>
+              {recentNotifications.length === 0 && (
+                <div className="space-y-4">
+                  <div className="relative space-y-0.5">
+                    <div className="absolute -left-[20.5px] top-1.5 w-2.5 h-2.5 rounded-full bg-[#C6A969]"></div>
+                    <h4 className="text-xs font-semibold text-[#1A1A1A] leading-none">Appointment Confirmed</h4>
+                    <p className="text-[10px] text-[#6B7280] leading-snug">VFS slot verified with Embassy.</p>
+                  </div>
+                  <div className="relative space-y-0.5">
+                    <div className="absolute -left-[20.5px] top-1.5 w-2.5 h-2.5 rounded-full bg-[#C6A969]"></div>
+                    <h4 className="text-xs font-semibold text-[#1A1A1A] leading-none">Passport Received</h4>
+                    <p className="text-[10px] text-[#6B7280] leading-snug">Passport copy verified at operations desk.</p>
+                  </div>
+                  <div className="relative space-y-0.5">
+                    <div className="absolute -left-[20.5px] top-1.5 w-2.5 h-2.5 rounded-full bg-[#C6A969]"></div>
+                    <h4 className="text-xs font-semibold text-[#1A1A1A] leading-none">Additional documents requested</h4>
+                    <p className="text-[10px] text-[#6B7280] leading-snug">Bank statements required for French Schengen file.</p>
+                  </div>
+                </div>
               )}
             </div>
           </div>
-        </div>
 
-        {/* Quick actions (1/3) */}
-        <div className="lg:col-span-4 space-y-6">
-          <div className="glass-card p-6 border border-on-primary-fixed-variant/60 space-y-4">
-            <h3 className="text-sm font-semibold text-white border-b border-on-primary-fixed-variant pb-2">Quick Actions</h3>
-            <div className="grid grid-cols-2 gap-3.5 text-xs text-center">
-              <button onClick={() => navigate("/portal/applications")} className="p-4 bg-primary-container hover:bg-primary-container/80 border border-outline-variant/10 rounded hover:border-secondary/25 transition-all text-on-primary-container font-semibold space-y-2 flex flex-col justify-center items-center">
-                <FileText className="h-5 w-5 text-secondary" />
-                <span>Applications</span>
-              </button>
-              <button onClick={() => navigate("/portal/documents")} className="p-4 bg-primary-container hover:bg-primary-container/80 border border-outline-variant/10 rounded hover:border-secondary/25 transition-all text-on-primary-container font-semibold space-y-2 flex flex-col justify-center items-center">
-                <UploadCloud className="h-5 w-5 text-secondary" />
-                <span>Documents</span>
-              </button>
-              <button onClick={() => navigate("/portal/appointments")} className="p-4 bg-primary-container hover:bg-primary-container/80 border border-outline-variant/10 rounded hover:border-secondary/25 transition-all text-on-primary-container font-semibold space-y-2 flex flex-col justify-center items-center">
-                <Calendar className="h-5 w-5 text-secondary" />
-                <span>Appointments</span>
-              </button>
-              <button onClick={() => navigate("/portal/payments")} className="p-4 bg-primary-container hover:bg-primary-container/80 border border-outline-variant/10 rounded hover:border-secondary/25 transition-all text-on-primary-container font-semibold space-y-2 flex flex-col justify-center items-center">
-                <CreditCard className="h-5 w-5 text-secondary" />
-                <span>Payments</span>
-              </button>
-              <button onClick={() => navigate("/portal/messages")} className="p-4 bg-primary-container hover:bg-primary-container/80 border border-outline-variant/10 rounded hover:border-secondary/25 transition-all text-on-primary-container font-semibold space-y-2 flex flex-col justify-center items-center">
-                <MessageSquare className="h-5 w-5 text-secondary" />
-                <span>Message Advisor</span>
-              </button>
-              <button onClick={() => navigate("/portal/notifications")} className="p-4 bg-primary-container hover:bg-primary-container/80 border border-outline-variant/10 rounded hover:border-secondary/25 transition-all text-[#F5F1E8] hover:text-white font-semibold space-y-2 flex flex-col justify-center items-center">
-                <div className="relative">
-                  <Bell className="h-5 w-5 text-secondary" />
-                  {unreadNotificationsCount > 0 && (
-                    <span className="absolute -top-1 -right-1 flex h-2 w-2 items-center justify-center rounded-full bg-red-500"></span>
-                  )}
-                </div>
-                <span>Notifications</span>
-              </button>
-            </div>
-          </div>
         </div>
       </div>
 

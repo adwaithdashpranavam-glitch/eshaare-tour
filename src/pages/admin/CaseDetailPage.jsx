@@ -70,25 +70,9 @@ export const CaseDetailPage = () => {
       }
       setLoading(false);
     }, (error) => {
-      console.warn("Using mock visa case details:", error);
-      setCaseData({
-        id: id,
-        caseNo: "VC-20260601-002",
-        travellerName: "Sarah Connor",
-        travellerPhone: "+971503334444",
-        travellerEmail: "sarah@yahoo.com",
-        visaType: "UK Visa",
-        destination: "United Kingdom",
-        assignedOfficer: "Visa Ops Officer",
-        stage: "Submitted",
-        priority: "Normal",
-        createdAt: { seconds: 1780327362 }
-      });
-      setDocItems([
-        { id: 0, name: "Original Passport", status: "Verified", fileUrl: "https://example.com/passport.pdf" },
-        { id: 1, name: "Emirates ID Copy", status: "Verified", fileUrl: "https://example.com/eid.pdf" },
-        { id: 2, name: "6 Months Bank Statement", status: "Uploaded", fileUrl: "https://example.com/bank.pdf" }
-      ]);
+      console.warn("Error loading visa case details:", error);
+      toast.error("Error loading case details: " + error.message);
+      navigate("/admin/cases");
       setLoading(false);
     });
 
@@ -108,14 +92,39 @@ export const CaseDetailPage = () => {
   const handleStageAdvance = async (nextStage) => {
     try {
       const docRef = doc(db, "visa_cases", id);
-      await updateDoc(docRef, { stage: nextStage });
+      await updateDoc(docRef, { stage: nextStage, updatedAt: new Date() });
       await logInternalNote(`Visa stage advanced to ${nextStage}`);
+
+      // Map CRM stage → booking status so Android app and client portal stay in sync
+      const stageToBookingStatus = {
+        "Verification": "Awaiting Payment Confirmation",
+        "Documents Pending": "Awaiting Payment Confirmation",
+        "Payment Confirmed": "Payment Confirmed",
+        "Processing": "Documents Prepared",
+        "Appointment Booked": "Appointment Scheduled",
+        "Submitted": "Visa Processing",
+        "Approved": "Completed",
+        "Rejected": "Rejected",
+        "Withdrawn": "Cancelled"
+      };
+      const bookingStatus = stageToBookingStatus[nextStage] || nextStage;
+
+      // Sync the same ID in bookings (Android app uses same ID for visa bookings)
+      try {
+        const bookingRef = doc(db, "bookings", id);
+        await updateDoc(bookingRef, { bookingStatus, status: bookingStatus, updatedAt: new Date() });
+      } catch (syncErr) {
+        // Booking may not exist if case was created from CRM directly — non-fatal
+        console.warn("Booking sync skipped (may not exist):", syncErr.message);
+      }
+
       toast.success(`Advanced to stage: ${nextStage}`);
     } catch (err) {
       console.error(err);
       toast.error("Error advancing stage");
     }
   };
+
 
   const handleDateChange = async (fieldName, val) => {
     try {
@@ -212,9 +221,16 @@ export const CaseDetailPage = () => {
       const payRef = collection(db, "payments");
       await addDoc(payRef, {
         orderId: caseData.caseNo,
+        invoiceNo: caseData.caseNo?.replace("VC-", "PAY-") || `PAY-${Date.now()}`,
+        clientName: caseData.travellerName || "",
+        clientEmail: caseData.travellerEmail?.toLowerCase() || "",
+        clientUid: caseData.travellerId || "",
+        service: `${caseData.visaType || caseData.destination || "Visa"} Booking`,
         amount: Number(paymentData.amount),
         method: paymentData.method,
         ref: paymentData.ref,
+        status: "Paid",
+        date: new Date(),
         createdAt: new Date()
       });
 
@@ -223,8 +239,27 @@ export const CaseDetailPage = () => {
         paid: prev.paid + Number(paymentData.amount)
       }));
 
-      await logInternalNote(`Payment logged: ${paymentData.amount} AED via ${paymentData.method}`);
-      toast.success("Payment recorded!");
+      // Advance case stage to Payment Confirmed
+      await updateDoc(doc(db, "visa_cases", id), {
+        stage: "Payment Confirmed",
+        paymentConfirmedAt: new Date(),
+        updatedAt: new Date()
+      });
+
+      // Sync bookings document so Android app and portal reflect confirmed payment
+      try {
+        await updateDoc(doc(db, "bookings", id), {
+          bookingStatus: "Payment Confirmed",
+          status: "Payment Confirmed",
+          paymentConfirmedAt: new Date(),
+          updatedAt: new Date()
+        });
+      } catch (syncErr) {
+        console.warn("Booking payment sync skipped:", syncErr.message);
+      }
+
+      await logInternalNote(`Payment logged: ${paymentData.amount} AED via ${paymentData.method} — Stage advanced to Payment Confirmed`);
+      toast.success("Payment recorded & case advanced to Payment Confirmed!");
       setIsRecordPaymentOpen(false);
       setPaymentData({ amount: "", method: "Card", ref: "" });
     } catch (err) {
@@ -232,6 +267,7 @@ export const CaseDetailPage = () => {
       toast.error("Error recording payment");
     }
   };
+
 
   if (loading || !caseData) {
     return <div className="h-screen flex items-center justify-center bg-primary-container text-secondary">Retrieving case files...</div>;
@@ -300,16 +336,7 @@ export const CaseDetailPage = () => {
             </div>
           </div>
 
-          {/* Document Checklist */}
-          <div className="glass-card p-6 border border-on-primary-fixed-variant/60 space-y-4">
-            <h3 className="text-base font-semibold text-white border-b border-on-primary-fixed-variant pb-2">Required Dossier Documents</h3>
-            <DocumentChecklist
-              caseId={caseData.id}
-              visaType={caseData.visaType}
-              travellerId={caseData.travellerId}
-              isAdmin={true}
-            />
-          </div>
+
 
           {/* Internal Notes thread */}
           <div className="glass-card p-6 border border-on-primary-fixed-variant/60 space-y-4">

@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../../contexts/AuthContext";
-import { collection, query, where, onSnapshot, addDoc, orderBy } from "firebase/firestore";
+import { collection, query, where, onSnapshot, addDoc } from "firebase/firestore";
 import { db } from "../../lib/firebase";
-import { MessageSquare, Send, Paperclip, FileText, ChevronLeft, User } from "lucide-react";
+import { Send, Paperclip, FileText } from "lucide-react";
 import FileUpload from "../../components/ui/FileUpload";
 import Modal from "../../components/ui/Modal";
 import { formatDate } from "../../utils/formatters";
@@ -15,28 +15,42 @@ export const PortalMessagesPage = () => {
   const [newMessage, setNewMessage] = useState("");
   const [isAttachOpen, setIsAttachOpen] = useState(false);
   const [attachment, setAttachment] = useState(null);
-  const [activeThread, setActiveThread] = useState(true); // Single active chat MVP
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
     if (!user) return;
 
-    // Fetch messages sorted by timestamp
+    // Fetch messages where user is a participant
     const msgRef = collection(db, "chats");
-    const q = query(msgRef, orderBy("createdAt", "asc"));
+    const q = query(msgRef, where("participants", "array-contains", user.uid));
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       if (!snapshot.empty) {
-        setMessages(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+        // Sort client-side by createdAt to avoid requiring a Firestore composite index
+        const sorted = snapshot.docs
+          .map(doc => ({ id: doc.id, ...doc.data() }))
+          .sort((a, b) => {
+            const timeA = a.createdAt?.seconds 
+              ? a.createdAt.seconds * 1000 
+              : a.createdAt?.toDate 
+                ? a.createdAt.toDate().getTime() 
+                : new Date(a.createdAt || 0).getTime();
+            const timeB = b.createdAt?.seconds 
+              ? b.createdAt.seconds * 1000 
+              : b.createdAt?.toDate 
+                ? b.createdAt.toDate().getTime() 
+                : new Date(b.createdAt || 0).getTime();
+            return timeA - timeB;
+          });
+        setMessages(sorted);
+      } else {
+        setMessages([]);
       }
       // Scroll to bottom
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, (error) => {
-      console.warn("Using mock message records fallback:", error);
-      setMessages([
-        { id: "1", senderId: "advisor", senderName: "Rana G. (Advisor)", text: "Hi Sarah, I reviewed your bank statements. They look good, but we need the stamp on the last page.", createdAt: new Date(Date.now() - 3600000) },
-        { id: "2", senderId: user.uid, senderName: "Sarah Connor", text: "Sure, I am uploading the stamped version now.", createdAt: new Date(Date.now() - 1800000) }
-      ]);
+      console.warn("Error fetching message records:", error);
+      setMessages([]);
     });
 
     return () => unsubscribe();
@@ -54,7 +68,8 @@ export const PortalMessagesPage = () => {
         text: newMessage.trim(),
         attachmentUrl: attachment?.url || null,
         attachmentName: attachment?.name || null,
-        createdAt: new Date()
+        createdAt: new Date(),
+        participants: [user.uid, "support"]
       });
       setNewMessage("");
       setAttachment(null);
@@ -71,16 +86,16 @@ export const PortalMessagesPage = () => {
   };
 
   return (
-    <div className="h-[75vh] flex flex-col glass-card border border-on-primary-fixed-variant/60 overflow-hidden font-sans">
+    <div className="h-[75vh] flex flex-col bg-white border border-[#E5E7EB] rounded-[24px] overflow-hidden font-sans shadow-sm">
       {/* Header */}
-      <div className="px-6 py-4 bg-primary-container border-b border-on-primary-fixed-variant/80 flex items-center justify-between">
-        <div className="flex items-center space-x-3">
-          <div className="h-9 w-9 rounded-full bg-secondary-container/10 border border-secondary/20 text-secondary flex items-center justify-center font-bold">
-            R
+      <div className="px-6 py-4 bg-[#F8F6F2] border-b border-[#E5E7EB] flex items-center justify-between">
+        <div className="flex items-center space-x-3.5">
+          <div className="h-10 w-10 rounded-full bg-[#0F3D2E] text-[#C6A969] border border-[#C6A969]/30 font-bold flex items-center justify-center text-sm shadow-inner">
+            SJ
           </div>
           <div>
-            <h3 className="text-xs font-bold text-white uppercase tracking-wider">Rana G. (Visa Consultant)</h3>
-            <span className="text-[9px] text-success font-bold flex items-center animate-pulse">
+            <h3 className="text-xs font-bold text-[#1A1A1A] uppercase tracking-wider">Sarah Johnson (Visa Advisor)</h3>
+            <span className="text-[9px] text-green-600 font-bold flex items-center animate-pulse mt-0.5">
               ● Online Support
             </span>
           </div>
@@ -88,18 +103,18 @@ export const PortalMessagesPage = () => {
       </div>
 
       {/* Message Feed */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-primary-container/20">
+      <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-[#F8F6F2]/40">
         {messages.map((msg, idx) => {
           const isMe = msg.senderId === user?.uid;
           return (
             <div key={msg.id || idx} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
               <div className={`max-w-[70%] space-y-1 ${isMe ? "text-right" : "text-left"}`}>
-                <span className="text-[9px] text-on-primary-container/40 uppercase tracking-widest">{msg.senderName}</span>
+                <span className="text-[9px] text-[#6B7280] uppercase tracking-widest font-semibold">{msg.senderName}</span>
                 <div 
-                  className={`p-3.5 rounded-card text-xs font-sans shadow-md leading-relaxed ${
+                  className={`p-3.5 rounded-2xl text-xs font-sans shadow-sm leading-relaxed ${
                     isMe 
-                      ? "bg-secondary-container text-on-primary-fixed rounded-tr-none font-semibold" 
-                      : "bg-primary-container text-white rounded-tl-none border border-outline-variant/10"
+                      ? "bg-[#0F3D2E] text-white rounded-tr-none font-medium" 
+                      : "bg-white text-[#1A1A1A] rounded-tl-none border border-[#E5E7EB]"
                   }`}
                 >
                   {msg.text && <p className="whitespace-pre-wrap">{msg.text}</p>}
@@ -108,16 +123,16 @@ export const PortalMessagesPage = () => {
                       href={msg.attachmentUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={`flex items-center space-x-1.5 mt-2 p-1.5 rounded bg-white/5 border border-dashed text-[10px] font-mono ${
-                        isMe ? "border-primary-container/20 text-on-primary-fixed" : "border-on-primary-fixed-variant text-secondary"
+                      className={`flex items-center space-x-1.5 mt-2 p-2 rounded-xl border border-dashed text-[10px] font-mono transition-colors ${
+                        isMe ? "border-white/30 text-white hover:text-[#C6A969]" : "border-[#E5E7EB] text-[#0F3D2E] hover:text-[#C6A969]"
                       }`}
                     >
-                      <FileText className="h-4 w-4" />
+                      <FileText className="h-4 w-4 shrink-0" />
                       <span className="truncate max-w-[120px]">{msg.attachmentName}</span>
                     </a>
                   )}
                 </div>
-                <span className="text-[9px] text-on-primary-container/30 block mt-1 font-mono">{formatDate(msg.createdAt)}</span>
+                <span className="text-[9px] text-gray-400 block mt-1 font-mono">{formatDate(msg.createdAt)}</span>
               </div>
             </div>
           );
@@ -126,21 +141,21 @@ export const PortalMessagesPage = () => {
       </div>
 
       {/* Compose bar */}
-      <form onSubmit={handleSendMessage} className="p-4 bg-primary-container border-t border-on-primary-fixed-variant/80 flex items-center gap-3">
+      <form onSubmit={handleSendMessage} className="p-4 bg-white border-t border-[#E5E7EB] flex items-center gap-3">
         <button
           type="button"
           onClick={() => setIsAttachOpen(true)}
-          className={`p-2 rounded-lg bg-primary-container border border-on-primary-fixed-variant hover:border-secondary/40 transition-colors ${
-            attachment ? "text-secondary border-secondary" : "text-on-primary-container/50 hover:text-white"
+          className={`p-2.5 rounded-xl bg-[#F8F6F2] hover:bg-[#0F3D2E]/5 border border-[#E5E7EB] transition-colors ${
+            attachment ? "text-[#C6A969] border-[#C6A969]" : "text-gray-500 hover:text-[#0F3D2E]"
           }`}
-          title="Attach PDF or scan copy"
+          title="Attach travel documents"
         >
-          <Paperclip className="h-4 w-4" />
+          <Paperclip className="h-4.5 w-4.5" />
         </button>
         
         <input
           type="text"
-          className="flex-1 px-4 py-2.5 bg-primary-container border border-on-primary-fixed-variant text-on-primary-container placeholder-on-primary-container/30 text-xs rounded-button focus:outline-none focus:border-secondary"
+          className="flex-1 px-4 py-2.5 bg-[#F8F6F2] border border-[#E5E7EB] text-[#1A1A1A] placeholder-gray-400 text-xs rounded-xl focus:outline-none focus:border-[#0F3D2E]"
           placeholder="Type your message..."
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
@@ -148,9 +163,9 @@ export const PortalMessagesPage = () => {
 
         <button
           type="submit"
-          className="p-2.5 bg-gradient-to-r from-secondary-container to-secondary-container text-on-primary-fixed rounded-button shadow-sm flex items-center justify-center"
+          className="p-2.5 bg-[#0F3D2E] text-white hover:bg-[#0F3D2E]/90 rounded-xl shadow-sm flex items-center justify-center transition-colors"
         >
-          <Send className="h-4 w-4" />
+          <Send className="h-4 w-4 text-[#C6A969]" />
         </button>
       </form>
 
@@ -162,12 +177,12 @@ export const PortalMessagesPage = () => {
         size="sm"
       >
         <div className="space-y-4">
-          <p className="text-[10px] text-on-primary-container/60 leading-normal font-sans">
+          <p className="text-[10px] text-gray-500 leading-normal font-sans">
             Attach document scans, bank receipt PDFs or visa pictures. Our consultant reviews the attachment in real-time.
           </p>
           <FileUpload
             collectionName="chats"
-            documentId="attachments"
+            documentId={user.uid}
             docType="chat_docs"
             onUploadSuccess={handleAttachmentSuccess}
           />

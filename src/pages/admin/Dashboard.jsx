@@ -68,16 +68,8 @@ export const Dashboard = () => {
     { name: "Awaiting Decision", value: 3, color: "#627555" }
   ];
 
-  const [recentLeads, setRecentLeads] = useState([
-    { id: "1", contactName: "Amit Sharma", source: "WhatsApp", stage: "New", createdAt: new Date() },
-    { id: "2", contactName: "Sarah Connor", source: "Website", stage: "Contacted", createdAt: new Date() },
-    { id: "3", contactName: "Habib Al-Fardan", source: "Referral", stage: "Qualified", createdAt: new Date() }
-  ]);
-
-  const [upcomingAppointments, setUpcomingAppointments] = useState([
-    { id: "1", clientName: "Amit Sharma", time: "10:30 AM", type: "Video Call" },
-    { id: "2", clientName: "Zayn Malik", time: "02:00 PM", type: "In-Person" }
-  ]);
+  const [recentLeads, setRecentLeads] = useState([]);
+  const [upcomingAppointments, setUpcomingAppointments] = useState([]);
 
   useEffect(() => {
     // 1. Fetch analytic counts (Safe from non-existent collections)
@@ -169,13 +161,22 @@ export const Dashboard = () => {
         const sortedLeads = leads
           .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0))
           .slice(0, 5);
-        if (sortedLeads.length > 0) {
-          setRecentLeads(sortedLeads);
-        }
+        setRecentLeads(sortedLeads);
+      } else {
+        setRecentLeads([]);
+        setKpis(prev => ({
+          ...prev,
+          newLeads: 0
+        }));
       }
       setLoading(false);
     }, (error) => {
-      console.warn("Real-time snapshot error (using mock config):", error);
+      console.warn("Real-time snapshot error for leads:", error);
+      setRecentLeads([]);
+      setKpis(prev => ({
+        ...prev,
+        newLeads: 0
+      }));
       setLoading(false);
     });
 
@@ -192,12 +193,41 @@ export const Dashboard = () => {
           activeCases: active,
           pendingDocs: pending
         }));
+      } else {
+        setKpis(prev => ({
+          ...prev,
+          activeCases: 0,
+          pendingDocs: 0
+        }));
       }
-    }, () => { });
+    }, (error) => {
+      console.warn("Real-time snapshot error for cases:", error);
+      setKpis(prev => ({
+        ...prev,
+        activeCases: 0,
+        pendingDocs: 0
+      }));
+    });
+
+    // 4. Real-time listener for Appointments
+    const apptsRef = collection(db, "appointments");
+    const qAppts = query(apptsRef, limit(10));
+    const unsubscribeAppts = onSnapshot(qAppts, (snapshot) => {
+      if (!snapshot.empty) {
+        const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setUpcomingAppointments(items);
+      } else {
+        setUpcomingAppointments([]);
+      }
+    }, (error) => {
+      console.warn("Error fetching dashboard appointments:", error);
+      setUpcomingAppointments([]);
+    });
 
     return () => {
       unsubscribeLeads();
       unsubscribeCases();
+      unsubscribeAppts();
     };
   }, []);
 
@@ -213,21 +243,21 @@ export const Dashboard = () => {
         <h1 className="text-3xl font-bold text-white">
           Admin Dashboard
         </h1>
-        <p className="mt-2 text-gray-400">
+        <p className="mt-2 text-slate-300">
           Overview of packages, leads, bookings, and business activity.
         </p>
       </div>
 
       {/* Overdue Alert Banner */}
       {kpis.overdueCases > 0 && (
-        <div className="flex items-center justify-between p-4 bg-danger/10 border border-danger/20 rounded-2xl text-danger text-sm">
+        <div className="flex items-center justify-between p-4 bg-red-500/10 border border-red-500/35 rounded-2xl text-red-200 text-sm">
           <div className="flex items-center space-x-2">
             <AlertCircle className="h-5 w-5 flex-shrink-0 animate-bounce" />
             <span className="font-semibold">Attention: 1 Visa Case has passed its decision expected date with no outcome updated.</span>
           </div>
           <Link
             to="/admin/cases"
-            className="text-xs font-bold underline uppercase tracking-wider hover:text-danger/80 transition-colors"
+            className="text-xs font-bold underline uppercase tracking-wider text-red-300 hover:text-red-200 transition-colors"
           >
             Review Case
           </Link>
@@ -239,78 +269,78 @@ export const Dashboard = () => {
         <div className="rounded-3xl bg-white/5 p-6 border border-white/10 hover:border-white/20 transition-all flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between">
-              <p className="text-gray-400 text-sm font-semibold uppercase tracking-wider">Packages</p>
-              <Package className="h-5 w-5 text-gray-400" />
+              <p className="text-slate-200 text-sm font-semibold uppercase tracking-wider">Packages</p>
+              <Package className="h-5 w-5 text-slate-300" />
             </div>
             <h2 className="mt-3 text-4xl font-bold text-white">{stats.totalPackages}</h2>
           </div>
-          <p className="mt-4 text-xs text-green-400 font-medium">{stats.activePackages} Active • {stats.featuredPackages} Featured</p>
+          <p className="mt-4 text-xs text-emerald-300 font-medium">{stats.activePackages} Active • {stats.featuredPackages} Featured</p>
         </div>
 
         <div className="rounded-3xl bg-white/5 p-6 border border-white/10 hover:border-white/20 transition-all flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between">
-              <p className="text-gray-400 text-sm font-semibold uppercase tracking-wider">Leads</p>
-              <Users className="h-5 w-5 text-orange-400" />
+              <p className="text-slate-200 text-sm font-semibold uppercase tracking-wider">Leads</p>
+              <Users className="h-5 w-5 text-orange-300" />
             </div>
-            <h2 className="mt-3 text-4xl font-bold text-orange-400">{stats.totalLeads}</h2>
+            <h2 className="mt-3 text-4xl font-bold text-orange-300">{stats.totalLeads}</h2>
           </div>
-          <p className="mt-4 text-xs text-red-400 font-medium">{stats.newLeads} New Inbox</p>
+          <p className="mt-4 text-xs text-rose-300 font-medium">{stats.newLeads} New Inbox</p>
         </div>
 
         <div className="rounded-3xl bg-white/5 p-6 border border-white/10 hover:border-white/20 transition-all flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between">
-              <p className="text-gray-400 text-sm font-semibold uppercase tracking-wider">Visas & Appts</p>
-              <FileText className="h-5 w-5 text-[#7A8F6B]" />
+              <p className="text-slate-200 text-sm font-semibold uppercase tracking-wider">Visas & Appts</p>
+              <FileText className="h-5 w-5 text-teal-300" />
             </div>
-            <h2 className="mt-3 text-4xl font-bold text-[#7A8F6B]">{stats.totalVisas}</h2>
+            <h2 className="mt-3 text-4xl font-bold text-teal-300">{stats.totalVisas}</h2>
           </div>
-          <p className="mt-4 text-xs text-emerald-400 font-medium">{stats.totalAppointments} Consultation Bookings</p>
+          <p className="mt-4 text-xs text-emerald-300 font-medium">{stats.totalAppointments} Consultation Bookings</p>
         </div>
 
         <div className="rounded-3xl bg-white/5 p-6 border border-white/10 hover:border-white/20 transition-all flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between">
-              <p className="text-gray-400 text-sm font-semibold uppercase tracking-wider">Registered Clients</p>
-              <Users className="h-5 w-5 text-purple-400" />
+              <p className="text-slate-200 text-sm font-semibold uppercase tracking-wider">Registered Clients</p>
+              <Users className="h-5 w-5 text-purple-300" />
             </div>
-            <h2 className="mt-3 text-4xl font-bold text-purple-400">{stats.totalClients}</h2>
+            <h2 className="mt-3 text-4xl font-bold text-purple-300">{stats.totalClients}</h2>
           </div>
-          <p className="mt-4 text-xs text-purple-300 font-medium">Active client accounts</p>
+          <p className="mt-4 text-xs text-purple-200 font-medium">Active client accounts</p>
         </div>
 
         <div className="rounded-3xl bg-white/5 p-6 border border-white/10 hover:border-white/20 transition-all flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between">
-              <p className="text-gray-400 text-sm font-semibold uppercase tracking-wider">Client Bookings</p>
-              <TrendingUp className="h-5 w-5 text-green-400" />
+              <p className="text-slate-200 text-sm font-semibold uppercase tracking-wider">Client Bookings</p>
+              <TrendingUp className="h-5 w-5 text-emerald-300" />
             </div>
-            <h2 className="mt-3 text-4xl font-bold text-green-400">{stats.totalBookings}</h2>
+            <h2 className="mt-3 text-4xl font-bold text-emerald-300">{stats.totalBookings}</h2>
           </div>
-          <p className="mt-4 text-xs text-gray-400 font-medium">Packages purchased</p>
+          <p className="mt-4 text-xs text-on-primary-container/70 font-medium">Packages purchased</p>
         </div>
 
         <div className="rounded-3xl bg-white/5 p-6 border border-white/10 hover:border-white/20 transition-all flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between">
-              <p className="text-gray-400 text-sm font-semibold uppercase tracking-wider">Hotels</p>
-              <Building className="h-5 w-5 text-emerald-400" />
+              <p className="text-slate-200 text-sm font-semibold uppercase tracking-wider">Hotels</p>
+              <Building className="h-5 w-5 text-emerald-300" />
             </div>
-            <h2 className="mt-3 text-4xl font-bold text-emerald-400">{stats.totalHotels}</h2>
+            <h2 className="mt-3 text-4xl font-bold text-emerald-300">{stats.totalHotels}</h2>
           </div>
-          <p className="mt-4 text-xs text-emerald-300 font-medium">Stays registered</p>
+          <p className="mt-4 text-xs text-emerald-200 font-medium">Stays registered</p>
         </div>
 
         <div className="rounded-3xl bg-white/5 p-6 border border-white/10 hover:border-white/20 transition-all flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between">
-              <p className="text-gray-400 text-sm font-semibold uppercase tracking-wider">Active Promo Offers</p>
-              <Tag className="h-5 w-5 text-yellow-400" />
+              <p className="text-slate-200 text-sm font-semibold uppercase tracking-wider">Active Promo Offers</p>
+              <Tag className="h-5 w-5 text-amber-300" />
             </div>
-            <h2 className="mt-3 text-4xl font-bold text-yellow-400">{stats.activeOffers}</h2>
+            <h2 className="mt-3 text-4xl font-bold text-amber-300">{stats.activeOffers}</h2>
           </div>
-          <p className="mt-4 text-xs text-yellow-300 font-medium">Showcased on homepage</p>
+          <p className="mt-4 text-xs text-amber-200 font-medium">Showcased on homepage</p>
         </div>
       </div>
 
@@ -327,7 +357,7 @@ export const Dashboard = () => {
           </Link>
           <Link
             to="/admin/hotels"
-            className="rounded-2xl bg-[#1D503A] p-5 text-white font-semibold transition hover:opacity-90 flex items-center justify-between shadow-lg"
+            className="rounded-2xl bg-[#0f3223] border border-white/10 p-5 text-white font-semibold transition hover:opacity-90 flex items-center justify-between shadow-lg"
           >
             <span>Hotels Manager</span>
             <span className="text-xs bg-black/20 px-2 py-0.5 rounded">{stats.totalHotels}</span>
@@ -360,7 +390,7 @@ export const Dashboard = () => {
                 <CartesianGrid strokeDasharray="3 3" stroke="#4D4740" />
                 <XAxis dataKey="date" stroke="#9ca3af" style={{ fontSize: 10 }} />
                 <YAxis stroke="#9ca3af" style={{ fontSize: 10 }} />
-                <Tooltip contentStyle={{ backgroundColor: "#1D503A", borderColor: "#4D4740", borderRadius: "12px", color: "#fff" }} labelStyle={{ color: "#fff" }} />
+                <Tooltip contentStyle={{ backgroundColor: "#0B1E14", borderColor: "#4D4740", borderRadius: "12px", color: "#fff" }} labelStyle={{ color: "#fff" }} />
                 <Line type="monotone" dataKey="amt" stroke="#7A8F6B" strokeWidth={3} activeDot={{ r: 8 }} />
               </LineChart>
             </ResponsiveContainer>
@@ -384,7 +414,7 @@ export const Dashboard = () => {
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={{ backgroundColor: "#1D503A", borderColor: "#4D4740", borderRadius: "12px" }} />
+                <Tooltip contentStyle={{ backgroundColor: "#0B1E14", borderColor: "#4D4740", borderRadius: "12px" }} />
               </PieChart>
             </ResponsiveContainer>
           </div>

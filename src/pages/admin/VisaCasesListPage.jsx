@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { collection, onSnapshot, query, where } from "firebase/firestore";
 import { db } from "../../lib/firebase";
+import { useAuth } from "../../contexts/AuthContext";
 import { Search, FileSpreadsheet, Plus, AlertCircle } from "lucide-react";
 import StatusBadge from "../../components/ui/StatusBadge";
 import FilterBar from "../../components/ui/FilterBar";
@@ -12,24 +13,28 @@ import toast from "react-hot-toast";
 
 export const VisaCasesListPage = () => {
   const navigate = useNavigate();
+  const { user, userProfile } = useAuth();
+  const isVisaOps = userProfile?.role === "visa_ops";
+
   const [cases, setCases] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState({ stage: "All", assignedOfficer: "All" });
 
   useEffect(() => {
+    if (!user) return;
     const casesRef = collection(db, "visa_cases");
-    const q = query(casesRef, where("isDeleted", "==", false));
+    let q = query(casesRef, where("isDeleted", "==", false));
+    if (isVisaOps) {
+      q = query(casesRef, where("isDeleted", "==", false), where("assignedOfficerId", "==", user.uid));
+    }
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setCases(items);
       setLoading(false);
     }, (error) => {
-      console.warn("Using mock visa cases fallback:", error);
-      setCases([
-        { id: "1", caseNo: "VC-20260601-001", travellerName: "Amit Sharma", visaType: "Schengen", destination: "France", assignedOfficer: "Visa Ops Officer", stage: "Docs Pending", priority: "Urgent", submissionDate: null, expectedDecisionAt: null, createdAt: new Date() },
-        { id: "2", caseNo: "VC-20260601-002", travellerName: "Sarah Connor", visaType: "UK Visa", destination: "United Kingdom", assignedOfficer: "Visa Ops Officer", stage: "Submitted", priority: "Normal", submissionDate: new Date(), expectedDecisionAt: new Date(Date.now() - 86400000), createdAt: new Date() }
-      ]);
+      console.warn("Error loading visa cases:", error);
+      setCases([]);
       setLoading(false);
     });
 
@@ -139,7 +144,7 @@ export const VisaCasesListPage = () => {
                 <td className="px-6 py-4 font-mono font-bold text-secondary text-xs">{c.caseNo}</td>
                 <td className="px-6 py-4 font-semibold text-white">{c.travellerName}</td>
                 <td className="px-6 py-4 text-xs">{c.visaType}</td>
-                <td className="px-6 py-4 text-xs font-semibold">{c.destination}</td>
+                <td className="px-6 py-4 text-xs font-semibold">{c.destinationCountry || c.destination}</td>
                 <td className="px-6 py-4 text-xs">{c.assignedOfficer || "Unassigned"}</td>
                 <td className="px-6 py-4"><StatusBadge status={c.stage} /></td>
                 <td className="px-6 py-4">

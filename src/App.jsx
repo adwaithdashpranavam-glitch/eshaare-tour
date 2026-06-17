@@ -1,11 +1,13 @@
 import React from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "react-hot-toast";
 
 // Contexts
 import { AuthProvider, ProtectedRoute, ClientRoute } from "./contexts/AuthContext";
+import { TravelerProfileProvider, ProfileCompleteGuard } from "./contexts/TravelerProfileContext";
 import { AppProvider } from "./contexts/AppContext";
+import { Analytics } from "@vercel/analytics/react";
 
 // Layouts
 import PublicLayout from "./layouts/PublicLayout";
@@ -25,6 +27,7 @@ import TrackApplicationPage from "./pages/public/TrackApplicationPage";
 import ResourcesPage from "./pages/public/ResourcesPage";
 import AppointmentBookingPage from "./pages/public/AppointmentBookingPage";
 import GlobePage from "./pages/public/GlobePage";
+import CustomisePackagePage from "./pages/public/CustomisePackagePage";
 import ScrollToTop from "./components/ui/ScrollToTop";
 
 // Auth Pages
@@ -63,6 +66,9 @@ import PortalPaymentsPage from "./pages/portal/PortalPaymentsPage";
 import PortalMessagesPage from "./pages/portal/PortalMessagesPage";
 import PortalSettingsPage from "./pages/portal/PortalSettingsPage";
 import PortalNotificationsPage from "./pages/portal/PortalNotificationsPage";
+import PortalVerifyProfilePage from "./pages/portal/PortalVerifyProfilePage";
+import PortalProfilePage from "./pages/portal/PortalProfilePage";
+import PortalFamilyMembersPage from "./pages/portal/PortalFamilyMembersPage";
 
 // Create Query Client
 const queryClient = new QueryClient({
@@ -99,26 +105,44 @@ function App() {
                 <Route path="appointment" element={<AppointmentBookingPage />} />
                 <Route path="globe" element={<GlobePage />} />
                 <Route path="visa-eligibility" element={<VisaEligibilityPage />} />
+                <Route path="packages/customise" element={<CustomisePackagePage />} />
+
+                {/* PROFILE VERIFICATION ONBOARDING (full-screen, accessible before completion) */}
+                <Route
+                  path="portal/verify-profile"
+                  element={
+                    <ClientRoute>
+                      <PortalVerifyProfilePage />
+                    </ClientRoute>
+                  }
+                />
 
                 {/* CLIENT TRAVELLER PORTAL */}
                 <Route
                   path="portal"
                   element={
                     <ClientRoute>
-                      <PortalLayout />
+                      <TravelerProfileProvider>
+                        <PortalLayout />
+                      </TravelerProfileProvider>
                     </ClientRoute>
                   }
                 >
-                  <Route index element={<Navigate to="/portal/dashboard" replace />} />
-                  <Route path="dashboard" element={<PortalDashboard />} />
-                  <Route path="applications" element={<PortalApplicationsPage />} />
-                  <Route path="applications/:id" element={<PortalApplicationDetailPage />} />
-                  <Route path="documents" element={<PortalDocumentsPage />} />
-                  <Route path="appointments" element={<PortalAppointmentsPage />} />
-                  <Route path="payments" element={<PortalPaymentsPage />} />
-                  <Route path="messages" element={<PortalMessagesPage />} />
-                  <Route path="settings" element={<PortalSettingsPage />} />
-                  <Route path="notifications" element={<PortalNotificationsPage />} />
+                  {/* All portal features blocked until profile verification is complete */}
+                  <Route element={<ProfileCompleteGuard><Outlet /></ProfileCompleteGuard>}>
+                    <Route index element={<Navigate to="/portal/dashboard" replace />} />
+                    <Route path="dashboard" element={<PortalDashboard />} />
+                    <Route path="profile" element={<PortalProfilePage />} />
+                    <Route path="family" element={<PortalFamilyMembersPage />} />
+                    <Route path="applications" element={<PortalApplicationsPage />} />
+                    <Route path="applications/:id" element={<PortalApplicationDetailPage />} />
+                    <Route path="documents" element={<PortalDocumentsPage />} />
+                    <Route path="appointments" element={<PortalAppointmentsPage />} />
+                    <Route path="payments" element={<PortalPaymentsPage />} />
+                    <Route path="messages" element={<PortalMessagesPage />} />
+                    <Route path="settings" element={<PortalSettingsPage />} />
+                    <Route path="notifications" element={<PortalNotificationsPage />} />
+                  </Route>
                 </Route>
               </Route>
 
@@ -182,6 +206,7 @@ function App() {
               }
             }}
           />
+          <Analytics />
         </AuthProvider>
       </AppProvider>
     </QueryClientProvider>

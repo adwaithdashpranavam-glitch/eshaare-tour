@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { collection, onSnapshot, addDoc, updateDoc, doc } from "firebase/firestore";
+import { collection, onSnapshot, addDoc, updateDoc, doc, query, where } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 import { 
   DndContext, 
@@ -221,9 +221,14 @@ export const LeadsListPage = () => {
   });
 
   useEffect(() => {
-    // Realtime Listener
+    if (!user) return;
+    // Realtime Listener with role filtering
     const leadsRef = collection(db, "leads");
-    const unsubscribe = onSnapshot(leadsRef, (snapshot) => {
+    let q = query(leadsRef, where("isDeleted", "==", false));
+    if (isSales) {
+      q = query(leadsRef, where("isDeleted", "==", false), where("assignedToId", "==", user.uid));
+    }
+    const unsubscribe = onSnapshot(q, (snapshot) => {
       const items = snapshot.docs
         .map(doc => ({ id: doc.id, ...doc.data() }))
         .filter(l => !l.isDeleted);
@@ -231,12 +236,7 @@ export const LeadsListPage = () => {
       setLoading(false);
     }, (error) => {
       console.error("Leads list snapshot error:", error);
-      // Fallback dummy records
-      setLeads([
-        { id: "1", leadNo: "LD-20260601-001", contactName: "Amit Sharma", contactPhone: "+971501112222", contactEmail: "amit@gmail.com", nationality: "Indian", destination: "Schengen", source: "WhatsApp", stage: "New", createdAt: new Date() },
-        { id: "2", leadNo: "LD-20260601-002", contactName: "Sarah Connor", contactPhone: "+971503334444", contactEmail: "sarah@yahoo.com", nationality: "American", destination: "UK", source: "Website", stage: "Contacted", createdAt: new Date() },
-        { id: "3", leadNo: "LD-20260601-003", contactName: "Habib Al-Fardan", contactPhone: "+971505556666", contactEmail: "habib@outlook.com", nationality: "Emirati", destination: "Saudi", source: "Referral", stage: "Qualified", createdAt: new Date() }
-      ]);
+      setLeads([]);
       setLoading(false);
     });
 

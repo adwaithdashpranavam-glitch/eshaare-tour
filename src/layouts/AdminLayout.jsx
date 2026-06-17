@@ -5,9 +5,57 @@ import { useAppState, useAppDispatch } from "../contexts/AppContext";
 import { 
   LayoutDashboard, Users, FileText, CalendarCheck, FileSpreadsheet, 
   CreditCard, ShieldAlert, BarChart3, Settings, LogOut, ChevronLeft, 
-  ChevronRight, Search, Bell, Plus, Menu, X, HelpCircle, Compass, Globe
+  ChevronRight, Search, Bell, Plus, Menu, X, HelpCircle, Compass, Globe,
+  AlertTriangle, RefreshCw
 } from "lucide-react";
 import toast from "react-hot-toast";
+
+// Error Boundary to catch crashes in admin page components (prevents blank pages)
+class AdminPageErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, info) {
+    console.error("Admin page crash:", error, info);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4 text-center p-8">
+          <div className="p-4 bg-error-container/10 border border-error/30 rounded-full">
+            <AlertTriangle className="h-10 w-10 text-error-red" />
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-lg font-bold text-white">Page Crashed</h2>
+            <p className="text-xs text-on-primary-container/60 max-w-sm">
+              This page encountered an error and couldn't load. This is usually a temporary issue.
+            </p>
+            {this.state.error && (
+              <p className="text-[10px] font-mono text-error-red/70 max-w-sm bg-error-container/10 border border-error/20 rounded p-2 mt-2">
+                {this.state.error.message}
+              </p>
+            )}
+          </div>
+          <button
+            onClick={() => { this.setState({ hasError: false, error: null }); window.location.reload(); }}
+            className="flex items-center space-x-2 px-4 py-2 bg-secondary-container text-on-primary-fixed text-xs font-bold rounded-button hover:opacity-90 transition-opacity"
+          >
+            <RefreshCw className="h-3.5 w-3.5" />
+            <span>Reload Page</span>
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 export const AdminLayout = () => {
   const { userProfile, logout } = useAuth();
@@ -33,48 +81,55 @@ export const AdminLayout = () => {
     {
       title: "Overview",
       items: [
-        { label: "Dashboard", path: "/admin/dashboard", icon: LayoutDashboard }
+        { label: "Dashboard", path: "/admin/dashboard", icon: LayoutDashboard, roles: ["super_admin", "admin", "manager", "sales", "visa_ops", "finance", "support"] }
       ]
     },
     {
       title: "Sales",
       items: [
-        { label: "Leads", path: "/admin/leads", icon: Users },
-        { label: "Leads CRM", path: "/admin/crm/leads", icon: Users }
+        { label: "Leads", path: "/admin/leads", icon: Users, roles: ["super_admin", "admin", "manager", "sales"] },
+        { label: "Leads CRM", path: "/admin/crm/leads", icon: Users, roles: ["super_admin", "admin", "manager", "sales"] }
       ]
     },
     {
       title: "Operations",
       items: [
-        { label: "Visa Cases", path: "/admin/cases", icon: FileText },
-        { label: "Applications", path: "/admin/crm/applications", icon: FileSpreadsheet },
-        { label: "Appointments", path: "/admin/appointments", icon: CalendarCheck }
+        { label: "Visa Cases", path: "/admin/cases", icon: FileText, roles: ["super_admin", "admin", "manager", "visa_ops"] },
+        { label: "Applications", path: "/admin/crm/applications", icon: FileSpreadsheet, roles: ["super_admin", "admin", "manager", "visa_ops"] },
+        { label: "Appointments", path: "/admin/appointments", icon: CalendarCheck, roles: ["super_admin", "admin", "manager", "sales", "visa_ops"] }
       ]
     },
     {
       title: "Finance",
       items: [
-        { label: "Quotations", path: "/admin/quotations", icon: FileSpreadsheet },
-        { label: "Payments", path: "/admin/payments", icon: CreditCard }
+        { label: "Quotations", path: "/admin/quotations", icon: FileSpreadsheet, roles: ["super_admin", "admin", "manager", "finance"] },
+        { label: "Payments", path: "/admin/payments", icon: CreditCard, roles: ["super_admin", "admin", "manager", "finance"] }
       ]
     },
     {
       title: "Team",
       items: [
-        { label: "Staff", path: "/admin/staff", icon: ShieldAlert }
+        { label: "Staff", path: "/admin/staff", icon: ShieldAlert, roles: ["super_admin", "admin"] }
       ]
     },
     {
       title: "Reports",
       items: [
-        { label: "Analytics", path: "/admin/reports", icon: BarChart3 }
+        { label: "Analytics", path: "/admin/reports", icon: BarChart3, roles: ["super_admin", "admin", "manager"] }
       ]
     },
     {
       title: "Website Content",
       items: [
-        { label: "Visa Pages", path: "/admin/visa-types", icon: Globe },
-        { label: "Visa Checker CMS", path: "/admin/cms/visa-checker", icon: Settings }
+        { label: "Visa Pages", path: "/admin/visa-types", icon: Globe, roles: ["super_admin", "admin", "manager"] },
+        { label: "Visa Checker CMS", path: "/admin/cms/visa-checker", icon: Settings, roles: ["super_admin", "admin", "manager"] }
+      ]
+    },
+    {
+      title: "App Content",
+      items: [
+        { label: "Packages", path: "/admin/app/packages", icon: Compass, roles: ["super_admin", "admin", "manager"] },
+        { label: "Visa", path: "/admin/app/visa", icon: Globe, roles: ["super_admin", "admin", "manager"] }
       ]
     },
     {
@@ -87,8 +142,8 @@ export const AdminLayout = () => {
     {
       title: "System",
       items: [
-        { label: "Settings", path: "/admin/settings", icon: Settings },
-        { label: "Theme & SEO CMS", path: "/admin/settings/theme", icon: Settings }
+        { label: "Settings", path: "/admin/settings", icon: Settings, roles: ["super_admin", "admin"] },
+        { label: "Theme & SEO CMS", path: "/admin/settings/theme", icon: Settings, roles: ["super_admin", "admin"] }
       ]
     }
   ];
@@ -123,7 +178,7 @@ export const AdminLayout = () => {
       <aside 
         className={`hidden md:flex flex-col bg-primary-container border-r border-on-primary-fixed-variant/65 transition-all duration-200 ${
           sidebarCollapsed ? "w-20" : "w-64"
-        } relative z-20`}
+        } relative z-20 h-screen sticky top-0`}
       >
         {/* Sidebar Header Logo */}
         <div className="h-16 flex items-center justify-between px-4 border-b border-on-primary-fixed-variant">
@@ -143,34 +198,38 @@ export const AdminLayout = () => {
 
         {/* Navigation Items */}
         <div className="flex-1 overflow-y-auto py-4 space-y-6 scrollbar-thin px-2">
-          {navSections.map((section, idx) => (
-            <div key={idx} className="space-y-1.5">
-              {!sidebarCollapsed && (
-                <span className="text-[10px] font-bold text-on-primary-container/30 uppercase tracking-widest pl-2">
-                  {section.title}
-                </span>
-              )}
-              {section.items.map((item) => {
-                const ItemIcon = item.icon;
-                const isActive = location.pathname === item.path || location.pathname.startsWith(`${item.path}/`);
-                return (
-                  <Link
-                    key={item.label}
-                    to={item.path}
-                    className={`flex items-center space-x-3 px-3 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all duration-150 ${
-                      isActive
-                        ? "bg-secondary-container/10 text-secondary border-l-2 border-secondary pl-2.5"
-                        : "text-on-primary-container/60 hover:text-white hover:bg-white/5 border-l-2 border-transparent"
-                    }`}
-                    title={item.label}
-                  >
-                    <ItemIcon className="h-4 w-4 flex-shrink-0" />
-                    {!sidebarCollapsed && <span className="truncate">{item.label}</span>}
-                  </Link>
-                );
-              })}
-            </div>
-          ))}
+          {navSections.map((section, idx) => {
+            const visibleItems = section.items.filter(item => item.roles?.includes(userProfile?.role));
+            if (visibleItems.length === 0) return null;
+            return (
+              <div key={idx} className="space-y-1.5">
+                {!sidebarCollapsed && (
+                  <span className="text-[10px] font-bold text-on-primary-container/60 uppercase tracking-widest pl-2">
+                    {section.title}
+                  </span>
+                )}
+                {visibleItems.map((item) => {
+                  const ItemIcon = item.icon;
+                  const isActive = location.pathname === item.path || location.pathname.startsWith(`${item.path}/`);
+                  return (
+                    <Link
+                      key={item.label}
+                      to={item.path}
+                      className={`flex items-center space-x-3 px-3 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all duration-150 ${
+                        isActive
+                          ? "bg-white/10 text-white border-l-2 border-secondary-fixed pl-2.5"
+                          : "text-on-primary-container/80 hover:text-white hover:bg-white/5 border-l-2 border-transparent"
+                      }`}
+                      title={item.label}
+                    >
+                      <ItemIcon className="h-4 w-4 flex-shrink-0" />
+                      {!sidebarCollapsed && <span className="truncate">{item.label}</span>}
+                    </Link>
+                  );
+                })}
+              </div>
+            );
+          })}
         </div>
 
         {/* User Profile Summary */}
@@ -222,7 +281,7 @@ export const AdminLayout = () => {
             </div>
             <input
               type="text"
-              className="w-full pl-10 pr-4 py-2 bg-primary-container border border-on-primary-fixed-variant text-on-primary-container placeholder-on-primary-container/30 rounded-button text-xs focus:outline-none focus:border-secondary"
+              className="w-full pl-10 pr-4 py-2 bg-primary-container border border-on-primary-fixed-variant text-on-primary-container placeholder-on-primary-container/60 rounded-button text-xs focus:outline-none focus:border-secondary"
               placeholder="Search leads, cases by name or phone..."
               value={searchVal}
               onChange={(e) => setSearchVal(e.target.value)}
@@ -253,7 +312,9 @@ export const AdminLayout = () => {
 
         {/* Router Outlet view */}
         <main className="flex-1 overflow-y-auto p-4 md:p-6 pb-20 md:pb-6">
-          <Outlet />
+          <AdminPageErrorBoundary>
+            <Outlet />
+          </AdminPageErrorBoundary>
         </main>
       </div>
 
@@ -273,32 +334,36 @@ export const AdminLayout = () => {
             </Link>
 
             <nav className="flex-1 overflow-y-auto space-y-4 pr-1">
-              {navSections.map((sect, sIdx) => (
-                <div key={sIdx} className="space-y-1">
-                  <span className="text-[9px] font-bold text-on-primary-container/35 uppercase tracking-widest pl-2">
-                    {sect.title}
-                  </span>
-                  {sect.items.map(item => {
-                    const ItemIcon = item.icon;
-                    const isActive = location.pathname === item.path;
-                    return (
-                      <Link
-                        key={item.label}
-                        to={item.path}
-                        onClick={() => setMobileMenuOpen(false)}
-                        className={`flex items-center space-x-3 px-3 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-colors ${
-                          isActive
-                            ? "bg-secondary-container/10 text-secondary border-l-2 border-secondary pl-2"
-                            : "text-on-primary-container/60 hover:text-white"
-                        }`}
-                      >
-                        <ItemIcon className="h-4 w-4" />
-                        <span>{item.label}</span>
-                      </Link>
-                    );
-                  })}
-                </div>
-              ))}
+              {navSections.map((sect, sIdx) => {
+                const visibleItems = sect.items.filter(item => item.roles?.includes(userProfile?.role));
+                if (visibleItems.length === 0) return null;
+                return (
+                  <div key={sIdx} className="space-y-1">
+                    <span className="text-[9px] font-bold text-on-primary-container/60 uppercase tracking-widest pl-2">
+                      {sect.title}
+                    </span>
+                    {visibleItems.map(item => {
+                      const ItemIcon = item.icon;
+                      const isActive = location.pathname === item.path;
+                      return (
+                        <Link
+                          key={item.label}
+                          to={item.path}
+                          onClick={() => setMobileMenuOpen(false)}
+                          className={`flex items-center space-x-3 px-3 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-colors ${
+                            isActive
+                              ? "bg-white/10 text-white border-l-2 border-secondary-fixed pl-2"
+                              : "text-on-primary-container/80 hover:text-white"
+                          }`}
+                        >
+                          <ItemIcon className="h-4 w-4" />
+                          <span>{item.label}</span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                );
+              })}
             </nav>
 
             <div className="pt-4 border-t border-on-primary-fixed-variant flex items-center justify-between mt-auto">
@@ -314,12 +379,12 @@ export const AdminLayout = () => {
       {/* Mobile Sticky Bottom Tab Bar */}
       <nav className="fixed bottom-0 left-0 right-0 z-40 bg-primary-container border-t border-on-primary-fixed-variant/80 md:hidden flex justify-around items-center h-16 px-2">
         {[
-          { label: "Dashboard", path: "/admin/dashboard", icon: LayoutDashboard },
-          { label: "Leads", path: "/admin/leads", icon: Users },
-          { label: "Cases", path: "/admin/cases", icon: FileText },
-          { label: "Appointments", path: "/admin/appointments", icon: CalendarCheck },
-          { label: "Settings", path: "/admin/settings", icon: Settings }
-        ].map((item) => {
+          { label: "Dashboard", path: "/admin/dashboard", icon: LayoutDashboard, roles: ["super_admin", "admin", "manager", "sales", "visa_ops", "finance", "support"] },
+          { label: "Leads", path: "/admin/leads", icon: Users, roles: ["super_admin", "admin", "manager", "sales"] },
+          { label: "Cases", path: "/admin/cases", icon: FileText, roles: ["super_admin", "admin", "manager", "visa_ops"] },
+          { label: "Appointments", path: "/admin/appointments", icon: CalendarCheck, roles: ["super_admin", "admin", "manager", "sales", "visa_ops"] },
+          { label: "Settings", path: "/admin/settings", icon: Settings, roles: ["super_admin", "admin"] }
+        ].filter(item => item.roles.includes(userProfile?.role)).map((item) => {
           const TabIcon = item.icon;
           const isActive = location.pathname === item.path;
           return (

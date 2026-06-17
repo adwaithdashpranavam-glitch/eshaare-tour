@@ -17,6 +17,7 @@ export const PaymentsPage = () => {
   const [paymentForm, setPaymentForm] = useState({
     invoiceNo: "",
     clientName: "",
+    clientEmail: "",
     service: "Schengen Visa",
     amount: "",
     method: "Card",
@@ -29,14 +30,13 @@ export const PaymentsPage = () => {
       if (!snapshot.empty) {
         const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         setPayments(items);
+      } else {
+        setPayments([]);
       }
       setLoading(false);
     }, (error) => {
-      console.warn("Using mock payments fallback lists:", error);
-      setPayments([
-        { id: "1", invoiceNo: "PAY-20260601-001", clientName: "Amit Sharma", service: "Schengen Visa", amount: 450, method: "Card", date: new Date(), dueDate: new Date(), status: "Paid" },
-        { id: "2", invoiceNo: "PAY-20260520-002", clientName: "Sarah Connor", service: "UK Visa Assistance", amount: 650, method: "Online Link", date: new Date(), dueDate: new Date(Date.now() - 86400000), status: "Overdue" }
-      ]);
+      console.warn("Error fetching payments lists:", error);
+      setPayments([]);
       setLoading(false);
     });
 
@@ -52,6 +52,7 @@ export const PaymentsPage = () => {
       await addDoc(payRef, {
         invoiceNo: paymentForm.invoiceNo,
         clientName: paymentForm.clientName,
+        clientEmail: paymentForm.clientEmail.toLowerCase(),
         service: paymentForm.service,
         amount: Number(paymentForm.amount),
         method: paymentForm.method,
@@ -64,6 +65,7 @@ export const PaymentsPage = () => {
       setPaymentForm({
         invoiceNo: "",
         clientName: "",
+        clientEmail: "",
         service: "Schengen Visa",
         amount: "",
         method: "Card",
@@ -83,6 +85,28 @@ export const PaymentsPage = () => {
     p.clientName?.toLowerCase().includes(searchVal.toLowerCase()) ||
     p.invoiceNo?.toLowerCase().includes(searchVal.toLowerCase())
   );
+
+  const today = new Date();
+  
+  const todayCollections = payments
+    .filter(p => {
+       const d = p.date?.toDate ? p.date.toDate() : new Date(p.date);
+       return p.status === "Paid" && d.toDateString() === today.toDateString();
+    })
+    .reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
+
+  const monthCollections = payments
+    .filter(p => {
+       const d = p.date?.toDate ? p.date.toDate() : new Date(p.date);
+       return p.status === "Paid" && d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear();
+    })
+    .reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
+
+  const outstandingOverdue = payments
+    .filter(p => p.status === "Overdue")
+    .reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
+
+  const pendingDrafts = payments.filter(p => p.status === "Draft").length;
 
   return (
     <div className="space-y-6 font-sans">
@@ -104,10 +128,10 @@ export const PaymentsPage = () => {
 
       {/* KPI Cards Row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
-        <KPICard title="Today's Collections" value="1,200 AED" icon="CreditCard" color="green" />
-        <KPICard title="Month Collections" value="45,000 AED" icon="TrendingUp" color="gold" />
-        <KPICard title="Outstanding Overdue" value="650 AED" icon="AlertTriangle" color="red" />
-        <KPICard title="Pending Drafts" value="2 invoices" icon="Landmark" color="orange" />
+        <KPICard title="Today's Collections" value={`${formatCurrency(todayCollections)}`} icon="CreditCard" color="green" />
+        <KPICard title="Month Collections" value={`${formatCurrency(monthCollections)}`} icon="TrendingUp" color="gold" />
+        <KPICard title="Outstanding Overdue" value={`${formatCurrency(outstandingOverdue)}`} icon="AlertTriangle" color="red" />
+        <KPICard title="Pending Drafts" value={`${pendingDrafts} invoices`} icon="Landmark" color="orange" />
       </div>
 
       {/* Search Bar */}
@@ -193,6 +217,17 @@ export const PaymentsPage = () => {
               className="px-3 py-2 bg-primary-container border border-on-primary-fixed-variant text-on-primary-container rounded focus:outline-none focus:border-secondary"
               value={paymentForm.clientName}
               onChange={(e) => setPaymentForm({ ...paymentForm, clientName: e.target.value })}
+            />
+          </div>
+          <div className="flex flex-col space-y-1">
+            <label className="text-[10px] font-bold text-on-primary-container/50 uppercase">Client Email</label>
+            <input
+              type="email"
+              required
+              placeholder="client@example.com"
+              className="px-3 py-2 bg-primary-container border border-on-primary-fixed-variant text-on-primary-container rounded focus:outline-none focus:border-secondary"
+              value={paymentForm.clientEmail}
+              onChange={(e) => setPaymentForm({ ...paymentForm, clientEmail: e.target.value })}
             />
           </div>
           <div className="flex flex-col space-y-1">

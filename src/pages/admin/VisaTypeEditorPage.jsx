@@ -8,6 +8,7 @@ import {
 import { getVisaTypeBySlug, saveVisaType } from "../../lib/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "../../lib/firebase";
+import { useAuth } from "../../contexts/AuthContext";
 import toast from "react-hot-toast";
 
 // Icon mapping dictionary for Hero Stats selection
@@ -23,8 +24,23 @@ const STAT_ICONS = {
 };
 
 export const VisaTypeEditorPage = () => {
+  const { userProfile } = useAuth();
   const { id } = useParams(); // Doc slug if editing
   const navigate = useNavigate();
+
+  const isAuthorized = ["super_admin", "admin", "manager"].includes(userProfile?.role);
+
+  if (!isAuthorized) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[50vh] text-center space-y-4 font-sans">
+        <Shield className="h-16 w-16 text-danger animate-pulse" />
+        <h1 className="text-xl font-bold text-white uppercase tracking-wide">Access Denied</h1>
+        <p className="text-xs text-on-primary-container/60 max-w-md leading-relaxed">
+          You do not have the required permissions to modify Visa Types CMS. Only Super Admins, Admins, and Managers can edit visa pages.
+        </p>
+      </div>
+    );
+  }
   const isEditMode = !!id;
 
   const [loading, setLoading] = useState(isEditMode);
