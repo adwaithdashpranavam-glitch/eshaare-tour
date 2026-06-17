@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import { getNotifications, markNotificationRead, markAllNotificationsRead } from "../../lib/firestore";
-import { Bell, Check, MailOpen, AlertCircle, Calendar, Trash2 } from "lucide-react";
+import { Bell, Check, MailOpen } from "lucide-react";
 import { formatShortDate } from "../../utils/formatters";
 import toast from "react-hot-toast";
 
@@ -52,13 +52,13 @@ export const PortalNotificationsPage = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-display font-bold text-white tracking-wide">Notifications</h1>
-          <p className="text-xs text-on-primary-container/50">Stay updated with your visa file progression and embassy announcements.</p>
+          <h1 className="text-2xl font-display font-bold text-[#1A1A1A] tracking-wide">Notifications</h1>
+          <p className="text-xs text-gray-500">Stay updated with your visa file progression and embassy announcements.</p>
         </div>
         {notifications.length > 0 && (
           <button
             onClick={handleMarkAllRead}
-            className="self-start sm:self-center px-4 py-2 border border-[#4D4740] hover:border-secondary hover:text-secondary text-[#F5F1E8]/80 font-bold text-xs uppercase tracking-wider rounded-lg flex items-center gap-1.5 transition-colors"
+            className="self-start sm:self-center px-4 py-2.5 bg-white border border-[#E7E1D6] hover:border-[#C8A45D] hover:text-[#C8A45D] text-gray-700 font-bold text-xs uppercase tracking-wider rounded-lg flex items-center gap-1.5 transition-colors"
           >
             <MailOpen className="h-4 w-4" />
             <span>Mark all read</span>
@@ -67,10 +67,10 @@ export const PortalNotificationsPage = () => {
       </div>
 
       {loading ? (
-        <div className="text-xs text-on-primary-container/40">Loading your notifications...</div>
+        <div className="text-xs text-gray-400">Loading your notifications...</div>
       ) : notifications.length === 0 ? (
-        <div className="glass-card p-12 border border-on-primary-fixed-variant/40 text-center text-xs text-on-primary-container/40 italic space-y-3">
-          <div className="mx-auto w-12 h-12 rounded-full bg-primary-container flex items-center justify-center border border-on-primary-fixed-variant/60 text-on-primary-container/40">
+        <div className="bg-white border border-[#E7E1D6] rounded-[20px] p-12 text-center text-xs text-gray-400 italic space-y-3">
+          <div className="mx-auto w-12 h-12 rounded-full bg-[#F7F5F1] flex items-center justify-center border border-[#E7E1D6] text-gray-400">
             <Bell className="w-5 h-5" />
           </div>
           <p>You have no notifications yet.</p>
@@ -82,43 +82,44 @@ export const PortalNotificationsPage = () => {
             return (
               <div
                 key={notif.id}
-                className={`glass-card p-5 border transition-all flex items-start gap-4 ${
+                className={`p-5 rounded-[20px] border transition-all flex items-start gap-4 ${
                   notif.read
-                    ? "border-on-primary-fixed-variant/40 bg-white/[0.01] opacity-75"
-                    : "border-secondary/25 bg-secondary-container/5 hover:border-secondary/40"
+                    ? "border-[#E7E1D6] bg-white opacity-75 shadow-sm"
+                    : "border-[#C8A45D]/40 bg-[#C8A45D]/5 hover:border-[#C8A45D]/60 shadow-md"
                 }`}
               >
                 <div className={`p-2.5 rounded-lg shrink-0 ${
                   notif.read
-                    ? "bg-[#2B2723] text-on-primary-container/40"
-                    : "bg-secondary-container/10 text-secondary"
+                    ? "bg-[#F7F5F1] text-gray-400 border border-[#E7E1D6]"
+                    : "bg-[#C8A45D]/10 text-[#C8A45D] border border-[#C8A45D]/20"
                 }`}>
                   <Bell className="h-5 w-5" />
                 </div>
                 
                 <div className="flex-1 min-w-0 space-y-1">
                   <div className="flex justify-between items-start gap-2">
-                    <h4 className={`text-sm font-semibold truncate ${notif.read ? "text-[#F5F1E8]/80" : "text-white"}`}>
+                    <h4 className={`text-xs font-semibold ${notif.read ? "text-gray-400" : "text-[#1A1A1A]"}`}>
                       {notif.title}
                     </h4>
-                    <span className="text-[10px] text-on-primary-container/40 whitespace-nowrap font-mono">
+                    <span className="text-[10px] text-gray-400 font-mono shrink-0">
                       {formatShortDate(date)}
                     </span>
                   </div>
-                  <p className="text-xs text-on-primary-container/60 leading-relaxed">
+                  
+                  <p className={`text-xs leading-relaxed ${notif.read ? "text-gray-400" : "text-gray-600 font-medium"}`}>
                     {notif.message}
                   </p>
-                </div>
 
-                {!notif.read && (
-                  <button
-                    onClick={() => handleMarkRead(notif.id)}
-                    className="p-1.5 rounded bg-primary-container border border-on-primary-fixed-variant hover:border-secondary text-secondary hover:text-white transition-colors shrink-0"
-                    title="Mark as read"
-                  >
-                    <Check className="h-3.5 w-3.5" />
-                  </button>
-                )}
+                  {!notif.read && (
+                    <button
+                      onClick={() => handleMarkRead(notif.id)}
+                      className="mt-2.5 text-[9px] font-extrabold text-[#C8A45D] hover:text-[#b08e4f] uppercase tracking-widest flex items-center gap-1.5 transition-colors"
+                    >
+                      <Check className="h-3 w-3" />
+                      <span>Mark as read</span>
+                    </button>
+                  )}
+                </div>
               </div>
             );
           })}

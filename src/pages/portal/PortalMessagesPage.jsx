@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "../../contexts/AuthContext";
-import { collection, query, where, onSnapshot, addDoc, orderBy } from "firebase/firestore";
+import { collection, query, where, onSnapshot, addDoc } from "firebase/firestore";
 import { db } from "../../lib/firebase";
-import { MessageSquare, Send, Paperclip, FileText, ChevronLeft, User } from "lucide-react";
+import { Send, Paperclip, FileText, Sparkles } from "lucide-react";
 import FileUpload from "../../components/ui/FileUpload";
 import Modal from "../../components/ui/Modal";
 import { formatDate } from "../../utils/formatters";
@@ -15,7 +15,6 @@ export const PortalMessagesPage = () => {
   const [newMessage, setNewMessage] = useState("");
   const [isAttachOpen, setIsAttachOpen] = useState(false);
   const [attachment, setAttachment] = useState(null);
-  const [activeThread, setActiveThread] = useState(true); // Single active chat MVP
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
@@ -70,7 +69,8 @@ export const PortalMessagesPage = () => {
         attachmentUrl: attachment?.url || null,
         attachmentName: attachment?.name || null,
         createdAt: new Date(),
-        participants: [user.uid, "support"]
+        participants: [user.uid, "support"],
+        read: false
       });
       setNewMessage("");
       setAttachment(null);
@@ -87,53 +87,56 @@ export const PortalMessagesPage = () => {
   };
 
   return (
-    <div className="h-[75vh] flex flex-col glass-card border border-on-primary-fixed-variant/60 overflow-hidden font-sans">
+    <div className="h-[75vh] flex flex-col bg-white border border-[#E7E1D6] rounded-[20px] shadow-sm overflow-hidden font-sans">
       {/* Header */}
-      <div className="px-6 py-4 bg-primary-container border-b border-on-primary-fixed-variant/80 flex items-center justify-between">
-        <div className="flex items-center space-x-3">
-          <div className="h-9 w-9 rounded-full bg-secondary-container/10 border border-secondary/20 text-secondary flex items-center justify-center font-bold">
+      <div className="px-6 py-4 bg-[#F7F5F1] border-b border-[#E7E1D6] flex items-center justify-between">
+        <div className="flex items-center space-x-3.5">
+          <div className="h-10 w-10 rounded-full bg-[#E7E1D6] border border-[#C8A45D]/30 text-[#1A1A1A] flex items-center justify-center font-bold">
             R
           </div>
           <div>
-            <h3 className="text-xs font-bold text-white uppercase tracking-wider">Rana G. (Visa Consultant)</h3>
-            <span className="text-[9px] text-success font-bold flex items-center animate-pulse">
-              ● Online Support
+            <h3 className="text-xs font-bold text-[#1A1A1A] uppercase tracking-wider font-display">Rana G. (Visa Consultant)</h3>
+            <span className="text-[9px] text-[#C8A45D] font-extrabold flex items-center gap-1 uppercase tracking-widest">
+              <Sparkles className="h-3 w-3 animate-pulse" />
+              <span>Dedicated Advisor</span>
             </span>
           </div>
         </div>
       </div>
 
       {/* Message Feed */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-primary-container/20">
+      <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-[#F7F5F1]/30">
         {messages.map((msg, idx) => {
           const isMe = msg.senderId === user?.uid;
           return (
             <div key={msg.id || idx} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
               <div className={`max-w-[70%] space-y-1 ${isMe ? "text-right" : "text-left"}`}>
-                <span className="text-[9px] text-on-primary-container/40 uppercase tracking-widest">{msg.senderName}</span>
+                <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wider">{msg.senderName}</span>
                 <div 
-                  className={`p-3.5 rounded-card text-xs font-sans shadow-md leading-relaxed ${
+                  className={`p-4 rounded-xl text-xs leading-relaxed ${
                     isMe 
-                      ? "bg-secondary-container text-on-primary-fixed rounded-tr-none font-semibold" 
-                      : "bg-primary-container text-white rounded-tl-none border border-outline-variant/10"
+                      ? "bg-[#C8A45D] text-white rounded-tr-none shadow-sm" 
+                      : "bg-white text-[#1A1A1A] rounded-tl-none border border-[#E7E1D6] shadow-sm"
                   }`}
                 >
-                  {msg.text && <p className="whitespace-pre-wrap">{msg.text}</p>}
+                  {msg.text && <p className="whitespace-pre-wrap font-medium">{msg.text}</p>}
                   {msg.attachmentUrl && (
                     <a
                       href={msg.attachmentUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={`flex items-center space-x-1.5 mt-2 p-1.5 rounded bg-white/5 border border-dashed text-[10px] font-mono ${
-                        isMe ? "border-primary-container/20 text-on-primary-fixed" : "border-on-primary-fixed-variant text-secondary"
+                      className={`flex items-center space-x-1.5 mt-2.5 p-2 rounded-lg border border-dashed text-[10px] font-mono transition-colors ${
+                        isMe 
+                          ? "border-white/40 text-white hover:bg-white/10" 
+                          : "border-[#E7E1D6] text-[#C8A45D] hover:bg-[#F7F5F1]"
                       }`}
                     >
-                      <FileText className="h-4 w-4" />
-                      <span className="truncate max-w-[120px]">{msg.attachmentName}</span>
+                      <FileText className="h-4 w-4 shrink-0" />
+                      <span className="truncate max-w-[150px]">{msg.attachmentName}</span>
                     </a>
                   )}
                 </div>
-                <span className="text-[9px] text-on-primary-container/30 block mt-1 font-mono">{formatDate(msg.createdAt)}</span>
+                <span className="text-[9px] text-gray-400 block mt-1 font-mono">{formatDate(msg.createdAt)}</span>
               </div>
             </div>
           );
@@ -142,12 +145,14 @@ export const PortalMessagesPage = () => {
       </div>
 
       {/* Compose bar */}
-      <form onSubmit={handleSendMessage} className="p-4 bg-primary-container border-t border-on-primary-fixed-variant/80 flex items-center gap-3">
+      <form onSubmit={handleSendMessage} className="p-4 bg-white border-t border-[#E7E1D6] flex items-center gap-3">
         <button
           type="button"
           onClick={() => setIsAttachOpen(true)}
-          className={`p-2 rounded-lg bg-primary-container border border-on-primary-fixed-variant hover:border-secondary/40 transition-colors ${
-            attachment ? "text-secondary border-secondary" : "text-on-primary-container/50 hover:text-white"
+          className={`p-2.5 rounded-lg border transition-all ${
+            attachment 
+              ? "text-[#C8A45D] border-[#C8A45D] bg-[#C8A45D]/10" 
+              : "text-gray-400 border-[#E7E1D6] bg-[#F7F5F1] hover:border-[#C8A45D] hover:text-[#C8A45D]"
           }`}
           title="Attach PDF or scan copy"
         >
@@ -156,7 +161,7 @@ export const PortalMessagesPage = () => {
         
         <input
           type="text"
-          className="flex-1 px-4 py-2.5 bg-primary-container border border-on-primary-fixed-variant text-on-primary-container placeholder-on-primary-container/30 text-xs rounded-button focus:outline-none focus:border-secondary"
+          className="flex-1 px-4 py-2.5 bg-[#F7F5F1] border border-[#E7E1D6] text-[#1A1A1A] placeholder-gray-400 text-xs rounded-lg focus:outline-none focus:border-[#C8A45D] transition-colors"
           placeholder="Type your message..."
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
@@ -164,7 +169,7 @@ export const PortalMessagesPage = () => {
 
         <button
           type="submit"
-          className="p-2.5 bg-gradient-to-r from-secondary-container to-secondary-container text-on-primary-fixed rounded-button shadow-sm flex items-center justify-center"
+          className="p-2.5 bg-[#C8A45D] hover:bg-[#b08e4f] text-white rounded-lg shadow-sm flex items-center justify-center transition-all"
         >
           <Send className="h-4 w-4" />
         </button>
@@ -178,8 +183,8 @@ export const PortalMessagesPage = () => {
         size="sm"
       >
         <div className="space-y-4">
-          <p className="text-[10px] text-on-primary-container/60 leading-normal font-sans">
-            Attach document scans, bank receipt PDFs or visa pictures. Our consultant reviews the attachment in real-time.
+          <p className="text-xs text-gray-500 leading-relaxed font-medium">
+            Attach document scans, bank receipt PDFs or visa pictures. Our travel concierge will receive the files in real-time.
           </p>
           <FileUpload
             collectionName="chats"

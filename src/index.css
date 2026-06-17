@@ -119,3 +119,36 @@ button:focus, a:focus, input:focus, select:focus, textarea:focus {
   from { width: 0 }
   to { width: 100% }
 }
+
+/* Premium Luxury Concierge Portal Overrides */
+.portal-root {
+  font-family: 'Inter', sans-serif !important;
+  background-color: #F7F5F1 !important;
+  color: #1A1A1A !important;
+}
+
+.portal-root h1, 
+.portal-root h2, 
+.portal-root h3, 
+.portal-root h4, 
+.portal-root h5, 
+.portal-root h6 {
+  font-family: 'Playfair Display', serif !important;
+  color: #1A1A1A !important;
+  font-weight: 600;
+}
+
+/* Premium luxury portal card style */
+.portal-card {
+  background-color: #FFFFFF !important;
+  border: 1px solid #E7E1D6 !important;
+  border-radius: 20px !important;
+  box-shadow: 0 10px 30px rgba(26, 26, 26, 0.03) !important;
+  transition: all 0.3s ease;
+}
+
+.portal-card:hover {
+  box-shadow: 0 15px 35px rgba(200, 164, 93, 0.06) !important;
+  border-color: #C8A45D !important;
+}
+

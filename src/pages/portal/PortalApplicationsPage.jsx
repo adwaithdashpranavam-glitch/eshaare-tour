@@ -1,15 +1,46 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 import { Link } from "react-router-dom";
-import { FileText, Compass, ChevronRight, Edit3, Send, Save, AlertCircle, FilePlus } from "lucide-react";
-import StatusBadge from "../../components/ui/StatusBadge";
+import { FileText, ChevronRight, Edit3, Send, Save, FilePlus } from "lucide-react";
 import { formatShortDate } from "../../utils/formatters";
 import Modal from "../../components/ui/Modal";
 import { getApplicationsForCustomer, updateApplication, submitApplication } from "../../lib/firestore";
 import LoadingSpinner from "../../components/ui/LoadingSpinner";
 import toast from "react-hot-toast";
+
+// Premium Luxury Status Badge
+const PortalStatusBadge = ({ status }) => {
+  const s = status || "Submitted";
+  
+  const stylesMap = {
+    "Docs Pending": "bg-amber-50 text-amber-700 border border-amber-200",
+    "Pending Documents": "bg-amber-50 text-amber-700 border border-amber-200",
+    
+    "Verification": "bg-blue-50 text-blue-700 border border-blue-200",
+    "Under Review": "bg-blue-50 text-blue-700 border border-blue-200",
+    "Submitted": "bg-blue-50 text-blue-700 border border-blue-200",
+    "Awaiting Decision": "bg-blue-50 text-blue-700 border border-blue-200",
+    
+    "Approved": "bg-emerald-50 text-emerald-700 border border-emerald-200",
+    "Paid": "bg-emerald-50 text-emerald-700 border border-emerald-200",
+    "Confirmed": "bg-emerald-50 text-emerald-700 border border-emerald-200",
+    
+    "Rejected": "bg-rose-50 text-rose-700 border border-rose-200",
+    "Overdue": "bg-rose-50 text-rose-700 border border-rose-200",
+    
+    "Withdrawn": "bg-gray-100 text-gray-600 border border-gray-200",
+    "Cancelled": "bg-gray-100 text-gray-600 border border-gray-200",
+  };
+
+  const currentStyle = stylesMap[s] || "bg-gray-50 text-gray-600 border border-gray-200";
+  return (
+    <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${currentStyle}`}>
+      {s}
+    </span>
+  );
+};
 
 export const PortalApplicationsPage = () => {
   const { user, userProfile } = useAuth();
@@ -31,6 +62,25 @@ export const PortalApplicationsPage = () => {
   });
   const [submitting, setSubmitting] = useState(false);
 
+  const getCountryFlag = (destination) => {
+    const dest = destination?.toLowerCase() || "";
+    if (dest.includes("france")) return "🇫🇷";
+    if (dest.includes("uk") || dest.includes("united kingdom") || dest.includes("london")) return "🇬🇧";
+    if (dest.includes("usa") || dest.includes("united states") || dest.includes("america")) return "🇺🇸";
+    if (dest.includes("canada")) return "🇨🇦";
+    if (dest.includes("japan")) return "🇯🇵";
+    if (dest.includes("australia")) return "🇦🇺";
+    if (dest.includes("saudi") || dest.includes("ksa")) return "🇸🇦";
+    if (dest.includes("uae") || dest.includes("dubai") || dest.includes("emirates")) return "🇦🇪";
+    if (dest.includes("europe") || dest.includes("schengen")) return "🇪🇺";
+    if (dest.includes("thailand")) return "🇹🇭";
+    if (dest.includes("maldives")) return "🇲🇻";
+    if (dest.includes("bali") || dest.includes("indonesia")) return "🇮🇩";
+    if (dest.includes("turkey")) return "🇹🇷";
+    if (dest.includes("georgia")) return "🇬🇪";
+    return "🌐";
+  };
+
   // Fetch drafts from 'applications'
   useEffect(() => {
     if (!user?.uid) return;
@@ -48,7 +98,9 @@ export const PortalApplicationsPage = () => {
   // Fetch CRM cases from both 'visa_cases' (CRM-originated) and 'bookings' (app-originated)
   useEffect(() => {
     if (!user?.uid && !userProfile?.email) {
-      setLoadingCases(false);
+      setTimeout(() => {
+        setLoadingCases(false);
+      }, 0);
       return;
     }
 
@@ -191,52 +243,52 @@ export const PortalApplicationsPage = () => {
   };
 
   return (
-    <div className="space-y-10 font-sans pb-16">
+    <div className="space-y-10 pb-16">
 
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-display font-bold text-white tracking-wide">My Applications</h1>
-        <p className="text-xs text-on-primary-container/50">Manage draft forms and track active visa files submitted to the ops desk.</p>
+        <h1 className="text-2xl font-display font-bold text-[#1A1A1A] tracking-wide">My Applications</h1>
+        <p className="text-xs text-gray-500">Manage draft forms and track active visa files submitted to the ops desk.</p>
       </div>
 
       {/* DRAFTS SECTION */}
-      <div className="space-y-4">
-        <div className="flex items-center space-x-2 border-b border-on-primary-fixed-variant/40 pb-2">
-          <FilePlus className="h-4.5 w-4.5 text-secondary" />
-          <h2 className="text-sm font-bold uppercase tracking-wider text-white">Draft Applications</h2>
+      <div className="bg-white border border-[#E7E1D6] rounded-[20px] p-6 shadow-sm space-y-4">
+        <div className="flex items-center space-x-2 border-b border-[#E7E1D6]/60 pb-2">
+          <FilePlus className="h-4.5 w-4.5 text-[#C8A45D]" />
+          <h2 className="text-xs font-bold uppercase tracking-wider text-[#1A1A1A] font-display">Draft Applications</h2>
         </div>
 
         {loadingDrafts ? (
           <LoadingSpinner message="Loading draft files..." />
         ) : drafts.length === 0 ? (
-          <div className="glass-card p-6 border border-on-primary-fixed-variant/40 text-center text-xs text-on-primary-container/40 italic">
+          <div className="p-6 text-center text-xs text-gray-400 italic">
             No active drafts. Start an application on any visa type page.
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {drafts.map((d) => (
-              <div key={d.id} className="glass-card p-6 border border-on-primary-fixed-variant/60 flex flex-col justify-between space-y-4 hover:border-secondary/20 transition-all">
+              <div key={d.id} className="p-5 bg-white border border-[#E7E1D6] rounded-xl flex flex-col justify-between space-y-4 hover:border-[#C8A45D] hover:shadow-sm transition-all">
                 <div className="flex justify-between items-start">
                   <div>
-                    <span className="text-[9px] font-bold uppercase tracking-wider bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded border border-amber-500/10">Draft</span>
-                    <h3 className="text-base font-semibold text-white mt-2">{d.visaName} Application</h3>
+                    <span className="text-[9px] font-bold uppercase tracking-wider bg-amber-50 text-amber-700 px-2 py-0.5 rounded border border-amber-200">Draft</span>
+                    <h3 className="text-sm font-semibold text-[#1A1A1A] mt-2">{d.visaName} Application</h3>
                   </div>
                   <button
                     onClick={() => handleOpenEdit(d)}
-                    className="p-2 bg-[#2B2723] border border-[#4D4740] text-secondary hover:text-white rounded-lg flex items-center justify-center transition-colors"
+                    className="p-2 bg-[#F7F5F1] border border-[#E7E1D6] text-[#C8A45D] hover:text-[#b08e4f] rounded-lg flex items-center justify-center transition-colors"
                     title="Continue Application"
                   >
                     <Edit3 className="h-4.5 w-4.5" />
                   </button>
                 </div>
 
-                <div className="flex justify-between items-center pt-4 border-t border-on-primary-fixed-variant text-xs text-on-primary-container/40">
+                <div className="flex justify-between items-center pt-4 border-t border-gray-100 text-xs text-gray-500">
                   <span>Created: {formatShortDate(d.createdAt?.toDate ? d.createdAt.toDate() : d.createdAt)}</span>
                   <button
                     onClick={() => handleOpenEdit(d)}
-                    className="text-secondary hover:text-[#F5F1E8] font-bold uppercase tracking-wider text-[10px] flex items-center space-x-1"
+                    className="text-[#C8A45D] hover:text-[#b08e4f] font-bold uppercase tracking-wider text-[10px] flex items-center space-x-1"
                   >
-                    <span>Continue Application</span>
+                    <span>Continue</span>
                     <ChevronRight className="h-3.5 w-3.5" />
                   </button>
                 </div>
@@ -247,42 +299,54 @@ export const PortalApplicationsPage = () => {
       </div>
 
       {/* CRM APPLICATIONS SECTION */}
-      <div className="space-y-4">
-        <div className="flex items-center space-x-2 border-b border-on-primary-fixed-variant/40 pb-2">
-          <FileText className="h-4.5 w-4.5 text-secondary" />
-          <h2 className="text-sm font-bold uppercase tracking-wider text-white">Submitted Applications</h2>
+      <div className="bg-white border border-[#E7E1D6] rounded-[20px] p-6 shadow-sm space-y-4">
+        <div className="flex items-center space-x-2 border-b border-[#E7E1D6]/60 pb-2">
+          <FileText className="h-4.5 w-4.5 text-[#C8A45D]" />
+          <h2 className="text-xs font-bold uppercase tracking-wider text-[#1A1A1A] font-display">Submitted Portfolios</h2>
         </div>
 
         {loadingCases ? (
           <LoadingSpinner message="Loading submitted files..." />
         ) : cases.length === 0 ? (
-          <div className="glass-card p-6 border border-on-primary-fixed-variant/40 text-center text-xs text-on-primary-container/40 italic">
+          <div className="p-6 text-center text-xs text-gray-400 italic">
             You do not have any visa application cases registered under your email yet.
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {cases.map((c) => (
-              <div key={c.id} className="glass-card p-6 border border-on-primary-fixed-variant/60 flex flex-col justify-between space-y-4 hover:border-secondary/20 transition-all">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <span className="text-[10px] font-mono text-secondary">{c.caseNo}</span>
-                    <h3 className="text-base font-semibold text-white mt-1">{c.visaType || c.destination} Case</h3>
+          <div className="space-y-4">
+            {cases.map((c) => {
+              const updatedDate = c.createdAt?.toDate ? c.createdAt.toDate() : c.createdAt;
+              return (
+                <div 
+                  key={c.id} 
+                  className="p-5 bg-white border border-[#E7E1D6] rounded-xl flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4 hover:border-[#C8A45D] hover:shadow-sm transition-all"
+                >
+                  <div className="flex items-center space-x-4">
+                    {/* Flag Avatar */}
+                    <div className="h-12 w-12 rounded-xl bg-[#F7F5F1] flex items-center justify-center text-2xl border border-[#E7E1D6] shrink-0">
+                      {getCountryFlag(c.destination || c.visaType)}
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-[9px] font-mono font-bold text-[#C8A45D] uppercase tracking-wider">{c.caseNo}</span>
+                      <h4 className="text-sm font-semibold text-[#1A1A1A]">{c.visaType}</h4>
+                      <span className="text-[10px] text-gray-500 block font-medium">
+                        Updated: {formatShortDate(updatedDate)}
+                      </span>
+                    </div>
                   </div>
-                  <StatusBadge status={c.stage} />
-                </div>
 
-                <div className="flex justify-between items-center pt-4 border-t border-on-primary-fixed-variant text-xs text-on-primary-container/40">
-                  <span>Submitted: {formatShortDate(c.createdAt?.toDate ? c.createdAt.toDate() : c.createdAt)}</span>
-                  <Link
-                    to={`/portal/applications/${c.id}`}
-                    className="text-secondary hover:text-[#F5F1E8] font-bold uppercase tracking-wider text-[10px] flex items-center space-x-1"
-                  >
-                    <span>Track Details</span>
-                    <ChevronRight className="h-3.5 w-3.5" />
-                  </Link>
+                  <div className="flex items-center justify-between sm:justify-end space-x-4 border-t sm:border-t-0 pt-3 sm:pt-0 border-gray-100">
+                    <PortalStatusBadge status={c.stage} />
+                    <Link
+                      to={`/portal/applications/${c.id}`}
+                      className="flex items-center space-x-1 px-4 py-2 rounded-lg bg-[#F7F5F1] border border-[#E7E1D6] hover:border-[#C8A45D] hover:text-[#C8A45D] text-xs font-semibold uppercase tracking-wider transition-all"
+                    >
+                      <span>Track Details</span>
+                      <ChevronRight className="h-3.5 w-3.5" />
+                    </Link>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
@@ -294,14 +358,14 @@ export const PortalApplicationsPage = () => {
         title={selectedDraft ? `Complete Application: ${selectedDraft.visaName}` : "Complete Application"}
         size="md"
       >
-        <form onSubmit={handleSubmitApplication} className="space-y-4 font-sans text-xs">
+        <form onSubmit={handleSubmitApplication} className="space-y-4 text-xs">
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col space-y-1.5">
-              <label className="text-[10px] font-bold text-[#F5F1E8]/40 uppercase tracking-wider">Full Name *</label>
+              <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Full Name *</label>
               <input
                 type="text"
                 required
-                className="px-3.5 py-2.5 bg-[#2B2723] border border-[#4D4740] text-white placeholder-[#F5F1E8]/20 rounded focus:outline-none focus:border-[#7A8F6B] text-xs"
+                className="px-3.5 py-2.5 bg-[#F7F5F1] border border-[#E7E1D6] text-[#1A1A1A] placeholder-gray-400 rounded focus:outline-none focus:border-[#C8A45D] text-xs transition-colors"
                 placeholder="Jane Doe"
                 name="name"
                 value={formData.name}
@@ -309,11 +373,11 @@ export const PortalApplicationsPage = () => {
               />
             </div>
             <div className="flex flex-col space-y-1.5">
-              <label className="text-[10px] font-bold text-[#F5F1E8]/40 uppercase tracking-wider">WhatsApp Phone *</label>
+              <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">WhatsApp Phone *</label>
               <input
                 type="tel"
                 required
-                className="px-3.5 py-2.5 bg-[#2B2723] border border-[#4D4740] text-white placeholder-[#F5F1E8]/20 rounded focus:outline-none focus:border-[#7A8F6B] text-xs"
+                className="px-3.5 py-2.5 bg-[#F7F5F1] border border-[#E7E1D6] text-[#1A1A1A] placeholder-gray-400 rounded focus:outline-none focus:border-[#C8A45D] text-xs transition-colors"
                 placeholder="e.g. +971 50 123 4567"
                 name="phone"
                 value={formData.phone}
@@ -324,11 +388,11 @@ export const PortalApplicationsPage = () => {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col space-y-1.5">
-              <label className="text-[10px] font-bold text-[#F5F1E8]/40 uppercase tracking-wider">Email Address *</label>
+              <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Email Address *</label>
               <input
                 type="email"
                 required
-                className="px-3.5 py-2.5 bg-[#2B2723] border border-[#4D4740] text-white placeholder-[#F5F1E8]/20 rounded focus:outline-none focus:border-[#7A8F6B] text-xs"
+                className="px-3.5 py-2.5 bg-[#F7F5F1] border border-[#E7E1D6] text-[#1A1A1A] placeholder-gray-400 rounded focus:outline-none focus:border-[#C8A45D] text-xs transition-colors"
                 placeholder="jane@example.com"
                 name="email"
                 value={formData.email}
@@ -336,10 +400,10 @@ export const PortalApplicationsPage = () => {
               />
             </div>
             <div className="flex flex-col space-y-1.5">
-              <label className="text-[10px] font-bold text-[#F5F1E8]/40 uppercase tracking-wider">Nationality</label>
+              <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Nationality</label>
               <input
                 type="text"
-                className="px-3.5 py-2.5 bg-[#2B2723] border border-[#4D4740] text-white placeholder-[#F5F1E8]/20 rounded focus:outline-none focus:border-[#7A8F6B] text-xs"
+                className="px-3.5 py-2.5 bg-[#F7F5F1] border border-[#E7E1D6] text-[#1A1A1A] placeholder-gray-400 rounded focus:outline-none focus:border-[#C8A45D] text-xs transition-colors"
                 placeholder="e.g. Indian, GCC Resident"
                 name="nationality"
                 value={formData.nationality}
@@ -349,10 +413,10 @@ export const PortalApplicationsPage = () => {
           </div>
 
           <div className="flex flex-col space-y-1.5">
-            <label className="text-[10px] font-bold text-[#F5F1E8]/40 uppercase tracking-wider">Travel Start Date</label>
+            <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Travel Start Date</label>
             <input
               type="date"
-              className="px-3.5 py-2.5 bg-[#2B2723] border border-[#4D4740] text-white rounded focus:outline-none focus:border-[#7A8F6B] text-xs"
+              className="px-3.5 py-2.5 bg-[#F7F5F1] border border-[#E7E1D6] text-[#1A1A1A] rounded focus:outline-none focus:border-[#C8A45D] text-xs transition-colors"
               name="travelDate"
               value={formData.travelDate}
               onChange={handleInputChange}
@@ -360,10 +424,10 @@ export const PortalApplicationsPage = () => {
           </div>
 
           <div className="flex flex-col space-y-1.5">
-            <label className="text-[10px] font-bold text-[#F5F1E8]/40 uppercase tracking-wider">Message / Specific Requests</label>
+            <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Message / Specific Requests</label>
             <textarea
               rows={3}
-              className="px-3.5 py-2.5 bg-[#2B2723] border border-[#4D4740] text-white placeholder-[#F5F1E8]/20 rounded focus:outline-none focus:border-[#7A8F6B] text-xs"
+              className="px-3.5 py-2.5 bg-[#F7F5F1] border border-[#E7E1D6] text-[#1A1A1A] placeholder-gray-400 rounded focus:outline-none focus:border-[#C8A45D] text-xs transition-colors"
               placeholder="e.g. Urgently need booking, GCC residence visa holder details..."
               name="message"
               value={formData.message}
@@ -371,12 +435,12 @@ export const PortalApplicationsPage = () => {
             />
           </div>
 
-          <div className="flex space-x-3 pt-4 border-t border-[#4D4740]">
+          <div className="flex space-x-3 pt-4 border-t border-[#E7E1D6]">
             <button
               type="button"
               onClick={handleSaveDraft}
               disabled={submitting}
-              className="flex-1 py-2.5 bg-[#2B2723] border border-[#4D4740] text-[#F5F1E8]/80 hover:text-white font-bold rounded text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 disabled:opacity-50"
+              className="flex-1 py-2.5 bg-white border border-[#E7E1D6] text-gray-700 hover:text-[#C8A45D] hover:border-[#C8A45D] font-bold rounded text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 disabled:opacity-50 transition-colors"
             >
               <Save className="h-4 w-4" />
               <span>Save Draft</span>
@@ -384,7 +448,7 @@ export const PortalApplicationsPage = () => {
             <button
               type="submit"
               disabled={submitting}
-              className="flex-1 py-2.5 bg-gradient-to-r from-[#7A8F6B] to-[#627555] text-[#1D503A] font-extrabold rounded text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-50"
+              className="flex-1 py-2.5 bg-[#C8A45D] text-white hover:bg-[#b08e4f] font-bold rounded text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-50 transition-all"
             >
               <Send className="h-4 w-4" />
               <span>Submit Application</span>
