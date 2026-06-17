@@ -3,7 +3,7 @@ import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { 
   LayoutDashboard, FileText, FolderOpen, Calendar, 
-  CreditCard, MessageSquare, Settings, LogOut, Bell, Compass 
+  CreditCard, MessageSquare, Settings, LogOut, Bell, Compass, Home
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -24,6 +24,7 @@ export const PortalLayout = () => {
   }, [location.pathname]);
 
   const navItems = [
+    { label: "Back to Home", path: "/", icon: Home },
     { label: "Dashboard", path: "/portal/dashboard", icon: LayoutDashboard },
     { label: "Applications", path: "/portal/applications", icon: FileText },
     { label: "Appointments", path: "/portal/appointments", icon: Calendar },

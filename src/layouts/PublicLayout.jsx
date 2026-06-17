@@ -192,6 +192,14 @@ export const PublicLayout = () => {
     }
   ];
 
+  const filteredNavData = navData.filter(item => {
+    // Hide APPOINTMENTS from public nav for logged in client portal users
+    if (user && !isAdmin && item.title === "APPOINTMENTS") {
+      return false;
+    }
+    return true;
+  });
+
   // Slug conversion mapping helper
   const toSlug = (text) => {
     const t = text.trim();
@@ -199,7 +207,7 @@ export const PublicLayout = () => {
     if (t === "Home") return "/";
     if (t === "About Us") return "/about";
     if (t === "Contact Us" || t === "Request Callback") return "/contact";
-    if (t === "Appointments" || t === "APPOINTMENTS") return "/appointment";
+    if (t === "Appointments" || t === "APPOINTMENTS") return (user && !isAdmin) ? "/portal/appointments" : "/appointment";
     if (t === "Documentation" || t === "DOCUMENTATION") return "/resources";
     if (t === "Eligibility" || t === "ELIGIBILITY") return "/visa-eligibility";
 
@@ -400,7 +408,7 @@ export const PublicLayout = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center gap-6 xl:gap-8 ml-8">
-            {navData.map((navItem) => (
+            {filteredNavData.map((navItem) => (
               <div key={navItem.title} className="relative group/main py-8">
                 {navItem.subcategories ? (
                   <>
@@ -477,7 +485,7 @@ export const PublicLayout = () => {
             )}
 
             <Link
-              to="/appointment"
+              to={(user && !isAdmin) ? "/portal/appointments" : "/appointment"}
               className="group relative flex items-center gap-2 h-9 bg-[#1D503A] border border-[#1D503A] text-white px-3 rounded-full font-semibold text-sm hover:bg-[#0e4a1e] transition-all duration-300 overflow-hidden shadow-md"
             >
               <Phone className="h-4 w-4" />
@@ -514,7 +522,7 @@ export const PublicLayout = () => {
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-50 lg:hidden bg-black/40 backdrop-blur-sm pt-20">
           <div className="bg-white max-h-[calc(100vh-80px)] overflow-y-auto shadow-xl p-4 flex flex-col gap-2">
-            {navData.map((navItem) => (
+            {filteredNavData.map((navItem) => (
               <div key={navItem.title} className="border-b border-gray-50 last:border-0">
                 {navItem.subcategories ? (
                   <>
@@ -612,7 +620,7 @@ export const PublicLayout = () => {
               )}
 
               <Link
-                to="/appointment"
+                to={(user && !isAdmin) ? "/portal/appointments" : "/appointment"}
                 className="bg-[#1D503A] text-white py-3 rounded-full text-center font-semibold text-sm shadow-md hover:bg-[#0e4a1e]"
                 onClick={() => setMobileMenuOpen(false)}
               >
@@ -773,91 +781,93 @@ export const PublicLayout = () => {
       )}
 
       {/* FIGMA DESIGN FIXED BOTTOM NAVBAR */}
-      <div className="fixed bottom-1 left-1/2 z-[9999] w-[75%] max-w-2xl -translate-x-1/2 rounded-full border border-white/10 bg-white/90 shadow-[0_8px_24px_rgba(0,0,0,0.15)] backdrop-blur-xl">
-        <div className="grid grid-cols-5 items-center py-1">
+      {!isPortal && (
+        <div className="fixed bottom-1 left-1/2 z-[9999] w-[75%] max-w-2xl -translate-x-1/2 rounded-full border border-white/10 bg-white/90 shadow-[0_8px_24px_rgba(0,0,0,0.15)] backdrop-blur-xl">
+          <div className="grid grid-cols-5 items-center py-1">
 
-          {/* GLOBE */}
-          <Link
-            to="/globe"
-            className="flex flex-col items-center justify-center gap-1 text-xs text-gray-700 transition hover:text-[#1D503A]"
-          >
-            <Globe size={17} />
-            <span>Globe</span>
-          </Link>
+            {/* GLOBE */}
+            <Link
+              to="/globe"
+              className="flex flex-col items-center justify-center gap-1 text-xs text-gray-700 transition hover:text-[#1D503A]"
+            >
+              <Globe size={17} />
+              <span>Globe</span>
+            </Link>
 
-          {/* HOME */}
-          <Link
-            to="/"
-            className="flex flex-col items-center justify-center gap-1 text-xs text-gray-700 transition hover:text-[#1D503A]"
-          >
-            <Home size={17} />
-            <span>Home</span>
-          </Link>
+            {/* HOME */}
+            <Link
+              to="/"
+              className="flex flex-col items-center justify-center gap-1 text-xs text-gray-700 transition hover:text-[#1D503A]"
+            >
+              <Home size={17} />
+              <span>Home</span>
+            </Link>
 
-          {/* SEARCH (SIRI-STYLE GLOWING ORB) */}
-          <button
-            onClick={() => setOpenSearch(true)}
-            className="-mt-8 mx-auto relative siri-orb-float flex h-14 w-14 items-center justify-center rounded-full
-              bg-black overflow-hidden shadow-[0_0_25px_rgba(34,211,238,0.3)] border border-white/20
-              transition-all duration-300 hover:scale-110 hover:shadow-[0_0_35px_rgba(34,211,238,0.6)] active:scale-95 group-btn"
-          >
-            {/* Morphing colored background blobs */}
-            <div className="absolute inset-0 z-0 scale-110 opacity-70">
-              {/* Cyan blob */}
-              <div
-                className="absolute w-[110%] h-[110%] -top-[5%] -left-[5%] bg-gradient-to-br from-cyan-400 to-blue-500 blur-[8px]"
-                style={{
-                  animation: "orb-morph-1 8s infinite linear",
-                }}
-              />
-              {/* Pink/Magenta blob */}
-              <div
-                className="absolute w-[120%] h-[120%] -bottom-[10%] -right-[10%] bg-gradient-to-tr from-pink-500 to-rose-500 blur-[10px]"
-                style={{
-                  animation: "orb-morph-2 10s infinite linear",
-                }}
-              />
-              {/* Green/Yellow blob */}
-              <div
-                className="absolute w-[90%] h-[90%] top-[10%] left-[10%] bg-gradient-to-r from-emerald-400 to-teal-500 blur-[8px]"
-                style={{
-                  animation: "orb-morph-3 12s infinite ease-in-out",
-                }}
-              />
-            </div>
+            {/* SEARCH (SIRI-STYLE GLOWING ORB) */}
+            <button
+              onClick={() => setOpenSearch(true)}
+              className="-mt-8 mx-auto relative siri-orb-float flex h-14 w-14 items-center justify-center rounded-full
+                bg-black overflow-hidden shadow-[0_0_25px_rgba(34,211,238,0.3)] border border-white/20
+                transition-all duration-300 hover:scale-110 hover:shadow-[0_0_35px_rgba(34,211,238,0.6)] active:scale-95 group-btn"
+            >
+              {/* Morphing colored background blobs */}
+              <div className="absolute inset-0 z-0 scale-110 opacity-70">
+                {/* Cyan blob */}
+                <div
+                  className="absolute w-[110%] h-[110%] -top-[5%] -left-[5%] bg-gradient-to-br from-cyan-400 to-blue-500 blur-[8px]"
+                  style={{
+                    animation: "orb-morph-1 8s infinite linear",
+                  }}
+                />
+                {/* Pink/Magenta blob */}
+                <div
+                  className="absolute w-[120%] h-[120%] -bottom-[10%] -right-[10%] bg-gradient-to-tr from-pink-500 to-rose-500 blur-[10px]"
+                  style={{
+                    animation: "orb-morph-2 10s infinite linear",
+                  }}
+                />
+                {/* Green/Yellow blob */}
+                <div
+                  className="absolute w-[90%] h-[90%] top-[10%] left-[10%] bg-gradient-to-r from-emerald-400 to-teal-500 blur-[8px]"
+                  style={{
+                    animation: "orb-morph-3 12s infinite ease-in-out",
+                  }}
+                />
+              </div>
 
-            {/* Glowing White Core */}
-            <div className="absolute w-6 h-6 rounded-full bg-white blur-[4px] opacity-80 z-10 animate-pulse" />
+              {/* Glowing White Core */}
+              <div className="absolute w-6 h-6 rounded-full bg-white blur-[4px] opacity-80 z-10 animate-pulse" />
 
-            {/* Search Icon and Text */}
-            <div className="relative z-20 flex flex-col items-center justify-center text-white select-none pointer-events-none">
-              <Search size={16} className="drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]" />
-              <span className="mt-0.5 text-[8px] font-extrabold uppercase tracking-wider drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]">
-                Search
-              </span>
-            </div>
-          </button>
+              {/* Search Icon and Text */}
+              <div className="relative z-20 flex flex-col items-center justify-center text-white select-none pointer-events-none">
+                <Search size={16} className="drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]" />
+                <span className="mt-0.5 text-[8px] font-extrabold uppercase tracking-wider drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]">
+                  Search
+                </span>
+              </div>
+            </button>
 
-          {/* EVENTS */}
-          <Link
-            to="/packages"
-            className="flex flex-col items-center justify-center gap-1 text-xs text-gray-700 transition hover:text-[#1D503A]"
-          >
-            <CalendarDays size={17} />
-            <span>Events</span>
-          </Link>
+            {/* EVENTS */}
+            <Link
+              to="/packages"
+              className="flex flex-col items-center justify-center gap-1 text-xs text-gray-700 transition hover:text-[#1D503A]"
+            >
+              <CalendarDays size={17} />
+              <span>Events</span>
+            </Link>
 
-          {/* ACCOUNT */}
-          <Link
-            to={user ? (isAdmin ? "/admin" : "/portal") : "/portal/login"}
-            className="flex flex-col items-center justify-center gap-1 text-xs text-gray-700 transition hover:text-[#1D503A]"
-          >
-            <User size={17} />
-            <span>{isAdmin ? "Admin" : "Account"}</span>
-          </Link>
+            {/* ACCOUNT */}
+            <Link
+              to={user ? (isAdmin ? "/admin" : "/portal") : "/portal/login"}
+              className="flex flex-col items-center justify-center gap-1 text-xs text-gray-700 transition hover:text-[#1D503A]"
+            >
+              <User size={17} />
+              <span>{isAdmin ? "Admin" : "Account"}</span>
+            </Link>
 
+          </div>
         </div>
-      </div>
+      )}
 
       {/* FIGMA DESIGN SEARCH POPUP */}
       {openSearch && (

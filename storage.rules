@@ -9,51 +9,64 @@ service firebase.storage {
     
     // Check if user document exists in users collection (by UID or by email)
     function hasUserDoc() {
-      return isSignedIn() && (
-        firestore.exists(/databases/(default)/documents/users/$(request.auth.uid)) ||
-        (request.auth.token != null && request.auth.token.email != null &&
-         firestore.exists(/databases/(default)/documents/users/$(request.auth.token.email)))
-      );
+      return isSignedIn() && getUserData() != null;
     }
 
     // Get user data - tries UID first, then email as doc ID (legacy docs)
     function getUserData() {
-      return firestore.exists(/databases/(default)/documents/users/$(request.auth.uid))
-        ? firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data
-        : firestore.get(/databases/(default)/documents/users/$(request.auth.token.email)).data;
+      let uidPath = /databases/(default)/documents/users/$(request.auth.uid);
+      return firestore.exists(uidPath)
+        ? firestore.get(uidPath).data
+        : (request.auth.token != null && request.auth.token.email != null && firestore.exists(/databases/(default)/documents/users/$(request.auth.token.email.lower()))
+          ? firestore.get(/databases/(default)/documents/users/$(request.auth.token.email.lower())).data
+          : null);
     }
 
     // Helper to fetch user's role from Firestore users collection
     function getRole() {
-      return getUserData().role;
+      let userData = getUserData();
+      return userData != null ? userData.role : null;
     }
 
     // Helper to check if user's account is Active (missing status field counts as Active)
     function isActive() {
-      return isSignedIn() && hasUserDoc() && (
-        !getUserData().keys().hasAny(['status']) ||
-        getUserData().status == 'Active'
+      let userData = getUserData();
+      return isSignedIn() && userData != null && (
+        !('status' in userData) ||
+        userData.status == 'Active'
       );
     }
     
     // Check if user is owner of the folder
     function isOwner(userId) {
-      return isSignedIn() && isActive() && request.auth.uid == userId;
+      let userData = getUserData();
+      return isSignedIn() && userData != null && 
+             (!('status' in userData) || userData.status == 'Active') &&
+             request.auth.uid == userId;
     }
 
     // Roles allowed to access travel documents (passports, statements, etc.)
     function canAccessTravelDocs() {
-      return isSignedIn() && isActive() && getRole() in ['super_admin', 'admin', 'manager', 'sales', 'visa_ops'];
+      let userData = getUserData();
+      return isSignedIn() && userData != null && 
+             (!('status' in userData) || userData.status == 'Active') &&
+             userData.role in ['super_admin', 'admin', 'manager', 'sales', 'visa_ops'];
     }
 
     // Roles allowed to access support chat attachments
     function canAccessChatDocs() {
-      return isSignedIn() && isActive() && getRole() in ['super_admin', 'admin', 'manager', 'support'];
+      let userData = getUserData();
+      return isSignedIn() && userData != null && 
+             (!('status' in userData) || userData.status == 'Active') &&
+             userData.role in ['super_admin', 'admin', 'manager', 'support'];
     }
 
     // Check if user is manager or admin
     function isManager() {
-      return isSignedIn() && isActive() && getRole() in ['super_admin', 'admin', 'manager'];
+      let userData = getUserData();
+      return isSignedIn() && userData != null && 
+             (!('status' in userData) || userData.status == 'Active') &&
+             userData.role in ['super_admin', 'admin', 'manager'];
     }
 
     // 1. Documents Collection uploads

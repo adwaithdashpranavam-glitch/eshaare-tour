@@ -23,9 +23,8 @@ export const PortalDashboard = () => {
   const [activeCases, setActiveCases] = useState([]);
   const [draftsCount, setDraftsCount] = useState(0);
   const [pendingDocsCount, setPendingDocsCount] = useState(0);
-  const [nextAppointment, setNextAppointment] = useState("No upcoming slots");
-  const [outstandingBalance, setOutstandingBalance] = useState(0);
   const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
+  const [appointments, setAppointments] = useState([]);
 
   // Fetch drafts & unread notifications
   useEffect(() => {
@@ -47,6 +46,28 @@ export const PortalDashboard = () => {
       unsubscribeNotif();
     };
   }, []);
+
+  // Fetch appointments for the customer
+  useEffect(() => {
+    if (!userProfile?.email) return;
+
+    const appRef = collection(db, "appointments");
+    const q = query(appRef, where("email", "==", userProfile.email.toLowerCase()));
+    
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      if (!snapshot.empty) {
+        const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setAppointments(list);
+      } else {
+        setAppointments([]);
+      }
+    }, (error) => {
+      console.warn("Error fetching appointments:", error);
+      setAppointments([]);
+    });
+
+    return () => unsubscribe();
+  }, [userProfile]);
 
   useEffect(() => {
     if (!userProfile?.email && !auth.currentUser?.uid) return;
@@ -172,6 +193,42 @@ export const PortalDashboard = () => {
               ))}
               {activeCases.length === 0 && (
                 <div className="text-center py-6 text-xs text-on-primary-container/40 italic">No applications active currently.</div>
+              )}
+            </div>
+          </div>
+
+          {/* Appointments Details */}
+          <div className="glass-card p-6 border border-on-primary-fixed-variant/60 space-y-4">
+            <div className="flex justify-between items-center border-b border-on-primary-fixed-variant pb-2">
+              <h3 className="text-base font-semibold text-white">Upcoming Consultations</h3>
+              <Link to="/portal/appointments" className="text-xs text-secondary hover:underline flex items-center gap-1">
+                <span>View All</span>
+                <ChevronRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+
+            <div className="space-y-4">
+              {appointments.slice(0, 3).map((app) => (
+                <div key={app.id} className="p-4 bg-white/5 border border-outline-variant/10 rounded-card flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4 hover:border-secondary/20 transition-all">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-2 rounded bg-secondary-container/10 border border-secondary/20 text-secondary">
+                      <Calendar className="h-4.5 w-4.5" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-semibold text-white font-mono">{app.time}</h4>
+                      <span className="text-[10px] text-on-primary-container/40 uppercase tracking-widest">{app.type} ({app.consultant || "Staff Advisor"})</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-3 self-end sm:self-center">
+                    <span className="text-xs text-on-primary-container/60 font-mono">{app.date}</span>
+                    <StatusBadge status={app.status} />
+                  </div>
+                </div>
+              ))}
+              {appointments.length === 0 && (
+                <div className="text-center py-6 text-xs text-on-primary-container/40 italic">
+                  No upcoming sessions booked. <Link to="/portal/appointments" className="text-secondary hover:underline">Book a session</Link> to get started.
+                </div>
               )}
             </div>
           </div>

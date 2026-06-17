@@ -27,6 +27,14 @@ export const HomePage = () => {
   // ─── Hero Slider ────────────────────────────────────────────────────────
   const [activeSlide, setActiveSlide] = useState(0);
   const slides = [
+        {
+      image: "https://plus.unsplash.com/premium_photo-1684407617181-275e50374e95?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      headline: "Visa Assistance From  Dubai",
+      subtext: "Fast and reliable visa assistance from Dubai. Get expert help with Schengen, UK, USA, Canada, Australia, New Zealand, and other international visas.",
+      animated: false,
+      ctaText: "Start Your Visa Process",
+      ctaLink: "/appointment"
+    },
     {
       image: "https://images.unsplash.com/photo-1531366936337-7c912a4589a7?auto=format&fit=crop&w=1600&q=80",
       headline: "Holiday Packages from Dubai",
@@ -34,14 +42,6 @@ export const HomePage = () => {
       animated: true,
       ctaText: "Plan Your Trip Today",
       ctaLink: "/packages"
-    },
-    {
-      image: "https://plus.unsplash.com/premium_photo-1684407617181-275e50374e95?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-      headline: "Visa Assistance From  Dubai",
-      subtext: "Fast and reliable visa assistance from Dubai. Get expert help with Schengen, UK, USA, Canada, Australia, New Zealand, and other international visas.",
-      animated: false,
-      ctaText: "Start Your Visa Process",
-      ctaLink: "/appointment"
     },
     {
       image: "https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=1600&q=80",
@@ -437,6 +437,7 @@ export const HomePage = () => {
   const carouselRef = useRef(null);
   const sectionRef = useRef(null);
   const dragStartY = useRef(null);
+  const isHovered = useRef(false);
   // Tracks whether the section's scroll trap is "active" (in viewport)
   const scrollTrapActive = useRef(false);
   // Accumulated wheel delta to avoid hyper-sensitive misfires
@@ -460,6 +461,7 @@ export const HomePage = () => {
 
   const handleWindowWheel = useCallback((e) => {
     if (!scrollTrapActive.current) return;
+    if (!isHovered.current) return;
 
     const el = sectionRef.current;
     if (!el) return;
@@ -489,15 +491,6 @@ export const HomePage = () => {
     if (shouldTrap) {
       // Capture the wheel event and advance the carousel
       e.preventDefault();
-
-      // Smoothly scroll the container to align its top with the sticky header's bottom
-      const offset = rect.top - navHeight;
-      if (Math.abs(offset) > 2) {
-        window.scrollTo({
-          top: window.scrollY + offset,
-          behavior: "smooth"
-        });
-      }
 
       // Debounce/accumulate so rapid small deltas don't fire too fast
       wheelAccum.current += Math.abs(e.deltaY);
@@ -722,7 +715,13 @@ export const HomePage = () => {
                 if (Math.abs(diff) > 50) stepSvc(diff > 0 ? 1 : -1);
                 dragStartY.current = null;
               }}
-              onMouseLeave={() => { dragStartY.current = null; }}
+              onMouseEnter={() => {
+                isHovered.current = true;
+              }}
+              onMouseLeave={() => {
+                dragStartY.current = null;
+                isHovered.current = false;
+              }}
               onTouchStart={handleCarouselTouchStart}
               onTouchEnd={handleCarouselTouchEnd}
             >
@@ -1093,38 +1092,38 @@ export const HomePage = () => {
               At Eshaare Tours UAE, we provide visa assistance for destinations across all seven continents, helping UAE residents travel worldwide with confidence.
             </p>
           </div>
-        </div>
-        <div className="flex justify-center gap-8 border-b border-outline-variant/20 overflow-x-auto pb-3 mt-10 scrollbar-thin">
-          {Object.keys(continentCountries).map((continent) => (
-            <button
-              key={continent}
-              onClick={() => setActiveContinent(continent)}
-              className={`pb-3 text-label-md font-label-md whitespace-nowrap cursor-pointer transition-colors ${activeContinent === continent
-                ? "text-secondary border-b-2 border-secondary font-semibold"
-                : "text-on-surface-variant hover:text-primary"
-                }`}
-            >
-              {continent}
-            </button>
-          ))}
-        </div>
+          <div className="flex justify-start lg:justify-center gap-8 border-b border-outline-variant/20 overflow-x-auto pb-3 scrollbar-thin">
+            {Object.keys(continentCountries).map((continent) => (
+              <button
+                key={continent}
+                onClick={() => setActiveContinent(continent)}
+                className={`pb-3 text-label-md font-label-md whitespace-nowrap cursor-pointer transition-colors ${activeContinent === continent
+                  ? "text-secondary border-b-2 border-secondary font-semibold"
+                  : "text-on-surface-variant hover:text-primary"
+                  }`}
+              >
+                {continent}
+              </button>
+            ))}
+          </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-          {continentCountries[activeContinent].map((country, idx) => (
-            <div key={idx} className="relative group bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/10 premium-shadow flex flex-col justify-between gap-4">
-              <div className="flex items-center gap-3 relative z-10">
-                <span className="text-3xl">{country.flag}</span>
-                <div>
-                  <h4 className="font-bold text-body-md text-primary">{country.name}</h4>
-                  <span className="text-body-sm text-on-surface-variant">{country.type}</span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+            {continentCountries[activeContinent].map((country, idx) => (
+              <div key={idx} className="relative group bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/10 premium-shadow flex flex-col justify-between gap-4">
+                <div className="flex items-center gap-3 relative z-10">
+                  <span className="text-3xl">{country.flag}</span>
+                  <div>
+                    <h4 className="font-bold text-body-md text-primary">{country.name}</h4>
+                    <span className="text-body-sm text-on-surface-variant">{country.type}</span>
+                  </div>
                 </div>
+                <Link to="/visa-services" className="text-secondary font-bold text-body-sm flex items-center gap-1 hover:underline w-fit mt-2 relative z-10">
+                  <span>View Visa Requirements</span>
+                  <span className="material-symbols-outlined text-lg">arrow_forward</span>
+                </Link>
               </div>
-              <Link to="/visa-services" className="text-secondary font-bold text-body-sm flex items-center gap-1 hover:underline w-fit mt-2 relative z-10">
-                <span>View Visa Requirements</span>
-                <span className="material-symbols-outlined text-lg">arrow_forward</span>
-              </Link>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </section>
 
