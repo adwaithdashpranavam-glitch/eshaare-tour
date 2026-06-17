@@ -76,15 +76,22 @@ export const PortalLayout = () => {
   const sidebarContent = (
     <div className="flex flex-col h-full bg-[#101010] text-[#E7E1D6]">
       {/* Brand Header */}
-      <div className="h-16 flex items-center px-6 border-b border-white/10 shrink-0">
+      <div className="h-16 flex items-center justify-between px-6 border-b border-white/10 shrink-0">
         <Link to="/portal/dashboard" className="flex items-center space-x-2" onClick={() => setMobileMenuOpen(false)}>
           <Compass className="h-5.5 w-5.5 text-[#C8A45D]" />
           <span className="font-logo-serif font-semibold tracking-[0.15em] text-sm text-white uppercase">ESHAARE</span>
         </Link>
+        <button
+          onClick={handleLogoutClick}
+          className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-white/5 rounded-lg transition-colors"
+          title="Logout"
+        >
+          <LogOut className="h-4.5 w-4.5" />
+        </button>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 py-6 px-4 space-y-1.5 overflow-y-auto">
+      <nav className="flex-grow py-6 px-4 space-y-1.5 overflow-y-auto">
         {navItems.map((item) => {
           const ItemIcon = item.icon;
           const isActive = location.pathname === item.path || location.pathname.startsWith(`${item.path}/`);
@@ -105,17 +112,6 @@ export const PortalLayout = () => {
           );
         })}
       </nav>
-
-      {/* Sidebar Footer Logout */}
-      <div className="p-4 border-t border-white/10">
-        <button
-          onClick={handleLogoutClick}
-          className="w-full flex items-center justify-center space-x-2 py-2.5 rounded-lg border border-white/10 hover:border-red-500/30 hover:bg-red-500/10 hover:text-red-400 transition-all text-xs font-semibold uppercase tracking-wider"
-        >
-          <LogOut className="h-4 w-4" />
-          <span>Logout</span>
-        </button>
-      </div>
     </div>
   );
 
@@ -189,6 +185,15 @@ export const PortalLayout = () => {
                 </span>
               )}
             </Link>
+
+            {/* Direct Logout Icon Button */}
+            <button
+              onClick={handleLogoutClick}
+              className="p-2 text-gray-500 hover:text-red-500 hover:bg-gray-50 rounded-full transition-colors"
+              title="Logout"
+            >
+              <LogOut className="h-5 w-5" />
+            </button>
 
             {/* Profile & User Menu */}
             <div className="relative" ref={userMenuRef}>
