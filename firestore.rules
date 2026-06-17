@@ -210,6 +210,24 @@ service cloud.firestore {
     }
 
     // ==========================================
+    // 1b. User Profiles Collection (Traveler Verification)
+    // ==========================================
+    match /user_profiles/{userId} {
+      // Owner can read/write their own profile; managers can read for case handling.
+      allow read: if isOwner(userId) || isManager();
+      allow create: if isSignedIn() && request.auth.uid == userId;
+      allow update: if isOwner(userId) || isManager();
+      allow delete: if isSuperAdmin();
+
+      // Family members live under the user's profile and are owner-managed.
+      match /family_members/{memberId} {
+        allow read: if isOwner(userId) || isManager();
+        allow create, update: if isSignedIn() && request.auth.uid == userId;
+        allow delete: if isSignedIn() && request.auth.uid == userId;
+      }
+    }
+
+    // ==========================================
     // 2. Customers Collection
     // ==========================================
     match /customers/{customerId} {

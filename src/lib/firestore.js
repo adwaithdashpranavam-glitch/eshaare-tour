@@ -1858,4 +1858,155 @@ export async function deleteVisa(id) {
   }
 }
 
+// ==========================================
+// USER PROFILES (Traveler Verification) SERVICES
+// ==========================================
+
+/**
+ * One-time fetch of the traveler profile document for a user.
+ * Returns the doc data (with id) or null if not yet created.
+ */
+export async function getUserProfile(userId) {
+  try {
+    const ref = doc(db, "user_profiles", userId);
+    const snap = await getDoc(ref);
+    return snap.exists() ? { id: snap.id, ...snap.data() } : null;
+  } catch (error) {
+    handleError(error, "getUserProfile");
+  }
+}
+
+/**
+ * Live subscription to a traveler profile. Used by the access-control guard
+ * so completion status / draft data stays in sync across tabs.
+ */
+export function subscribeToUserProfile(userId, callback, errorCallback = null) {
+  const ref = doc(db, "user_profiles", userId);
+  return onSnapshot(
+    ref,
+    (snap) => callback(snap.exists() ? { id: snap.id, ...snap.data() } : null),
+    (error) => {
+      console.error("subscribeToUserProfile error:", error);
+      if (errorCallback) errorCallback(error);
+    }
+  );
+}
+
+/**
+ * Save a partial draft of the profile (autosave). Merges into the existing doc
+ * and keeps profileCompleted untouched unless it doesn't exist yet.
+ */
+export async function saveProfileDraft(userId, partial) {
+  try {
+    const ref = doc(db, "user_profiles", userId);
+    const snap = await getDoc(ref);
+    const base = snap.exists()
+      ? {}
+      : { userId, profileCompleted: false, createdAt: serverTimestamp() };
+    await setDoc(
+      ref,
+      { ...base, ...partial, userId, updatedAt: serverTimestamp() },
+      { merge: true }
+    );
+  } catch (error) {
+    handleError(error, "saveProfileDraft");
+  }
+}
+
+/**
+ * Finalize the profile — sets profileCompleted = true and persists all sections.
+ * Also mirrors a few key fields onto the customer/user docs for existing portal UI.
+ */
+export async function completeUserProfile(userId, profile) {
+  try {
+    const ref = doc(db, "user_profiles", userId);
+    const snap = await getDoc(ref);
+    const createdAt = snap.exists() && snap.data().createdAt ? snap.data().createdAt : serverTimestamp();
+    await setDoc(
+      ref,
+      {
+        userId,
+        profileCompleted: true,
+        completedAt: serverTimestamp(),
+        createdAt,
+        updatedAt: serverTimestamp(),
+        personalInformation: profile.personalInformation || {},
+        passportInformation: profile.passportInformation || {},
+        contactInformation: profile.contactInformation || {},
+        uaeResidenceInformation: profile.uaeResidenceInformation || {},
+        employmentInformation: profile.employmentInformation || {},
+        emergencyContact: profile.emergencyContact || {}
+      },
+      { merge: true }
+    );
+
+    // Mirror a friendly name / phone / nationality onto user + customer docs (best-effort).
+    try {
+      const personal = profile.personalInformation || {};
+      const contact = profile.contactInformation || {};
+      const fullName = [personal.givenName, personal.surname].filter(Boolean).join(" ").trim();
+      const phone = contact.mobile ? `${contact.mobile.dialCode || ""} ${contact.mobile.number || ""}`.trim() : "";
+      const mirror = {
+        ...(fullName ? { name: fullName, fullName } : {}),
+        ...(phone ? { phone, phoneNumber: phone } : {}),
+        ...(personal.currentNationality ? { nationality: personal.currentNationality } : {}),
+        updatedAt: new Date()
+      };
+      await setDoc(doc(db, "customers", userId), mirror, { merge: true });
+      await updateDoc(doc(db, "users", userId), mirror).catch(() => {});
+    } catch (mirrorErr) {
+      console.warn("Profile mirror to customer/user skipped:", mirrorErr);
+    }
+  } catch (error) {
+    handleError(error, "completeUserProfile");
+  }
+}
+
+// ==========================================
+// FAMILY MEMBERS (subcollection of user_profiles)
+// ==========================================
+
+export function getFamilyMembers(userId, callback, errorCallback = null) {
+  const ref = collection(db, "user_profiles", userId, "family_members");
+  const q = query(ref, orderBy("createdAt", "desc"));
+  return onSnapshot(
+    q,
+    (snap) => callback(snap.docs.map((d) => ({ id: d.id, ...d.data() }))),
+    (error) => {
+      console.error("getFamilyMembers error:", error);
+      if (errorCallback) errorCallback(error);
+    }
+  );
+}
+
+export async function saveFamilyMember(userId, memberId, data) {
+  try {
+    const colRef = collection(db, "user_profiles", userId, "family_members");
+    if (memberId) {
+      await setDoc(
+        doc(colRef, memberId),
+        { ...data, updatedAt: serverTimestamp() },
+        { merge: true }
+      );
+      return memberId;
+    }
+    const newRef = await addDoc(colRef, {
+      ...data,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    });
+    return newRef.id;
+  } catch (error) {
+    handleError(error, "saveFamilyMember");
+  }
+}
+
+export async function deleteFamilyMember(userId, memberId) {
+  try {
+    await deleteDoc(doc(db, "user_profiles", userId, "family_members", memberId));
+  } catch (error) {
+    handleError(error, "deleteFamilyMember");
+  }
+}
+
 
