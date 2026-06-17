@@ -6,6 +6,7 @@ import { Toaster } from "react-hot-toast";
 // Contexts
 import { AuthProvider, ProtectedRoute, ClientRoute } from "./contexts/AuthContext";
 import { AppProvider } from "./contexts/AppContext";
+import { Analytics } from "@vercel/analytics/react";
 
 // Layouts
 import PublicLayout from "./layouts/PublicLayout";
@@ -184,6 +185,7 @@ function App() {
               }
             }}
           />
+          <Analytics />
         </AuthProvider>
       </AppProvider>
     </QueryClientProvider>

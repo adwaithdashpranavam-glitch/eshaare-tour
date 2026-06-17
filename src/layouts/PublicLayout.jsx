@@ -54,6 +54,7 @@ export const PublicLayout = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileExpanded, setMobileExpanded] = useState(null);
   const [mobileSubExpanded, setMobileSubExpanded] = useState(null);
+  const [mobileSubSubExpanded, setMobileSubSubExpanded] = useState(null);
 
   // Search state matching figma
   const [openSearch, setOpenSearch] = useState(false);
@@ -108,9 +109,11 @@ export const PublicLayout = () => {
     if (mobileExpanded === title) {
       setMobileExpanded(null);
       setMobileSubExpanded(null);
+      setMobileSubSubExpanded(null);
     } else {
       setMobileExpanded(title);
       setMobileSubExpanded(null);
+      setMobileSubSubExpanded(null);
     }
   };
 
@@ -122,13 +125,42 @@ export const PublicLayout = () => {
         {
           title: "Visa Services",
           links: [
-            "Schengen Visa",
-            "UAE Visa",
             "UK Visa",
             "USA Visa",
-            "Canada Visa",
-            "Australia Visa",
-            "Saudi Visa",
+            {
+              title: "Schengen Visa",
+              links: [
+                "France Visa",
+                "Italy Visa",
+                "Germany Visa",
+                "Spain Visa",
+                "Netherlands Visa",
+                "Switzerland Visa"
+              ]
+            },
+            {
+              title: "GCC / Middle East Visa",
+              links: [
+                "UAE Visa",
+                "Saudi Arabia Visa",
+                "Oman Visa"
+              ]
+            },
+            {
+              title: "Asia Visa",
+              links: [
+                "Japan Visa",
+                "Korea Visa",
+                "Vietnam Visa"
+              ]
+            },
+            {
+              title: "Oceania Visa",
+              links: [
+                "Australia Visa",
+                "New Zealand Visa"
+              ]
+            }
           ],
         },
         {
@@ -205,18 +237,14 @@ export const PublicLayout = () => {
 
     // Visas
     if (t === "Visa Services") return "/visa-services";
-    if (
-      t === "Schengen Visa" ||
-      t === "UK Visa" ||
-      t === "USA Visa" ||
-      t === "Japan Visa" ||
-      t === "UAE Visa" ||
-      t === "Canada Visa" ||
-      t === "Australia Visa" ||
-      t === "Saudi Visa"
-    ) {
-      const slug = t.toLowerCase().split(" ")[0];
-      return `/visa-services/${slug}`;
+    if (t.endsWith(" Visa")) {
+      const name = t.replace(" Visa", "").toLowerCase().trim();
+      if (name === "saudi arabia" || name === "saudi") return "/visa-services/saudi";
+      if (name === "new zealand") return "/visa-services/new-zealand";
+      if (name === "gcc / middle east") return "/visa-services/gcc-middle-east";
+      if (name === "asia") return "/visa-services/asia";
+      if (name === "oceania") return "/visa-services/oceania";
+      return `/visa-services/${name.replace(/\s+/g, "-")}`;
     }
 
     // Packages
@@ -424,15 +452,44 @@ export const PublicLayout = () => {
                               </Link>
 
                               <div className="absolute top-0 left-full -ml-1 w-60 bg-white border border-gray-100 shadow-xl rounded-xl opacity-0 invisible group-hover/sub:opacity-100 group-hover/sub:visible transition-all duration-300 py-2">
-                                {sub.links.map((link) => (
-                                  <Link
-                                    key={link}
-                                    to={toSlug(link)}
-                                    className="block px-5 py-2.5 hover:bg-orange-50/50 hover:text-[#1D503A] text-sm text-gray-600 transition-colors"
-                                  >
-                                    {link}
-                                  </Link>
-                                ))}
+                                {sub.links.map((link) => {
+                                  const isObject = typeof link === "object" && link !== null;
+                                  const title = isObject ? link.title : link;
+                                  if (isObject) {
+                                    return (
+                                      <div key={title} className="relative group/subsub">
+                                        <Link
+                                          to={toSlug(title)}
+                                          className="px-5 py-2.5 hover:bg-orange-50/50 hover:text-[#1D503A] flex items-center justify-between text-sm text-gray-600 transition-colors"
+                                        >
+                                          {title}
+                                          <ChevronRight className="w-3.5 h-3.5 text-gray-400 group-hover/subsub:text-[#1D503A]" />
+                                        </Link>
+
+                                        <div className="absolute top-0 left-full -ml-1 w-60 bg-white border border-gray-100 shadow-xl rounded-xl opacity-0 invisible group-hover/subsub:opacity-100 group-hover/subsub:visible transition-all duration-300 py-2">
+                                          {link.links.map((subLink) => (
+                                            <Link
+                                              key={subLink}
+                                              to={toSlug(subLink)}
+                                              className="block px-5 py-2.5 hover:bg-orange-50/50 hover:text-[#1D503A] text-sm text-gray-600 transition-colors"
+                                            >
+                                              {subLink}
+                                            </Link>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    );
+                                  }
+                                  return (
+                                    <Link
+                                      key={title}
+                                      to={toSlug(title)}
+                                      className="block px-5 py-2.5 hover:bg-orange-50/50 hover:text-[#1D503A] text-sm text-gray-600 transition-colors"
+                                    >
+                                      {title}
+                                    </Link>
+                                  );
+                                })}
                               </div>
                             </>
                           ) : (
@@ -538,11 +595,12 @@ export const PublicLayout = () => {
                             {sub.links && sub.links.length > 0 ? (
                               <>
                                 <button
-                                  onClick={() =>
+                                  onClick={() => {
                                     setMobileSubExpanded(
                                       mobileSubExpanded === sub.title ? null : sub.title
-                                    )
-                                  }
+                                    );
+                                    setMobileSubSubExpanded(null);
+                                  }}
                                   className="w-full py-2.5 flex items-center justify-between text-sm font-semibold text-gray-700 hover:text-[#1D503A]"
                                 >
                                   <span>{sub.title}</span>
@@ -554,16 +612,56 @@ export const PublicLayout = () => {
 
                                 {mobileSubExpanded === sub.title && (
                                   <div className="pl-4 pr-4 py-1 flex flex-col gap-1 border-l-2 border-orange-100 ml-2">
-                                    {sub.links.map((link) => (
-                                      <Link
-                                        key={link}
-                                        to={toSlug(link)}
-                                        onClick={() => setMobileMenuOpen(false)}
-                                        className="py-2 text-[13px] text-gray-600 hover:text-[#1D503A] block"
-                                      >
-                                        {link}
-                                      </Link>
-                                    ))}
+                                    {sub.links.map((link) => {
+                                      const isObject = typeof link === "object" && link !== null;
+                                      const title = isObject ? link.title : link;
+                                      if (isObject) {
+                                        return (
+                                          <div key={title} className="w-full">
+                                            <button
+                                              onClick={() =>
+                                                setMobileSubSubExpanded(
+                                                  mobileSubSubExpanded === title ? null : title
+                                                )
+                                              }
+                                              className="w-full py-2 flex items-center justify-between text-[13px] font-semibold text-gray-700 hover:text-[#1D503A]"
+                                            >
+                                              <span>{title}</span>
+                                              <ChevronDown
+                                                className={`w-3 h-3 transition-transform ${
+                                                  mobileSubSubExpanded === title ? "rotate-180" : ""
+                                                }`}
+                                              />
+                                            </button>
+
+                                            {mobileSubSubExpanded === title && (
+                                              <div className="pl-4 pr-4 py-1 flex flex-col gap-1 border-l border-orange-100 ml-2">
+                                                {link.links.map((subLink) => (
+                                                  <Link
+                                                    key={subLink}
+                                                    to={toSlug(subLink)}
+                                                    onClick={() => setMobileMenuOpen(false)}
+                                                    className="py-1.5 text-[12px] text-gray-600 hover:text-[#1D503A] block"
+                                                  >
+                                                    {subLink}
+                                                  </Link>
+                                                ))}
+                                              </div>
+                                            )}
+                                          </div>
+                                        );
+                                      }
+                                      return (
+                                        <Link
+                                          key={title}
+                                          to={toSlug(title)}
+                                          onClick={() => setMobileMenuOpen(false)}
+                                          className="py-2 text-[13px] text-gray-600 hover:text-[#1D503A] block"
+                                        >
+                                          {title}
+                                        </Link>
+                                      );
+                                    })}
                                   </div>
                                 )}
                               </>

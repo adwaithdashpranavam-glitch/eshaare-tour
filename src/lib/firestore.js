@@ -1011,6 +1011,548 @@ const SEED_VISA_TYPES = [
     ],
     metaTitle: "Germany Visa Dubai | Schengen Visa Specialists | Eshaare Tours",
     metaDescription: "Apply for Germany Schengen visa in Dubai with expert support. VFS slot booking and document compliance audits."
+  },
+  {
+    slug: "oman",
+    imageUrl: "https://images.unsplash.com/photo-1621680696874-edd80ce57b72?auto=format&fit=crop&w=800&q=80",
+    name: "Oman Visa",
+    tagline: "Transit and tourist eVisas for road or air travelers from the UAE",
+    isPublished: true,
+    sortOrder: 10,
+    heroStats: [
+      { label: "Processing Time", value: "1-2 Days", icon: "Clock" },
+      { label: "Success Rate", value: "99.8%", icon: "TrendingUp" },
+      { label: "Required Documents", value: "3 Core Docs", icon: "FileText" },
+      { label: "Submission Type", value: "100% Online", icon: "Globe" }
+    ],
+    overviewText: "Apply for your Oman tourist eVisa with Eshaare Tours. For UAE residents traveling to Muscat, Salalah, or driving through the Hatta border, we handle the entire eVisa application. We ensure your passport copies, residency cards, and personal photographs meet the Royal Oman Police requirements for instant approval.",
+    suitableFor: ["Tourism", "Family Visit", "Business"],
+    visaSpecs: {
+      visaType: "eVisa / Tourist",
+      validity: "10 or 30 Days",
+      entryType: "Single Entry",
+      processingTime: "1–2 Days",
+      biometrics: "Not Required",
+      insurance: "Recommended",
+      category: "GCC / Middle East Visa"
+    },
+    groupedDocuments: {
+      personal: [
+        "Passport Scan (Bio page)",
+        "UAE Residency Copy",
+        "Emirates ID Copy"
+      ],
+      financial: [
+        "Not Required for eVisa"
+      ],
+      travel: [
+        "Passport Photo (White background)",
+        "Border Crossing Details (if driving)"
+      ]
+    },
+    popularLocations: [
+      { name: "Muscat", imageUrl: "https://images.unsplash.com/photo-1609137144813-881c1c1f4640?auto=format&fit=crop&w=500&q=80" },
+      { name: "Salalah", imageUrl: "https://images.unsplash.com/photo-1601919051950-bb9f3ff4dfee?auto=format&fit=crop&w=500&q=80" },
+      { name: "Nizwa", imageUrl: "https://images.unsplash.com/photo-1549880338-65ddcdfd017b?auto=format&fit=crop&w=500&q=80" }
+    ],
+    requiredDocuments: [
+      "Passport copy (minimum 6 months validity)",
+      "UAE residency visa page copy (minimum 3 months validity)",
+      "Passport-sized photograph with white background"
+    ],
+    processSteps: [
+      { stepNumber: 1, title: "Submit Details & Photos", description: "Provide passport copy and personal photo through our secure client dashboard." },
+      { stepNumber: 2, title: "Expert Document Audit", description: "Our team verifies photo dimensions, background specifications, and residency validity." },
+      { stepNumber: 3, title: "Royal Oman Police Portal Submission", description: "We execute your eVisa submission directly through the official immigration gateway." },
+      { stepNumber: 4, title: "eVisa Approved & Sent", description: "Track return updates. Your approved PDF eVisa is sent straight to your email or WhatsApp." }
+    ],
+    feeStructure: [
+      { applicantType: "10-Day Single Entry", embassyFee: "100 AED", serviceFee: "100 AED" },
+      { applicantType: "30-Day Single Entry", embassyFee: "250 AED", serviceFee: "100 AED" }
+    ],
+    faqs: [
+      { question: "Do UAE residents get visa on arrival in Oman?", answer: "While some professions get visa on arrival, it is highly recommended to apply for an eVisa in advance to avoid long border queues or boarding issues." },
+      { question: "How long does Oman eVisa take?", answer: "Oman eVisas are usually approved within 24 to 48 hours." }
+    ],
+    metaTitle: "Oman eVisa Dubai | Eshaare Tours",
+    metaDescription: "Apply for Oman tourist visa in Dubai. 24-48 hour fast processing and 99.8% success rate."
+  },
+  {
+    slug: "japan",
+    imageUrl: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=800&q=80",
+    name: "Japan Visa",
+    tagline: "Short-stay tourist visa assistance including travel plan and reservation compliance",
+    isPublished: true,
+    sortOrder: 11,
+    heroStats: [
+      { label: "Processing Time", value: "5-7 Days", icon: "Clock" },
+      { label: "Success Rate", value: "98.7%", icon: "TrendingUp" },
+      { label: "Required Documents", value: "5 Core Docs", icon: "FileText" },
+      { label: "Submission Type", value: "eVisa / VFS", icon: "Calendar" }
+    ],
+    overviewText: "Apply for your Japan tourist or business visa with Eshaare Tours. Japan offers either electronic eVisa or standard sticker visas depending on applicant nationality and UAE residency profile. We prepare a detailed day-by-day travel itinerary (Schedule of Stay), confirm compliant bookings, and manage the submission to ensure a successful outcome.",
+    suitableFor: ["Tourism", "Business", "Family Visit"],
+    visaSpecs: {
+      visaType: "Tourist / Short Stay",
+      validity: "Up to 90 Days",
+      entryType: "Single or Multiple",
+      processingTime: "5–7 Working Days",
+      biometrics: "Required for Sticker",
+      insurance: "Recommended",
+      category: "Asia Visa"
+    },
+    groupedDocuments: {
+      personal: [
+        "Original Passport",
+        "Emirates ID Copy",
+        "UAE Residency Copy",
+        "Passport Photo (2x2 inches)"
+      ],
+      financial: [
+        "3 Months Bank Statement (Stamped)",
+        "NOC from Employer (Salary, Job Title)"
+      ],
+      travel: [
+        "Flight Reservation (Return)",
+        "Hotel Booking Confirmation",
+        "Day-by-Day Travel Plan (Schedule of Stay)"
+      ]
+    },
+    popularLocations: [
+      { name: "Tokyo", imageUrl: "https://images.unsplash.com/photo-1540959733332-eab4deceeaf7?auto=format&fit=crop&w=500&q=80" },
+      { name: "Kyoto", imageUrl: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=500&q=80" },
+      { name: "Osaka", imageUrl: "https://images.unsplash.com/photo-1590253509399-00550f588523?auto=format&fit=crop&w=500&q=80" }
+    ],
+    requiredDocuments: [
+      "Original Passport valid for at least 6 months",
+      "Copy of UAE Residency Visa and Emirates ID",
+      "3 months bank statement with original bank stamp",
+      "No Objection Certificate (NOC) from UAE employer",
+      "Detailed travel itinerary (Schedule of Stay)"
+    ],
+    processSteps: [
+      { stepNumber: 1, title: "Intake & Profile Audit", description: "Review passenger background, passport validity, and financial transaction sheets." },
+      { stepNumber: 2, title: "Drafting 'Schedule of Stay'", description: "Create a detailed day-by-day activity itinerary, required by the Japanese embassy." },
+      { stepNumber: 3, title: "VFS / eVisa Submission", description: "Manage official submission and book biometrics appointment at VFS Dubai if needed." },
+      { stepNumber: 4, title: "Approved Sticker/eVisa Delivery", description: "Receive passport back with approved Japanese visa or download approved eVisa PDF." }
+    ],
+    feeStructure: [
+      { applicantType: "Single Entry Tourist", embassyFee: "100 AED", serviceFee: "200 AED" },
+      { applicantType: "Multiple Entry Tourist", embassyFee: "200 AED", serviceFee: "250 AED" }
+    ],
+    faqs: [
+      { question: "Can Indian nationals in UAE apply for Japan eVisa?", answer: "Yes, Indian nationals holding valid UAE residency can apply for the Japan eVisa online through our guided portal." },
+      { question: "What is a 'Schedule of Stay' for Japan?", answer: "A mandatory document listing your day-by-day activities, accommodation details, and contact numbers in Japan. We draft this for you." }
+    ],
+    metaTitle: "Japan Tourist Visa Dubai | Eshaare Tours",
+    metaDescription: "Apply for Japan tourist visa in Dubai. eVisa or VFS processing with detailed Schedule of Stay auditing."
+  },
+  {
+    slug: "korea",
+    imageUrl: "https://images.unsplash.com/photo-1538481199705-c710c4e965fc?auto=format&fit=crop&w=800&q=80",
+    name: "South Korea Visa",
+    tagline: "Tourist visas and K-ETA application check-ins for UAE residents",
+    isPublished: true,
+    sortOrder: 12,
+    heroStats: [
+      { label: "Processing Time", value: "7-10 Days", icon: "Clock" },
+      { label: "Success Rate", value: "96.2%", icon: "TrendingUp" },
+      { label: "Required Documents", value: "5 Core Docs", icon: "FileText" },
+      { label: "Submission Type", value: "KVAC Dubai / eVisa", icon: "Calendar" }
+    ],
+    overviewText: "Apply for your South Korea visitor visa with Eshaare Tours. Visas for South Korea are processed via the Korea Visa Application Center (KVAC) in Dubai. We audit your employment verification, salary history, bank statements, and complete the detailed K-ETA or visa application forms to meet the Korean consulate's strict standards.",
+    suitableFor: ["Tourism", "Business", "Family Visit"],
+    visaSpecs: {
+      visaType: "Visitor / Tourist",
+      validity: "Up to 90 Days",
+      entryType: "Single Entry",
+      processingTime: "7–10 Days",
+      biometrics: "Not Required",
+      insurance: "Recommended",
+      category: "Asia Visa"
+    },
+    groupedDocuments: {
+      personal: [
+        "Original passport",
+        "UAE Residency copy",
+        "Emirates ID copy",
+        "Passport Photo (3.5x4.5cm)"
+      ],
+      financial: [
+        "3-6 Months bank statement (Stamped)",
+        "NOC from Employer"
+      ],
+      travel: [
+        "Hotel booking confirmation",
+        "Flight Reservation (Return)",
+        "Daily Travel Itinerary"
+      ]
+    },
+    popularLocations: [
+      { name: "Seoul", imageUrl: "https://images.unsplash.com/photo-1538481199705-c710c4e965fc?auto=format&fit=crop&w=500&q=80" },
+      { name: "Busan", imageUrl: "https://images.unsplash.com/photo-1608670868840-7e44ab6708f5?auto=format&fit=crop&w=500&q=80" },
+      { name: "Jeju Island", imageUrl: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=500&q=80" }
+    ],
+    requiredDocuments: [
+      "Original passport with 6 months validity",
+      "UAE residency visa and Emirates ID copy",
+      "Certificate of Employment / NOC stating job title and salary",
+      "3-6 months bank statement (original bank stamp)",
+      "Hotel booking confirmation and daily travel plan"
+    ],
+    processSteps: [
+      { stepNumber: 1, title: "Profile Screening", description: "Review applicant nationality, UAE visa details, and bank statements." },
+      { stepNumber: 2, title: "Korea Visa Form Preparation", description: "Complete the comprehensive multi-page KVAC application form." },
+      { stepNumber: 3, title: "KVAC Dossier Submission", description: "Submit documents to KVAC Dubai and pay the administrative fees." },
+      { stepNumber: 4, title: "Visa Grant Notification", description: "Receive passport with Korea entry visa sticker." }
+    ],
+    feeStructure: [
+      { applicantType: "Short Term Single Entry (under 90 days)", embassyFee: "150 AED", serviceFee: "250 AED" },
+      { applicantType: "KVAC Handling Fee", embassyFee: "60 AED", serviceFee: "0 AED" }
+    ],
+    faqs: [
+      { question: "Do I need a K-ETA or a regular Visa?", answer: "Passport holders of visa-exempt countries need a K-ETA. Other nationalities must apply for a regular tourist visa at KVAC. We assist with both." }
+    ],
+    metaTitle: "South Korea Visa Dubai | KVAC Specialists | Eshaare Tours",
+    metaDescription: "Apply for South Korea tourist visa in Dubai via KVAC or K-ETA with expert document auditing."
+  },
+  {
+    slug: "vietnam",
+    imageUrl: "https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=800&q=80",
+    name: "Vietnam Visa",
+    tagline: "Fast-track approval letters and tourist eVisas handled within 72 hours",
+    isPublished: true,
+    sortOrder: 13,
+    heroStats: [
+      { label: "Processing Time", value: "3-4 Days", icon: "Clock" },
+      { label: "Success Rate", value: "99.0%", icon: "TrendingUp" },
+      { label: "Required Documents", value: "3 Core Docs", icon: "FileText" },
+      { label: "Submission Type", value: "100% Online", icon: "Globe" }
+    ],
+    overviewText: "Apply for your Vietnam tourist eVisa with Eshaare Tours. Vietnam has expanded its online eVisa facility to all nationalities, allowing up to 90 days stay. We audit your passport details, photo dimensions, entry/exit ports, and process the visa through the immigration department to ensure complete accuracy.",
+    suitableFor: ["Tourism", "Business"],
+    visaSpecs: {
+      visaType: "eVisa / Tourist",
+      validity: "30 or 90 Days",
+      entryType: "Single / Multiple",
+      processingTime: "3–4 Working Days",
+      biometrics: "Not Required",
+      insurance: "Recommended",
+      category: "Asia Visa"
+    },
+    groupedDocuments: {
+      personal: [
+        "Passport Bio Page Photo",
+        "Portrait Photo (4x6 cm)"
+      ],
+      financial: [
+        "Not Required for eVisa"
+      ],
+      travel: [
+        "Entry Port details (Airport/Land)",
+        "Exit Port details"
+      ]
+    },
+    popularLocations: [
+      { name: "Hanoi", imageUrl: "https://images.unsplash.com/photo-1509060464153-44667396260f?auto=format&fit=crop&w=500&q=80" },
+      { name: "Halong Bay", imageUrl: "https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=500&q=80" },
+      { name: "Ho Chi Minh", imageUrl: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=500&q=80" }
+    ],
+    requiredDocuments: [
+      "High-quality passport bio page photo (valid for 6+ months)",
+      "Portrait photo (4x6 cm, white background, no glasses)",
+      "Proposed entry and exit ports in Vietnam"
+    ],
+    processSteps: [
+      { stepNumber: 1, title: "Submit Digital Files", description: "Upload a clean scan of your passport bio page and passport photograph." },
+      { stepNumber: 2, title: "Port & Itinerary Check", description: "Audit chosen land border checkpoints or airports to prevent entry refusal." },
+      { stepNumber: 3, title: "Vietnam Immigration Submission", description: "File the eVisa request on the Vietnam immigration platform." },
+      { stepNumber: 4, title: "eVisa Receipt", description: "Receive your approved Vietnam eVisa PDF to print for immigration clearance." }
+    ],
+    feeStructure: [
+      { applicantType: "30-Day Single Entry eVisa", embassyFee: "100 AED", serviceFee: "120 AED" },
+      { applicantType: "90-Day Multiple Entry eVisa", embassyFee: "200 AED", serviceFee: "150 AED" }
+    ],
+    faqs: [
+      { question: "How long does a Vietnam eVisa take?", answer: "Normally 3-4 working days. Express service is available for urgent travel." }
+    ],
+    metaTitle: "Vietnam eVisa Dubai | Eshaare Tours",
+    metaDescription: "Apply for Vietnam eVisa online from Dubai. Express service options and 99% approval rating."
+  },
+  {
+    slug: "australia",
+    imageUrl: "https://images.unsplash.com/photo-1524413840807-0c3cb6fa808d?auto=format&fit=crop&w=800&q=80",
+    name: "Australia Visa",
+    tagline: "Visitor Visa (Subclass 600) audits for multi-entry tourism or business trips",
+    isPublished: true,
+    sortOrder: 14,
+    heroStats: [
+      { label: "Processing Time", value: "15-20 Days", icon: "Clock" },
+      { label: "Success Rate", value: "95.5%", icon: "TrendingUp" },
+      { label: "Required Documents", value: "6 Core Docs", icon: "FileText" },
+      { label: "Submission Type", value: "ImmiAccount Online", icon: "Globe" }
+    ],
+    overviewText: "Apply for your Australia Subclass 600 Visitor Visa with Eshaare Tours. Australia requires a highly detailed online submission through the Department of Home Affairs ImmiAccount portal. We audit and translate your financial holdings, employment history, assets, and tie-backs to the UAE to build a robust visa application.",
+    suitableFor: ["Tourism", "Business", "Family Visit"],
+    visaSpecs: {
+      visaType: "Visitor (Subclass 600)",
+      validity: "Up to 12 Months",
+      entryType: "Single or Multiple",
+      processingTime: "15–20 Days",
+      biometrics: "Required at VFS",
+      insurance: "Recommended",
+      category: "Oceania Visa"
+    },
+    groupedDocuments: {
+      personal: [
+        "Passport Color Scan (All pages)",
+        "UAE Residency & Emirates ID",
+        "Family Registration documents (if any)"
+      ],
+      financial: [
+        "6 Months bank statement showing regular income",
+        "NOC from employer / Business License",
+        "Proof of Assets or Properties (optional)"
+      ],
+      travel: [
+        "Detailed Day-by-Day Itinerary",
+        "Flight/Hotel Vouchers"
+      ]
+    },
+    popularLocations: [
+      { name: "Sydney", imageUrl: "https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?auto=format&fit=crop&w=500&q=80" },
+      { name: "Melbourne", imageUrl: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?auto=format&fit=crop&w=500&q=80" },
+      { name: "Brisbane", imageUrl: "https://images.unsplash.com/photo-1554797078-97a366e25757?auto=format&fit=crop&w=500&q=80" }
+    ],
+    requiredDocuments: [
+      "Scan of passport bio-page and all stamped pages",
+      "UAE residency visa and Emirates ID scans",
+      "NOC from employer showing salary, designation, and approved leave",
+      "6 months personal bank statements with solid credit profile",
+      "Detailed itinerary and flight details"
+    ],
+    processSteps: [
+      { stepNumber: 1, title: "Dossier Screening", description: "Gather comprehensive financial, employment, and personal ties documentation." },
+      { stepNumber: 2, title: "ImmiAccount File Creation", description: "Formulate the extensive Australian visitor visa profile questionnaire." },
+      { stepNumber: 3, title: "Biometrics Appointment", description: "Book and complete biometrics capture at VFS Global Dubai/Abu Dhabi." },
+      { stepNumber: 4, title: "E-Visa Grant Letter", description: "Your approved Australian Visitor Visa grant is delivered electronically." }
+    ],
+    feeStructure: [
+      { applicantType: "Visitor Visa (Subclass 600)", embassyFee: "620 AED", serviceFee: "300 AED" }
+    ],
+    faqs: [
+      { question: "Do I need to submit my physical passport for Australia Visa?", answer: "No, Australia visas are completely label-free/electronic. You only submit biometrics at VFS Global." }
+    ],
+    metaTitle: "Australia Visa Dubai | Subclass 600 | Eshaare Tours",
+    metaDescription: "Apply for Australia Subclass 600 tourist visa in Dubai. Complete ImmiAccount documentation audits."
+  },
+  {
+    slug: "new-zealand",
+    imageUrl: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=800&q=80",
+    name: "New Zealand Visa",
+    tagline: "Visitor Visa and NZeTA document verification for smooth travel entries",
+    isPublished: true,
+    sortOrder: 15,
+    heroStats: [
+      { label: "Processing Time", value: "15-25 Days", icon: "Clock" },
+      { label: "Success Rate", value: "94.8%", icon: "TrendingUp" },
+      { label: "Required Documents", value: "6 Core Docs", icon: "FileText" },
+      { label: "Submission Type", value: "RealMe Portal Online", icon: "Globe" }
+    ],
+    overviewText: "Apply for your New Zealand Visitor Visa with Eshaare Tours. Navigating the RealMe immigration portal can be intricate. We verify your funds, employer details, flight itineraries, and complete the detailed declaration files to ensure compliance with Immigration New Zealand standards.",
+    suitableFor: ["Tourism", "Business", "Family Visit"],
+    visaSpecs: {
+      visaType: "Visitor / Short Stay",
+      validity: "Up to 9 Months",
+      entryType: "Single / Multiple",
+      processingTime: "15–25 Days",
+      biometrics: "Not Required",
+      insurance: "Recommended",
+      category: "Oceania Visa"
+    },
+    groupedDocuments: {
+      personal: [
+        "Passport Bio-data page scan (color)",
+        "UAE Residency & Emirates ID copies",
+        "Passport digital photograph (NZ Specs)"
+      ],
+      financial: [
+        "6 Months original bank statements",
+        "Employment verification letter / NOC"
+      ],
+      travel: [
+        "Flight bookings",
+        "Hotel reservations / Accommodation plan",
+        "Daily travel schedule"
+      ]
+    },
+    popularLocations: [
+      { name: "Auckland", imageUrl: "https://images.unsplash.com/photo-1507699622108-4be3a09551ff?auto=format&fit=crop&w=500&q=80" },
+      { name: "Queenstown", imageUrl: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=500&q=80" },
+      { name: "Wellington", imageUrl: "https://images.unsplash.com/photo-1589871181831-a0808ee85c15?auto=format&fit=crop&w=500&q=80" }
+    ],
+    requiredDocuments: [
+      "Passport bio-data page color scan",
+      "UAE residency visa and Emirates ID copy",
+      "No Objection Certificate (NOC) from employer",
+      "6 months original bank statements",
+      "Passport-sized digital photograph matching NZ specifications"
+    ],
+    processSteps: [
+      { stepNumber: 1, title: "Profile Screening", description: "Examine applicant profile, residency history, and bank balances." },
+      { stepNumber: 2, title: "RealMe Portal Upload", description: "Submit details and digital dossiers via the New Zealand Immigration system." },
+      { stepNumber: 3, title: "Immigration Case Monitoring", description: "Liaise with immigration officers for any additional information requests." },
+      { stepNumber: 4, title: "Electronic Visa Issuance", description: "Receive NZ Visitor Visa approval directly via email." }
+    ],
+    feeStructure: [
+      { applicantType: "Visitor Visa", embassyFee: "550 AED", serviceFee: "300 AED" },
+      { applicantType: "NZeTA (Visa-Exempt)", embassyFee: "130 AED", serviceFee: "80 AED" }
+    ],
+    faqs: [
+      { question: "How long does a New Zealand tourist visa take?", answer: "Most tourist applications are processed in 3 to 4 weeks. Early planning is recommended." }
+    ],
+    metaTitle: "New Zealand Visa Dubai | Eshaare Tours",
+    metaDescription: "Apply for New Zealand visitor visa in Dubai. Complete RealMe application and document compliance checks."
+  },
+  {
+    slug: "spain",
+    imageUrl: "https://images.unsplash.com/photo-1509840841025-9088ba78a826?auto=format&fit=crop&w=800&q=80",
+    name: "Spain Schengen Visa",
+    tagline: "Explore Madrid, Barcelona, and Andalucia with expert BLS Spain booking support",
+    isPublished: true,
+    sortOrder: 16,
+    heroStats: [
+      { label: "Processing Time", value: "10-15 Days", icon: "Clock" },
+      { label: "Success Rate", value: "97.0%", icon: "TrendingUp" },
+      { label: "Required Documents", value: "5 Core Docs", icon: "FileText" },
+      { label: "Embassy Appointment", value: "BLS International Dubai", icon: "Calendar" }
+    ],
+    overviewText: "Apply for your Spain tourist or business visa with Eshaare Tours. Spain visa submissions from Dubai are managed by BLS International. Securing a BLS appointment slot requires constant monitoring. We assist you with document compilation, travel insurance, flight itineraries, and hotel bookings to ensure BLS compliance.",
+    suitableFor: ["Tourism", "Family Visit", "Business", "Trade Shows", "Training", "Medical"],
+    visaSpecs: {
+      visaType: "Tourist Visa",
+      validity: "Up to 90 Days",
+      entryType: "Single / Multiple",
+      processingTime: "10–15 Working Days",
+      biometrics: "Required",
+      insurance: "Mandatory",
+      category: "Schengen Visa"
+    },
+    groupedDocuments: {
+      personal: [
+        "Original Passport",
+        "Passport Copy",
+        "UAE Residence Visa Copy",
+        "Emirates ID Copy"
+      ],
+      financial: [
+        "6 Months Bank Statement",
+        "Salary Certificate / NOC"
+      ],
+      travel: [
+        "Flight & Hotel Reservation",
+        "Mandatory Travel Insurance",
+        "Detailed Itinerary"
+      ]
+    },
+    popularLocations: [
+      { name: "Madrid", imageUrl: "https://images.unsplash.com/photo-1539650116574-8efeb43e2750?auto=format&fit=crop&w=500&q=80" },
+      { name: "Barcelona", imageUrl: "https://images.unsplash.com/photo-1583422409516-2895a77efedd?auto=format&fit=crop&w=500&q=80" },
+      { name: "Seville", imageUrl: "https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=500&q=80" }
+    ],
+    requiredDocuments: [
+      "Passport valid for at least 6 months",
+      "UAE residence visa copy",
+      "Passport photos",
+      "3-6 months bank statements showing regular income",
+      "Employer NOC or business setup papers",
+      "Travel insurance compliant with Schengen rules"
+    ],
+    processSteps: [
+      { stepNumber: 1, title: "Submit Details & NOC Checklist", description: "Provide passport copy and complete travel questionnaire." },
+      { stepNumber: 2, title: "Compliance Audit Check", description: "Our senior visa executives verify bank statement transactions, passport validity, and photo dimensions." },
+      { stepNumber: 3, title: "BLS Slot Booking & Submission", description: "We secure an appointment slot at BLS Dubai, compile your document dossier, and assist you with submission." },
+      { stepNumber: 4, title: "Visa Approved & Delivery", description: "Receive your passport back with your approved Spanish Schengen sticker." }
+    ],
+    feeStructure: [
+      { applicantType: "Adult (12+ years)", embassyFee: "320 AED (€80)", serviceFee: "280 AED" },
+      { applicantType: "Child (6-12 years)", embassyFee: "160 AED (€40)", serviceFee: "280 AED" }
+    ],
+    faqs: [
+      { question: "How long does Spanish processing take?", answer: "Typically 10-15 working days post-submission." }
+    ],
+    metaTitle: "Spain Visa Dubai | BLS Spain Specialists | Eshaare Tours",
+    metaDescription: "Apply for Spain Schengen visa in Dubai with expert support. BLS slot booking and document compliance audits."
+  },
+  {
+    slug: "netherlands",
+    imageUrl: "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=800&q=80",
+    name: "Netherlands Schengen Visa",
+    tagline: "Audit your financial statement & employment files for Dutch Schengen entry",
+    isPublished: true,
+    sortOrder: 17,
+    heroStats: [
+      { label: "Processing Time", value: "7-12 Days", icon: "Clock" },
+      { label: "Success Rate", value: "98.0%", icon: "TrendingUp" },
+      { label: "Required Documents", value: "5 Core Docs", icon: "FileText" },
+      { label: "Embassy Appointment", value: "VFS Global Dubai", icon: "Calendar" }
+    ],
+    overviewText: "Apply for your Netherlands tourist or business visa with Eshaare Tours. Navigating the Dutch embassy rules and biometrics slots at VFS Global Dubai is simple with our documentation team. We review your financial statements, employment letters, and prepare compliant travel details.",
+    suitableFor: ["Tourism", "Family Visit", "Business", "Trade Shows", "Training", "Medical"],
+    visaSpecs: {
+      visaType: "Tourist Visa",
+      validity: "Up to 90 Days",
+      entryType: "Single / Multiple",
+      processingTime: "7–12 Working Days",
+      biometrics: "Required",
+      insurance: "Mandatory",
+      category: "Schengen Visa"
+    },
+    groupedDocuments: {
+      personal: [
+        "Original Passport",
+        "Passport Copy",
+        "UAE Residence Visa Copy",
+        "Emirates ID Copy"
+      ],
+      financial: [
+        "6 Months Bank Statement",
+        "Salary Certificate / NOC"
+      ],
+      travel: [
+        "Flight & Hotel Reservation",
+        "Mandatory Travel Insurance",
+        "Detailed Itinerary"
+      ]
+    },
+    popularLocations: [
+      { name: "Amsterdam", imageUrl: "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=500&q=80" },
+      { name: "Rotterdam", imageUrl: "https://images.unsplash.com/photo-1473976377429-97fb3c634024?auto=format&fit=crop&w=500&q=80" },
+      { name: "The Hague", imageUrl: "https://images.unsplash.com/photo-1581084282500-1c09930f7850?auto=format&fit=crop&w=500&q=80" }
+    ],
+    requiredDocuments: [
+      "Passport valid for at least 6 months",
+      "UAE residence visa copy",
+      "Passport photos",
+      "3-6 months bank statements showing regular income",
+      "Employer NOC or business setup papers",
+      "Travel insurance compliant with Schengen rules"
+    ],
+    processSteps: [
+      { stepNumber: 1, title: "Submit Details & NOC Checklist", description: "Provide passport copy and complete travel questionnaire." },
+      { stepNumber: 2, title: "Compliance Audit Check", description: "Our senior visa executives verify bank statement transactions, passport validity, and photo dimensions." },
+      { stepNumber: 3, title: "VFS Slot Booking & Submission", description: "We secure an appointment slot at VFS Dubai, compile your document dossier, and assist you with submission." },
+      { stepNumber: 4, title: "Visa Approved & Delivery", description: "Receive your passport back with your approved Dutch Schengen sticker." }
+    ],
+    feeStructure: [
+      { applicantType: "Adult (12+ years)", embassyFee: "320 AED (€80)", serviceFee: "280 AED" },
+      { applicantType: "Child (6-12 years)", embassyFee: "160 AED (€40)", serviceFee: "280 AED" }
+    ],
+    faqs: [
+      { question: "How long does Netherlands processing take?", answer: "Typically 7-12 working days post-submission." }
+    ],
+    metaTitle: "Netherlands Visa Dubai | VFS Dutch Specialists | Eshaare Tours",
+    metaDescription: "Apply for Netherlands Schengen visa in Dubai with expert support. VFS slot booking and document compliance audits."
   }
 ];
 
@@ -1023,7 +1565,7 @@ export async function seedVisaTypes() {
       const itemRef = doc(db, "visa_types", item.slug);
       
       const defaultSupportPackages = {
-        showSupportPackages: item.slug === "schengen" || item.slug === "france" || item.slug === "italy" || item.slug === "switzerland" || item.slug === "germany",
+        showSupportPackages: item.slug === "schengen" || item.slug === "france" || item.slug === "italy" || item.slug === "switzerland" || item.slug === "germany" || item.slug === "spain" || item.slug === "netherlands",
         supportPackages: {
           standard: {
             title: item.slug === "schengen" ? "Standard Schengen Support" : `${item.name} Standard Support`,
@@ -1062,7 +1604,7 @@ export async function seedVisaTypes() {
     });
 
     await batch.commit();
-    toast.success("9 visa types created successfully");
+    toast.success("17 visa types created successfully");
     return true;
   } catch (error) {
     handleError(error, "seedVisaTypes");

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
-import { getVisaTypeBySlug, saveVisaType, createLead, createApplicationDraft } from "../../lib/firestore";
+import { getVisaTypeBySlug, saveVisaType, createLead, createApplicationDraft, getVisaTypes } from "../../lib/firestore";
 import { useAuth } from "../../contexts/AuthContext";
 import { generateLeadNo } from "../../utils/helpers";
 import { serverTimestamp } from "../../lib/firebase";
@@ -8,7 +8,7 @@ import Modal from "../../components/ui/Modal";
 import {
   Clock, TrendingUp, FileText, Calendar, Shield, Star,
   CheckCircle, Globe, CreditCard, Award, ChevronDown, Check, Phone, ArrowLeft, AlertCircle,
-  X, Sparkles, Users, Briefcase, BookOpen, Stethoscope, Home
+  X, Sparkles, Users, Briefcase, BookOpen, Stethoscope, Home, ArrowRight
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -73,6 +73,75 @@ const SCHENGEN_COUNTRIES = [
   { name: "Switzerland", flag: "🇨🇭" }
 ];
 
+const SCHENGEN_SUB_VISAS_PRESETS = [
+  {
+    id: "france",
+    slug: "france",
+    name: "🇫🇷 France Visa",
+    tagline: "Apply for entry to France. Document check and VFS Global appointment assistance in Dubai.",
+    imageUrl: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=800&q=80",
+    category: "Schengen Visa",
+    heroStats: [
+      { label: "Processing Time", value: "8-12 Days", icon: "Clock" },
+      { label: "Success Rate", value: "98.9%", icon: "TrendingUp" }
+    ]
+  },
+  {
+    id: "italy",
+    slug: "italy",
+    name: "Italy Visa",
+    tagline: "Secure a biometrics appointment for Italy with flight itineraries & compliant hotel bookings.",
+    imageUrl: "https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&w=800&q=80",
+    category: "Schengen Visa",
+    heroStats: [
+      { label: "Processing Time", value: "10-14 Days", icon: "Clock" },
+      { label: "Success Rate", value: "97.8%", icon: "TrendingUp" }
+    ]
+  },
+  {
+    id: "germany",
+    slug: "germany",
+    name: "🇩🇪 Germany Visa",
+    tagline: "Business & tourist document audit for rapid German Schengen visa processing.",
+    imageUrl: "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?auto=format&fit=crop&w=800&q=80",
+    category: "Schengen Visa",
+    heroStats: [
+      { label: "Processing Time", value: "5-10 Days", icon: "Clock" },
+      { label: "Success Rate", value: "98.5%", icon: "TrendingUp" }
+    ]
+  },
+  {
+    id: "spain",
+    slug: "spain",
+    name: "🇪🇸 Spain Visa",
+    tagline: "Explore Madrid, Barcelona, and Andalucia with expert BLS Spain booking support.",
+    imageUrl: "https://images.unsplash.com/photo-1509840841025-9088ba78a826?auto=format&fit=crop&w=800&q=80",
+    category: "Schengen Visa",
+    heroStats: [
+      { label: "Processing Time", value: "10-15 Days", icon: "Clock" },
+      { label: "Success Rate", value: "97.0%", icon: "TrendingUp" }
+    ]
+  }
+];
+
+const getMergedSubVisas = (firestoreVisas) => {
+  return SCHENGEN_SUB_VISAS_PRESETS.map(preset => {
+    const firestoreMatch = firestoreVisas.find(fv => {
+      const fSlug = (fv.slug || fv.id || "").toLowerCase().trim();
+      return fSlug === preset.slug;
+    });
+    if (firestoreMatch) {
+      return { 
+        ...preset, 
+        ...firestoreMatch,
+        // Override name to ensure exact flags
+        name: preset.name 
+      };
+    }
+    return preset;
+  });
+};
+
 export const VisaDetailPage = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
@@ -83,6 +152,7 @@ export const VisaDetailPage = () => {
   const [visaData, setVisaData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [subVisas, setSubVisas] = useState([]);
 
   // Tabs state
   const [activeTab, setActiveTab] = useState("overview");
@@ -135,6 +205,28 @@ export const VisaDetailPage = () => {
     fetchVisa();
     return () => {
       isMounted = false;
+    };
+  }, [slug]);
+
+  // Fetch sub-visas for Schengen visa page
+  useEffect(() => {
+    if (slug !== "schengen") {
+      setSubVisas([]);
+      return;
+    }
+
+    const unsubscribe = getVisaTypes(
+      (data) => {
+        setSubVisas(data);
+      },
+      true, // onlyPublished
+      (err) => {
+        console.error("Failed to load sub-visas:", err);
+      }
+    );
+
+    return () => {
+      if (unsubscribe) unsubscribe();
     };
   }, [slug]);
 
@@ -487,31 +579,121 @@ export const VisaDetailPage = () => {
           </div>
         </section>
 
-        {/* POPULAR DESTINATIONS GRID */}
-        {visaData.popularDestinations && visaData.popularDestinations.length > 0 && (
+        {/* POPULAR DESTINATIONS OR SCHENGEN SUB-VISAS */}
+        {visaData.slug === "schengen" ? (
           <section className="space-y-6">
             <h2 className="text-xl font-bold font-display text-[#0E221A] uppercase tracking-wider border-b border-slate-200/80 pb-2">
-              Popular Destinations
+              Types of Schengen Visa
             </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-4xl">
-              {visaData.popularDestinations.map((dest, idx) => (
-                <Link
-                  key={idx}
-                  to={`/visa/${dest.slug}`}
-                  className="relative h-40 rounded-2xl overflow-hidden group shadow-sm hover:shadow-md transition-all duration-300 block"
-                >
-                  <img
-                    src={dest.imageUrl}
-                    alt={dest.name}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                  />
-                  <div className="absolute inset-0 bg-black/40 flex items-end p-4">
-                    <span className="text-white font-bold text-sm tracking-wide group-hover:text-[#C5A880] transition-colors">{dest.name}</span>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {getMergedSubVisas(subVisas).map((visa) => {
+                const firstStat = visa.heroStats?.[0] || { label: "Processing Time", value: "Standard", icon: "Clock" };
+                const secondStat = visa.heroStats?.[1] || { label: "Success Rate", value: "High", icon: "TrendingUp" };
+
+                return (
+                  <div
+                    key={visa.id}
+                    className="bg-white border border-slate-100 rounded-2xl overflow-hidden hover:border-[#7FE6A2] hover:shadow-[0_20px_40px_rgba(29,80,58,0.06)] transition-all duration-300 flex flex-col justify-between group shadow-sm animate-[fadeIn_0.3s_ease-out]"
+                  >
+                    {/* Card Cover Image */}
+                    <div className="h-44 w-full overflow-hidden bg-slate-50 relative flex-shrink-0">
+                      {visa.imageUrl ? (
+                        <img
+                          src={visa.imageUrl}
+                          alt={visa.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-slate-400 uppercase tracking-widest text-[9px] font-bold">
+                          Eshaare Tours & Visas
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent"></div>
+                    </div>
+
+                    {/* Card Text Content */}
+                    <div className="p-5 pt-3 flex-grow flex flex-col justify-between space-y-4">
+                      <div className="space-y-3">
+                        <h3 className="text-base font-bold font-display text-gray-900 group-hover:text-[#1D503A] transition-colors leading-snug">
+                          {visa.name}
+                        </h3>
+                        <p className="text-[11px] text-slate-500 leading-relaxed line-clamp-2">
+                          {visa.tagline}
+                        </p>
+
+                        {/* Accent Divider */}
+                        <div className="h-[2px] bg-[#1D503A]/20 w-10 rounded"></div>
+
+                        {/* First 2 Stats badged side-by-side */}
+                        <div className="grid grid-cols-2 gap-3 p-3 bg-slate-50/50 border border-slate-100 rounded-xl font-mono">
+                          <div className="flex items-start gap-1.5 text-left">
+                            <div className="p-1 rounded bg-[#1D503A]/5 text-[#1D503A] mt-0.5">
+                              <StatIcon name={firstStat.icon} className="h-3.5 w-3.5" />
+                            </div>
+                            <div>
+                              <div className="text-[11px] font-bold text-gray-900 leading-tight">{firstStat.value}</div>
+                              <span className="text-[8px] text-slate-400 font-semibold uppercase tracking-wider font-sans">{firstStat.label}</span>
+                            </div>
+                          </div>
+                          <div className="flex items-start gap-1.5 text-left">
+                            <div className="p-1 rounded bg-[#1D503A]/5 text-[#1D503A] mt-0.5">
+                              <StatIcon name={secondStat.icon} className="h-3.5 w-3.5" />
+                            </div>
+                            <div>
+                              <div className="text-[11px] font-bold text-gray-900 leading-tight">{secondStat.value}</div>
+                              <span className="text-[8px] text-slate-400 font-semibold uppercase tracking-wider font-sans">{secondStat.label}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2 pt-1">
+                        <Link
+                          to={`/visa/${visa.slug}`}
+                          className="w-full text-center py-2 border border-[#1D503A]/25 text-[#1D503A] hover:bg-[#1D503A]/5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all"
+                        >
+                          Learn More
+                        </Link>
+                        <Link
+                          to={`/visa-services/${visa.slug}`}
+                          className="w-full text-center py-2 bg-[#1D503A] hover:bg-[#0e4a1e] text-white font-bold rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all shadow-sm flex items-center justify-center gap-1 group group-btn"
+                        >
+                          <span>Apply Now</span>
+                          <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+                        </Link>
+                      </div>
+                    </div>
                   </div>
-                </Link>
-              ))}
+                );
+              })}
             </div>
           </section>
+        ) : (
+          visaData.popularDestinations && visaData.popularDestinations.length > 0 && (
+            <section className="space-y-6">
+              <h2 className="text-xl font-bold font-display text-[#0E221A] uppercase tracking-wider border-b border-slate-200/80 pb-2">
+                Popular Destinations
+              </h2>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-4xl">
+                {visaData.popularDestinations.map((dest, idx) => (
+                  <Link
+                    key={idx}
+                    to={`/visa/${dest.slug}`}
+                    className="relative h-40 rounded-2xl overflow-hidden group shadow-sm hover:shadow-md transition-all duration-300 block"
+                  >
+                    <img
+                      src={dest.imageUrl}
+                      alt={dest.name}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                    />
+                    <div className="absolute inset-0 bg-black/40 flex items-end p-4">
+                      <span className="text-white font-bold text-sm tracking-wide group-hover:text-[#C5A880] transition-colors">{dest.name}</span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )
         )}
 
         {/* SCHENGEN COUNTRIES DIRECTORY */}
