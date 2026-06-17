@@ -460,5 +460,23 @@ service cloud.firestore {
     match /tours/{id} {
       allow read: if true;
     }
+
+    // ==========================================
+    // 14. App Packages Collection
+    // ==========================================
+    match /packages/{packageId} {
+      // Public read access; write only by staff
+      allow read: if true;
+      allow write: if isStaff();
+    }
+
+    // ==========================================
+    // 15. App Visas Collection
+    // ==========================================
+    match /visas/{visaId} {
+      // Public read access; write only by staff
+      allow read: if true;
+      allow write: if isStaff();
+    }
   }
 }
