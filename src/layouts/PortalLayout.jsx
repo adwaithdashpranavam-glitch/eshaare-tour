@@ -1,59 +1,28 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { 
   LayoutDashboard, FileText, FolderOpen, Calendar, 
-  CreditCard, MessageSquare, Settings, LogOut, Bell, Compass, Menu, X, Home
+  CreditCard, MessageSquare, Settings, LogOut, Bell, Menu, X
 } from "lucide-react";
-import { collection, query, where, onSnapshot } from "firebase/firestore";
-import { db } from "../lib/firebase";
 import toast from "react-hot-toast";
+import foxLogo from "../assets/fox-logo.png";
 
 export const PortalLayout = () => {
   const { userProfile, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-
-  const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const userMenuRef = useRef(null);
 
-  // Remove dark mode class for the client portal
+  // Force LIGHT mode for luxury theme
   useEffect(() => {
     document.documentElement.classList.remove("dark");
-  }, []);
-
-  // Fetch unread notifications count
-  useEffect(() => {
-    if (!userProfile?.id) return;
-    const notifRef = collection(db, "notifications");
-    const qNotif = query(notifRef, where("userId", "==", userProfile.id), where("read", "==", false));
-    const unsubscribeNotif = onSnapshot(qNotif, (snapshot) => {
-      setUnreadNotificationsCount(snapshot.size);
-    }, (err) => {
-      console.warn("Error loading notifications in layout:", err);
-    });
-    return () => unsubscribeNotif();
-  }, [userProfile]);
-
-  // Click outside listener to close user menu
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
-        setUserMenuOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [location.pathname]);
 
   const navItems = [
-    { label: "Back to Home", path: "/", icon: Home },
     { label: "Dashboard", path: "/portal/dashboard", icon: LayoutDashboard },
     { label: "Applications", path: "/portal/applications", icon: FileText },
     { label: "Documents", path: "/portal/documents", icon: FolderOpen },
-    { label: "Appointments", path: "/portal/appointments", icon: Calendar },
     { label: "Payments", path: "/portal/payments", icon: CreditCard },
     { label: "Messages", path: "/portal/messages", icon: MessageSquare },
     { label: "Settings", path: "/portal/settings", icon: Settings }
@@ -65,187 +34,230 @@ export const PortalLayout = () => {
     navigate("/portal/login");
   };
 
+  const getBreadcrumbs = () => {
+    const path = location.pathname;
+    if (path.startsWith("/portal/dashboard")) {
+      return ["Dashboard"];
+    } else if (path.startsWith("/portal/applications/")) {
+      return ["Dashboard", "Applications", "Application Details"];
+    } else if (path.startsWith("/portal/applications")) {
+      return ["Dashboard", "Applications"];
+    } else if (path.startsWith("/portal/appointments")) {
+      return ["Dashboard", "Appointments"];
+    } else if (path.startsWith("/portal/documents")) {
+      return ["Dashboard", "Documents"];
+    } else if (path.startsWith("/portal/payments")) {
+      return ["Dashboard", "Payments"];
+    } else if (path.startsWith("/portal/messages")) {
+      return ["Dashboard", "Messages"];
+    } else if (path.startsWith("/portal/settings")) {
+      return ["Dashboard", "Settings"];
+    } else if (path.startsWith("/portal/notifications")) {
+      return ["Dashboard", "Notifications"];
+    }
+    return ["Dashboard"];
+  };
+
   const getMonogram = (name) => {
     if (!name) return "CL";
-    const parts = name.trim().split(/\s+/).filter(Boolean);
+    let cleanName = name.includes("@") ? name.split("@")[0] : name;
+    const parts = cleanName.trim().split(/[\s._-]+/).filter(Boolean);
+    if (parts.length === 0) return "CL";
     if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
     return (parts[0][0] + parts[1][0]).toUpperCase();
   };
 
-  const userMonogram = getMonogram(userProfile?.name);
-
-  const sidebarContent = (
-    <div className="flex flex-col h-full bg-[#101010] text-[#E7E1D6]">
-      {/* Brand Header */}
-      <div className="h-16 flex items-center justify-between px-6 border-b border-white/10 shrink-0">
-        <Link to="/portal/dashboard" className="flex items-center space-x-2" onClick={() => setMobileMenuOpen(false)}>
-          <Compass className="h-5.5 w-5.5 text-[#C8A45D]" />
-          <span className="font-logo-serif font-semibold tracking-[0.15em] text-sm text-white uppercase">ESHAARE</span>
-        </Link>
-        <button
-          onClick={handleLogoutClick}
-          className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-white/5 rounded-lg transition-colors"
-          title="Logout"
-        >
-          <LogOut className="h-4.5 w-4.5" />
-        </button>
-      </div>
-
-      {/* Navigation */}
-      <nav className="flex-grow py-6 px-4 space-y-1.5 overflow-y-auto">
-        {navItems.map((item) => {
-          const ItemIcon = item.icon;
-          const isActive = location.pathname === item.path || location.pathname.startsWith(`${item.path}/`);
-          return (
-            <Link
-              key={item.label}
-              to={item.path}
-              onClick={() => setMobileMenuOpen(false)}
-              className={`flex items-center space-x-3.5 px-4 py-3 rounded-lg text-[11px] font-medium uppercase tracking-wider transition-all duration-200 ${
-                isActive
-                  ? "bg-[#C8A45D]/10 text-[#C8A45D] border-l-4 border-[#C8A45D] pl-2.5"
-                  : "text-gray-400 hover:text-white hover:bg-white/5 border-l-4 border-transparent"
-              }`}
-            >
-              <ItemIcon className="h-4.5 w-4.5" />
-              <span>{item.label}</span>
-            </Link>
-          );
-        })}
-      </nav>
-    </div>
-  );
+  const breadcrumbs = getBreadcrumbs();
+  const userName = userProfile?.name || "Client";
+  const userMonogram = getMonogram(userName);
 
   return (
-    <div className="portal-root min-h-screen w-full bg-[#F7F5F1] text-[#1A1A1A] flex flex-col md:flex-row font-sans">
-      
-      {/* Desktop Sidebar (Left side, fixed width 220px) */}
-      <aside className="hidden md:flex flex-col w-[220px] shrink-0 border-r border-[#E7E1D6]">
-        {sidebarContent}
-      </aside>
+    <div className="min-h-screen w-full bg-[#F8F6F2] text-[#1A1A1A] flex flex-col font-sans antialiased">
+      {/* Top Header Bar */}
+      <header className="h-16 w-full bg-white border-b border-[#E5E7EB] sticky top-0 z-30 flex items-center justify-between px-4 md:px-6 shadow-sm">
+        {/* Left: Eshaare Logo */}
+        <div className="flex items-center space-x-3">
+          <button 
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)} 
+            className="md:hidden p-1.5 rounded-lg hover:bg-gray-100 text-[#1A1A1A]"
+            aria-label="Toggle navigation menu"
+          >
+            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+          
+          <Link to="/portal/dashboard" className="flex items-center space-x-2 group">
+            <img
+              src={foxLogo}
+              alt="Eshaare Tour"
+              className="h-10 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+            />
+            <div className="leading-none">
+              <h1 className="text-lg md:text-xl text-[#0F3D2E] font-bold" style={{ fontFamily: "'Great Vibes', cursive" }}>
+                Eshaare Tour
+              </h1>
+              <p className="text-[5px] tracking-[0.25em] uppercase text-gray-500 font-semibold">
+                Visa Concierge
+              </p>
+            </div>
+          </Link>
+        </div>
 
-      {/* Mobile Header Bar */}
-      <header className="md:hidden h-16 bg-[#101010] text-[#E7E1D6] px-4 flex items-center justify-between z-30 sticky top-0 border-b border-white/10">
-        <button 
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)} 
-          className="p-2 rounded-lg hover:bg-white/5 text-[#E7E1D6]"
-          title="Toggle Menu"
-        >
-          {mobileMenuOpen ? <X className="h-5.5 w-5.5" /> : <Menu className="h-5.5 w-5.5" />}
-        </button>
+        {/* Center: Breadcrumb Navigation */}
+        <div className="hidden md:flex items-center space-x-2 text-xs font-medium text-[#6B7280]">
+          {breadcrumbs.map((crumb, idx) => {
+            const isLast = idx === breadcrumbs.length - 1;
+            return (
+              <React.Fragment key={crumb}>
+                {idx > 0 && <span className="text-gray-300">/</span>}
+                <span className={isLast ? "text-[#0F3D2E] font-semibold" : "hover:text-[#0F3D2E] transition-colors"}>
+                  {crumb}
+                </span>
+              </React.Fragment>
+            );
+          })}
+        </div>
 
-        <Link to="/portal/dashboard" className="flex items-center space-x-2">
-          <Compass className="h-5 w-5 text-[#C8A45D]" />
-          <span className="font-logo-serif font-semibold tracking-wider text-xs uppercase text-white">ESHAARE</span>
-        </Link>
+        {/* Right: Notifications, Messages, Profile Avatar */}
+        <div className="flex items-center space-x-2 md:space-x-4">
+          <Link 
+            to="/portal/notifications" 
+            className="p-2 text-gray-500 hover:text-[#0F3D2E] hover:bg-[#F8F6F2] rounded-full transition-all duration-200 relative"
+            title="Notifications"
+          >
+            <Bell className="h-5 w-5" />
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#C6A969] rounded-full"></span>
+          </Link>
+          
+          <Link 
+            to="/portal/messages" 
+            className="p-2 text-gray-500 hover:text-[#0F3D2E] hover:bg-[#F8F6F2] rounded-full transition-all duration-200"
+            title="Messages"
+          >
+            <MessageSquare className="h-5 w-5" />
+          </Link>
 
-        <Link to="/portal/notifications" className="p-2 relative rounded-lg hover:bg-white/5 text-[#E7E1D6]">
-          <Bell className="h-5 w-5" />
-          {unreadNotificationsCount > 0 && (
-            <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-[#C8A45D] rounded-full border-2 border-[#101010]" />
-          )}
-        </Link>
+          <Link 
+            to="/portal/settings"
+            className="h-9 w-9 rounded-full bg-[#0F3D2E]/10 border border-[#0F3D2E]/20 text-[#0F3D2E] font-bold text-xs flex items-center justify-center transition-all hover:border-[#C6A969] hover:bg-[#0F3D2E]/20 shadow-sm"
+            title={`Profile: ${userName}`}
+          >
+            {userMonogram}
+          </Link>
+        </div>
       </header>
 
-      {/* Mobile Sidebar Slide Drawer */}
-      {mobileMenuOpen && (
-        <div className="fixed inset-0 z-40 flex md:hidden">
-          {/* Backdrop */}
-          <div className="fixed inset-0 bg-black/50" onClick={() => setMobileMenuOpen(false)} />
-          {/* Drawer Panel */}
-          <div className="relative flex flex-col w-[240px] max-w-sm h-full bg-[#101010] animate-[slide-in-left_0.2s_ease-out]">
-            {sidebarContent}
-          </div>
-        </div>
-      )}
+      {/* Main Layout Body */}
+      <div className="flex-1 flex relative">
+        {/* Sidebar Container */}
+        {/* Desktop Sidebar */}
+        <aside className="hidden md:flex flex-col w-[240px] bg-white border-r border-[#E5E7EB] shrink-0 sticky top-16 h-[calc(100vh-4rem)] z-20">
+          <nav className="flex-1 py-6 px-4 space-y-1.5 overflow-y-auto">
+            {navItems.map((item) => {
+              const ItemIcon = item.icon;
+              const isActive = location.pathname === item.path || (item.path !== "/portal" && location.pathname.startsWith(`${item.path}/`));
+              return (
+                <Link
+                  key={item.label}
+                  to={item.path}
+                  className={`flex items-center space-x-3 px-4 py-3 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all duration-200 relative ${
+                    isActive
+                      ? "bg-[#0F3D2E]/5 text-[#0F3D2E]"
+                      : "text-[#6B7280] hover:text-[#0F3D2E] hover:bg-[#F8F6F2]"
+                  }`}
+                >
+                  {/* Active Gold Indicator Bar */}
+                  {isActive && (
+                    <div className="absolute left-0 top-1/4 bottom-1/4 w-1 bg-[#C6A969] rounded-r"></div>
+                  )}
+                  <ItemIcon className={`h-4.5 w-4.5 ${isActive ? "text-[#0F3D2E]" : "text-[#6B7280]"}`} />
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
+          </nav>
 
-      {/* Right Column (Header & Main Content Area) */}
-      <div className="flex-grow flex flex-col min-w-0">
-        
-        {/* Dedicated Portal Header (Desktop) */}
-        <header className="hidden md:flex h-16 bg-white border-b border-[#E7E1D6] items-center justify-between px-8 z-20 sticky top-0 shadow-sm">
-          {/* Left: Logo/Title */}
-          <div>
-            <h2 className="font-logo-serif font-semibold text-lg text-[#1A1A1A] tracking-wider uppercase flex items-center space-x-2">
-              <span>Eshaare Concierge Portal</span>
-            </h2>
-          </div>
-
-          {/* Right: Actions */}
-          <div className="flex items-center space-x-6">
-            {/* Notifications */}
-            <Link 
-              to="/portal/notifications" 
-              className="p-2 relative text-gray-500 hover:text-[#C8A45D] hover:bg-gray-50 rounded-full transition-colors"
-              title="Notifications"
-            >
-              <Bell className="h-5 w-5" />
-              {unreadNotificationsCount > 0 && (
-                <span className="absolute top-1 right-1 w-4.5 h-4.5 bg-[#C8A45D] text-white text-[9px] font-extrabold flex items-center justify-center rounded-full border border-white">
-                  {unreadNotificationsCount}
-                </span>
-              )}
-            </Link>
-
-            {/* Direct Logout Icon Button */}
+          {/* Sidebar Footer */}
+          <div className="p-4 border-t border-[#E5E7EB] bg-[#F8F6F2]/30 flex items-center justify-between">
+            <div className="flex items-center space-x-2.5 truncate min-w-0">
+              <div className="h-8 w-8 rounded-full bg-[#0F3D2E] text-white font-bold text-xs flex items-center justify-center flex-shrink-0">
+                {userMonogram}
+              </div>
+              <div className="truncate min-w-0">
+                <p className="text-xs font-bold text-[#1A1A1A] truncate leading-tight">{userName}</p>
+                <span className="text-[9px] text-[#6B7280] font-medium tracking-wide">Visa Concierge Client</span>
+              </div>
+            </div>
             <button
               onClick={handleLogoutClick}
-              className="p-2 text-gray-500 hover:text-red-500 hover:bg-gray-50 rounded-full transition-colors"
+              className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors flex-shrink-0"
               title="Logout"
             >
-              <LogOut className="h-5 w-5" />
+              <LogOut className="h-4.5 w-4.5" />
             </button>
+          </div>
+        </aside>
 
-            {/* Profile & User Menu */}
-            <div className="relative" ref={userMenuRef}>
-              <button
-                onClick={() => setUserMenuOpen(!userMenuOpen)}
-                className="flex items-center space-x-2.5 p-1.5 rounded-full hover:bg-gray-50 transition-all"
-                title="User Account"
-              >
-                <div className="h-9 w-9 rounded-full bg-[#E7E1D6] hover:bg-[#C8A45D]/20 text-[#1A1A1A] font-bold text-xs flex items-center justify-center border border-[#C8A45D]/30 transition-all uppercase">
-                  {userMonogram}
-                </div>
-              </button>
+        {/* Mobile Slide-Over Sidebar Drawer */}
+        {mobileMenuOpen && (
+          <div className="md:hidden fixed inset-0 z-40 flex">
+            {/* Backdrop */}
+            <div 
+              className="fixed inset-0 bg-black/30 backdrop-blur-xs transition-opacity" 
+              onClick={() => setMobileMenuOpen(false)}
+            />
+            
+            {/* Drawer Panel */}
+            <div className="relative flex flex-col w-[240px] max-w-xs bg-white h-[calc(100vh-4rem)] mt-16 border-r border-[#E5E7EB] shadow-xl animate-[slideIn_0.2s_ease-out]">
+              <nav className="flex-1 py-6 px-4 space-y-1.5 overflow-y-auto">
+                {navItems.map((item) => {
+                  const ItemIcon = item.icon;
+                  const isActive = location.pathname === item.path || (item.path !== "/portal" && location.pathname.startsWith(`${item.path}/`));
+                  return (
+                    <Link
+                      key={item.label}
+                      to={item.path}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={`flex items-center space-x-3 px-4 py-3 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all duration-200 relative ${
+                        isActive
+                          ? "bg-[#0F3D2E]/5 text-[#0F3D2E]"
+                          : "text-[#6B7280] hover:text-[#0F3D2E] hover:bg-[#F8F6F2]"
+                      }`}
+                    >
+                      {isActive && (
+                        <div className="absolute left-0 top-1/4 bottom-1/4 w-1 bg-[#C6A969] rounded-r"></div>
+                      )}
+                      <ItemIcon className={`h-4.5 w-4.5 ${isActive ? "text-[#0F3D2E]" : "text-[#6B7280]"}`} />
+                      <span>{item.label}</span>
+                    </Link>
+                  );
+                })}
+              </nav>
 
-              {/* Dropdown User Menu */}
-              {userMenuOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white border border-[#E7E1D6] rounded-xl shadow-lg py-2 z-30">
-                  <div className="px-4 py-2 border-b border-[#E7E1D6] text-xs">
-                    <p className="font-bold text-[#1A1A1A] truncate">{userProfile?.name || "Client Account"}</p>
-                    <p className="text-[10px] text-gray-500 truncate mt-0.5">{userProfile?.email}</p>
+              <div className="p-4 border-t border-[#E5E7EB] bg-[#F8F6F2]/30 flex items-center justify-between">
+                <div className="flex items-center space-x-2.5 truncate">
+                  <div className="h-8 w-8 rounded-full bg-[#0F3D2E] text-white font-bold text-xs flex items-center justify-center flex-shrink-0">
+                    {userMonogram}
                   </div>
-                  
-                  <Link 
-                    to="/portal/settings" 
-                    onClick={() => setUserMenuOpen(false)}
-                    className="flex items-center space-x-2.5 px-4 py-2.5 text-xs text-[#1A1A1A] hover:bg-[#F7F5F1] hover:text-[#C8A45D] transition-colors"
-                  >
-                    <Settings className="w-4 h-4 text-gray-400" />
-                    <span>Account Settings</span>
-                  </Link>
-
-                  <button 
-                    onClick={() => {
-                      setUserMenuOpen(false);
-                      handleLogoutClick();
-                    }}
-                    className="w-full flex items-center space-x-2.5 px-4 py-2.5 text-xs text-red-600 hover:bg-[#F7F5F1] transition-colors border-t border-[#E7E1D6]/60 text-left"
-                  >
-                    <LogOut className="w-4 h-4 text-red-500" />
-                    <span>Logout</span>
-                  </button>
+                  <div className="truncate">
+                    <p className="text-xs font-bold text-[#1A1A1A] truncate leading-tight">{userName}</p>
+                    <span className="text-[9px] text-[#6B7280]">Visa Client</span>
+                  </div>
                 </div>
-              )}
+                <button
+                  onClick={handleLogoutClick}
+                  className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                  title="Logout"
+                >
+                  <LogOut className="h-4.5 w-4.5" />
+                </button>
+              </div>
             </div>
           </div>
-        </header>
+        )}
 
-        {/* Main Content Pane */}
-        <main className="flex-grow p-6 md:p-8 overflow-y-auto">
-          <div className="max-w-[1200px] mx-auto">
-            <Outlet />
-          </div>
+        {/* Page Content Viewport */}
+        <main className="flex-grow p-4 md:p-8 overflow-y-auto">
+          <Outlet />
         </main>
       </div>
     </div>

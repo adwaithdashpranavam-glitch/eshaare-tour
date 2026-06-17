@@ -120,41 +120,52 @@ button:focus, a:focus, input:focus, select:focus, textarea:focus {
   to { width: 100% }
 }
 
-/* Premium Luxury Concierge Portal Overrides */
-.portal-root {
-  font-family: 'Inter', sans-serif !important;
-  background-color: #F7F5F1 !important;
-  color: #1A1A1A !important;
+/* Premium Luxury Visa Concierge Styles */
+:root {
+  --portal-primary: #0F3D2E;
+  --portal-primary-light: #1E6F5C;
+  --portal-gold: #C6A969;
+  --portal-background: #F8F6F2;
+  --portal-surface: #FFFFFF;
+  --portal-text-primary: #1A1A1A;
+  --portal-text-secondary: #6B7280;
+  --portal-border: #E5E7EB;
 }
 
-.portal-root h1, 
-.portal-root h2, 
-.portal-root h3, 
-.portal-root h4, 
-.portal-root h5, 
-.portal-root h6,
-.portal-root .font-display,
-.portal-root .font-serif {
-  font-family: 'Inter', sans-serif !important;
-  color: #1A1A1A !important;
+/* Luxury container */
+.portal-bg {
+  background-color: var(--portal-background);
+  color: var(--portal-text-primary);
 }
 
-/* Premium luxury portal brand font */
-.font-logo-serif {
-  font-family: 'Playfair Display', serif !important;
+/* Luxury card design */
+.luxury-card {
+  background-color: var(--portal-surface);
+  border: 1px solid var(--portal-border);
+  box-shadow: 0 4px 20px rgba(15, 61, 46, 0.03), 0 1px 3px rgba(0, 0, 0, 0.01);
+  border-radius: 16px;
+  transition: all 0.25s ease;
 }
 
-/* Premium luxury portal card style */
-.portal-card {
-  background-color: #FFFFFF !important;
-  border: 1px solid #E7E1D6 !important;
-  border-radius: 20px !important;
-  box-shadow: 0 10px 30px rgba(26, 26, 26, 0.03) !important;
-  transition: all 0.3s ease;
+.luxury-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(15, 61, 46, 0.06), 0 2px 6px rgba(0, 0, 0, 0.02);
+  border-color: rgba(198, 169, 105, 0.3);
 }
 
-.portal-card:hover {
-  box-shadow: 0 15px 35px rgba(200, 164, 93, 0.06) !important;
-  border-color: #C8A45D !important;
+/* Slim scrollbar for premium panels */
+.premium-scrollbar::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+.premium-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.premium-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(198, 169, 105, 0.2);
+  border-radius: 99px;
+}
+.premium-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(198, 169, 105, 0.4);
 }
 
