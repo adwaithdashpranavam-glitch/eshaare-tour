@@ -86,6 +86,28 @@ export const PaymentsPage = () => {
     p.invoiceNo?.toLowerCase().includes(searchVal.toLowerCase())
   );
 
+  const today = new Date();
+  
+  const todayCollections = payments
+    .filter(p => {
+       const d = p.date?.toDate ? p.date.toDate() : new Date(p.date);
+       return p.status === "Paid" && d.toDateString() === today.toDateString();
+    })
+    .reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
+
+  const monthCollections = payments
+    .filter(p => {
+       const d = p.date?.toDate ? p.date.toDate() : new Date(p.date);
+       return p.status === "Paid" && d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear();
+    })
+    .reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
+
+  const outstandingOverdue = payments
+    .filter(p => p.status === "Overdue")
+    .reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
+
+  const pendingDrafts = payments.filter(p => p.status === "Draft").length;
+
   return (
     <div className="space-y-6 font-sans">
       
@@ -106,10 +128,10 @@ export const PaymentsPage = () => {
 
       {/* KPI Cards Row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
-        <KPICard title="Today's Collections" value="1,200 AED" icon="CreditCard" color="green" />
-        <KPICard title="Month Collections" value="45,000 AED" icon="TrendingUp" color="gold" />
-        <KPICard title="Outstanding Overdue" value="650 AED" icon="AlertTriangle" color="red" />
-        <KPICard title="Pending Drafts" value="2 invoices" icon="Landmark" color="orange" />
+        <KPICard title="Today's Collections" value={`${formatCurrency(todayCollections)}`} icon="CreditCard" color="green" />
+        <KPICard title="Month Collections" value={`${formatCurrency(monthCollections)}`} icon="TrendingUp" color="gold" />
+        <KPICard title="Outstanding Overdue" value={`${formatCurrency(outstandingOverdue)}`} icon="AlertTriangle" color="red" />
+        <KPICard title="Pending Drafts" value={`${pendingDrafts} invoices`} icon="Landmark" color="orange" />
       </div>
 
       {/* Search Bar */}
