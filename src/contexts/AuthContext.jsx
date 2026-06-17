@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useRef } from "react";
 import { 
   onAuthStateChanged, 
   signInWithEmailAndPassword, 
@@ -29,7 +29,28 @@ export const AuthProvider = ({ children }) => {
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchAndLinkProfile = async (currentUser) => {
+  // Refs to avoid stale closures and duplicate concurrent fetching/writes in auth listeners
+  const userProfileRef = useRef(null);
+  const userRef = useRef(null);
+
+  const setUserProfileAndRef = (profile) => {
+    userProfileRef.current = profile;
+    setUserProfile(profile);
+  };
+
+  const setUserAndRef = (currentUser) => {
+    userRef.current = currentUser;
+    setUser(currentUser);
+  };
+
+  // Set persistence once at application mount to avoid blocking logins
+  useEffect(() => {
+    setPersistence(auth, browserLocalPersistence).catch((err) => {
+      console.warn("Error setting auth persistence:", err);
+    });
+  }, []);
+
+  const fetchAndLinkProfile = async (currentUser, skipUpdate = false) => {
     const userDocRef = doc(db, "users", currentUser.uid);
     const userDoc = await getDoc(userDocRef);
     const lastLoginAt = new Date();
@@ -37,12 +58,14 @@ export const AuthProvider = ({ children }) => {
     if (userDoc.exists()) {
       const data = userDoc.data();
       // Only update lastLoginAt - don't change role/status/uid so we don't violate update rules
-      try {
-        await setDoc(userDocRef, { lastLoginAt }, { merge: true });
-      } catch (e) {
-        console.warn("Could not update lastLoginAt:", e);
+      if (!skipUpdate) {
+        try {
+          await setDoc(userDocRef, { lastLoginAt }, { merge: true });
+        } catch (e) {
+          console.warn("Could not update lastLoginAt:", e);
+        }
       }
-      return { ...data, lastLoginAt };
+      return { ...data, lastLoginAt: data.lastLoginAt || lastLoginAt };
     }
     
     // If UID doc does not exist, check if there's a pre-created staff profile using lowercase email as ID
@@ -87,11 +110,15 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     setLoading(true);
     try {
-      await setPersistence(auth, browserLocalPersistence);
       const userCredential = await signInWithEmailAndPassword(auth, email.trim(), password);
       const currentUser = userCredential.user;
 
-      let profileData = await fetchAndLinkProfile(currentUser);
+      // Check if profile was already fetched by onAuthStateChanged listener to avoid duplicate read
+      let profileData = userProfileRef.current;
+      if (!profileData || userRef.current?.uid !== currentUser.uid) {
+        // Fetch profile data without blocking on the write
+        profileData = await fetchAndLinkProfile(currentUser, true);
+      }
 
       if (profileData.status === "Suspended" || profileData.status === "Disabled") {
         toast.error("Your account has been suspended. Please contact support.");
@@ -99,49 +126,70 @@ export const AuthProvider = ({ children }) => {
         throw new Error("Your account has been suspended.");
       }
 
-      // Log login action
-      try {
-        const logAuthEventFn = httpsCallable(functions, "logAuthEvent");
-        await logAuthEventFn({ action: "USER_LOGIN" });
-      } catch (err) {
+      // Log login action (in background)
+      const logAuthEventFn = httpsCallable(functions, "logAuthEvent");
+      logAuthEventFn({ action: "USER_LOGIN" }).catch((err) => {
         console.warn("Audit logging failed:", err);
-      }
+      });
 
-      // If they are a client/customer, update the 'customers' collection as well
+      // Update lastLoginAt in users collection (in background)
+      const userDocRef = doc(db, "users", currentUser.uid);
+      setDoc(userDocRef, { lastLoginAt: new Date() }, { merge: true }).catch((e) => {
+        console.warn("Could not update lastLoginAt in background:", e);
+      });
+      // If they are a client/customer, update the 'customers' collection as well (in background)
       if (profileData.role === ROLES.CLIENT || profileData.role === "customer") {
         const customerRef = doc(db, "customers", currentUser.uid);
-        const customerDoc = await getDoc(customerRef);
-        let name = profileData.name;
-        if (customerDoc.exists()) {
-          const custData = customerDoc.data();
-          if (custData.name && custData.name !== "Client User") {
-            name = custData.name;
+        const originalProfile = { ...profileData };
+        
+        // Run customer document check, merge, and write completely asynchronously
+        (async () => {
+          const customerDoc = await getDoc(customerRef);
+          let name = originalProfile.name;
+          let mergedData = {};
+          if (customerDoc.exists()) {
+            const custData = customerDoc.data();
+            if (custData.name && custData.name !== "Client User") {
+              name = custData.name;
+            }
+            mergedData = {
+              ...custData,
+              phone: custData.phone || originalProfile.phone || originalProfile.phoneNumber || "",
+              phoneNumber: custData.phone || originalProfile.phoneNumber || originalProfile.phone || "",
+              name: name || "Client User"
+            };
+          } else {
+            mergedData = {
+              phone: originalProfile.phone || originalProfile.phoneNumber || "",
+              phoneNumber: originalProfile.phone || originalProfile.phoneNumber || "",
+              name: name || "Client User"
+            };
           }
-          profileData = { 
-            ...profileData, 
-            ...custData,
-            phone: custData.phone || profileData.phone || profileData.phoneNumber || "",
-            phoneNumber: custData.phone || profileData.phoneNumber || profileData.phone || ""
-          };
-        } else {
-          profileData.phone = profileData.phone || profileData.phoneNumber || "";
-          profileData.phoneNumber = profileData.phone;
-        }
-        await setDoc(customerRef, {
-          uid: currentUser.uid,
-          name: name || "Client User",
-          email: profileData.email || currentUser.email || "",
-          phone: profileData.phone || "",
-          nationality: profileData.nationality || "",
-          createdAt: profileData.createdAt || new Date(),
-          lastLoginAt: new Date(),
-          status: "Active"
-        }, { merge: true });
-        profileData.name = name || "Client User";
-      }
 
-      setUserProfile(profileData);
-      setUser(currentUser);
+          // Update state and ref in the background so the user gets the merged data
+          if (userProfileRef.current && userProfileRef.current.uid === currentUser.uid) {
+            setUserProfileAndRef({
+              ...userProfileRef.current,
+              ...mergedData
+            });
+          }
+
+          await setDoc(customerRef, {
+            uid: currentUser.uid,
+            name: name || "Client User",
+            email: originalProfile.email || currentUser.email || "",
+            phone: mergedData.phone || "",
+            nationality: originalProfile.nationality || mergedData.nationality || "",
+            createdAt: originalProfile.createdAt || mergedData.createdAt || new Date(),
+            lastLoginAt: new Date(),
+            status: "Active"
+          }, { merge: true });
+        })().catch((err) => {
+          console.warn("Background customer sync failed:", err);
+        });
+      }
+      setUserProfileAndRef(profileData);
+      setUserAndRef(currentUser);
       return currentUser;
     } catch (error) {
       console.error("Login failed:", error);
@@ -154,7 +202,6 @@ export const AuthProvider = ({ children }) => {
   const register = async (email, password, extraData) => {
     setLoading(true);
     try {
-      await setPersistence(auth, browserLocalPersistence);
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       
@@ -169,10 +216,8 @@ export const AuthProvider = ({ children }) => {
         ...extraData
       };
 
-      // Save profile to Firestore 'users'
+      // Save profile to Firestore 'users' and 'customers' (await them during registration)
       await setDoc(doc(db, "users", user.uid), profileData);
-      
-      // Save profile to Firestore 'customers'
       await setDoc(doc(db, "customers", user.uid), {
         uid: user.uid,
         name: extraData.name || "Client User",
@@ -185,11 +230,9 @@ export const AuthProvider = ({ children }) => {
       });
       
       // Set state directly immediately to prevent race condition
-      setUserProfile(profileData);
-      setUser(user);
+      setUserProfileAndRef(profileData);
+      setUserAndRef(user);
 
-      // Registration audit is handled automatically on the backend via Auth onCreate trigger (onUserCreated)
-      
       return user;
     } catch (error) {
       console.error("Registration failed:", error);
@@ -202,17 +245,15 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     setLoading(true);
     try {
-      if (user) {
-        try {
-          const logAuthEventFn = httpsCallable(functions, "logAuthEvent");
-          await logAuthEventFn({ action: "USER_LOGOUT" });
-        } catch (err) {
+      if (userRef.current) {
+        const logAuthEventFn = httpsCallable(functions, "logAuthEvent");
+        logAuthEventFn({ action: "USER_LOGOUT" }).catch((err) => {
           console.warn("Audit logging failed:", err);
-        }
+        });
       }
       await signOut(auth);
-      setUser(null);
-      setUserProfile(null);
+      setUserAndRef(null);
+      setUserProfileAndRef(null);
     } catch (error) {
       console.error("Logout failed:", error);
     } finally {
@@ -225,20 +266,20 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       if (currentUser) {
         // Skip re-fetching if login() already set the profile for this user (avoids race condition)
-        if (userProfile && user?.uid === currentUser.uid) {
+        if (userProfileRef.current && userRef.current?.uid === currentUser.uid) {
           setLoading(false);
           return;
         }
         try {
-          const profile = await fetchAndLinkProfile(currentUser);
+          const profile = await fetchAndLinkProfile(currentUser, true);
           
           let updatedProfile = { ...profile };
 
           if (updatedProfile && (updatedProfile.status === "Suspended" || updatedProfile.status === "Disabled")) {
             toast.error("Your account has been suspended. Please contact support.");
             await signOut(auth);
-            setUser(null);
-            setUserProfile(null);
+            setUserAndRef(null);
+            setUserProfileAndRef(null);
             setLoading(false);
             return;
           }
@@ -266,19 +307,19 @@ export const AuthProvider = ({ children }) => {
             if (loginDate < fifteenDaysAgo) {
               toast.error("Session expired (15 days max). Please log in again.");
               await signOut(auth);
-              setUser(null);
-              setUserProfile(null);
+              setUserAndRef(null);
+              setUserProfileAndRef(null);
               setLoading(false);
               return;
             }
           }
 
-          setUser(currentUser);
-          setUserProfile(updatedProfile);
+          setUserAndRef(currentUser);
+          setUserProfileAndRef(updatedProfile);
         } catch (error) {
           console.error("Error fetching user profile:", error);
-          setUser(currentUser);
-          setUserProfile({
+          setUserAndRef(currentUser);
+          setUserProfileAndRef({
             uid: currentUser.uid,
             email: currentUser.email,
             name: "User Profile Error",
@@ -286,8 +327,8 @@ export const AuthProvider = ({ children }) => {
           });
         }
       } else {
-        setUser(null);
-        setUserProfile(null);
+        setUserAndRef(null);
+        setUserProfileAndRef(null);
       }
       setLoading(false);
     });

@@ -192,6 +192,14 @@ export const PublicLayout = () => {
     }
   ];
 
+  const filteredNavData = navData.filter(item => {
+    // Hide APPOINTMENTS from public nav for logged in client portal users
+    if (user && !isAdmin && item.title === "APPOINTMENTS") {
+      return false;
+    }
+    return true;
+  });
+
   // Slug conversion mapping helper
   const toSlug = (text) => {
     const t = text.trim();
@@ -199,7 +207,7 @@ export const PublicLayout = () => {
     if (t === "Home") return "/";
     if (t === "About Us") return "/about";
     if (t === "Contact Us" || t === "Request Callback") return "/contact";
-    if (t === "Appointments" || t === "APPOINTMENTS") return "/appointment";
+    if (t === "Appointments" || t === "APPOINTMENTS") return (user && !isAdmin) ? "/portal/appointments" : "/appointment";
     if (t === "Documentation" || t === "DOCUMENTATION") return "/resources";
     if (t === "Eligibility" || t === "ELIGIBILITY") return "/visa-eligibility";
 
@@ -401,7 +409,7 @@ export const PublicLayout = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center gap-6 xl:gap-8 ml-8">
-            {navData.map((navItem) => (
+            {filteredNavData.map((navItem) => (
               <div key={navItem.title} className="relative group/main py-8">
                 {navItem.subcategories ? (
                   <>
@@ -478,7 +486,7 @@ export const PublicLayout = () => {
             )}
 
             <Link
-              to="/appointment"
+              to={(user && !isAdmin) ? "/portal/appointments" : "/appointment"}
               className="group relative flex items-center gap-2 h-9 bg-[#1D503A] border border-[#1D503A] text-white px-3 rounded-full font-semibold text-sm hover:bg-[#0e4a1e] transition-all duration-300 overflow-hidden shadow-md"
             >
               <Phone className="h-4 w-4" />
@@ -516,7 +524,7 @@ export const PublicLayout = () => {
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-50 lg:hidden bg-black/40 backdrop-blur-sm pt-20">
           <div className="bg-white max-h-[calc(100vh-80px)] overflow-y-auto shadow-xl p-4 flex flex-col gap-2">
-            {navData.map((navItem) => (
+            {filteredNavData.map((navItem) => (
               <div key={navItem.title} className="border-b border-gray-50 last:border-0">
                 {navItem.subcategories ? (
                   <>
@@ -614,7 +622,7 @@ export const PublicLayout = () => {
               )}
 
               <Link
-                to="/appointment"
+                to={(user && !isAdmin) ? "/portal/appointments" : "/appointment"}
                 className="bg-[#1D503A] text-white py-3 rounded-full text-center font-semibold text-sm shadow-md hover:bg-[#0e4a1e]"
                 onClick={() => setMobileMenuOpen(false)}
               >

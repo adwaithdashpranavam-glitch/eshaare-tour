@@ -49,6 +49,7 @@ export const PortalDashboard = () => {
   const [pendingDocsCount, setPendingDocsCount] = useState(0);
   const [upcomingApptsCount, setUpcomingApptsCount] = useState(0);
   const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
+  const [appointments, setAppointments] = useState([]);
 
   const getCountryFlag = (destination) => {
     const dest = destination?.toLowerCase() || "";
@@ -70,6 +71,28 @@ export const PortalDashboard = () => {
   };
 
 
+
+  // Fetch appointments for the customer dashboard preview
+  useEffect(() => {
+    if (!userProfile?.email) return;
+
+    const appRef = collection(db, "appointments");
+    const q = query(appRef, where("email", "==", userProfile.email.toLowerCase()));
+    
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      if (!snapshot.empty) {
+        const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setAppointments(list);
+      } else {
+        setAppointments([]);
+      }
+    }, (error) => {
+      console.warn("Error fetching appointments:", error);
+      setAppointments([]);
+    });
+
+    return () => unsubscribe();
+  }, [userProfile]);
 
   // Fetch cases details, appointments count & unread messages count
   useEffect(() => {
@@ -394,6 +417,42 @@ export const PortalDashboard = () => {
               {activeCases.length === 0 && (
                 <div className="text-center py-12 text-xs text-gray-400 italic">
                   No active visa files registered. Start a draft or request assistance from your consultant.
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Appointments Details */}
+          <div className="bg-white border border-[#E7E1D6] rounded-[20px] p-6 shadow-sm space-y-5">
+            <div className="flex justify-between items-center border-b border-[#E7E1D6]/60 pb-3">
+              <h3 className="text-base font-semibold text-[#1A1A1A]">Upcoming Consultations</h3>
+              <Link to="/portal/appointments" className="text-xs text-[#C8A45D] hover:underline flex items-center gap-1">
+                <span>View All</span>
+                <ChevronRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+
+            <div className="space-y-4">
+              {appointments.slice(0, 3).map((app) => (
+                <div key={app.id} className="p-5 bg-white border border-[#E7E1D6] rounded-xl flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4 hover:border-[#C8A45D] hover:shadow-sm transition-all">
+                  <div className="flex items-center space-x-4">
+                    <div className="p-3 rounded-xl bg-[#F7F5F1] border border-[#E7E1D6] text-[#C8A45D] shrink-0">
+                      <Calendar className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-semibold text-[#1A1A1A]">{app.time}</h4>
+                      <span className="text-[10px] text-gray-500 block uppercase tracking-wider">{app.type} ({app.consultant || "Staff Advisor"})</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between sm:justify-end space-x-4 border-t sm:border-t-0 pt-3 sm:pt-0 border-gray-100">
+                    <span className="text-xs text-gray-500 font-medium">{formatShortDate(app.date)}</span>
+                    <PortalStatusBadge status={app.status} />
+                  </div>
+                </div>
+              ))}
+              {appointments.length === 0 && (
+                <div className="text-center py-6 text-xs text-gray-400 italic">
+                  No upcoming sessions booked. <Link to="/portal/appointments" className="text-[#C8A45D] hover:underline font-semibold">Book a session</Link> to get started.
                 </div>
               )}
             </div>

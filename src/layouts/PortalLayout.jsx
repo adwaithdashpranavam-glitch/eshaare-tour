@@ -3,7 +3,7 @@ import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { 
   LayoutDashboard, FileText, FolderOpen, Calendar, 
-  CreditCard, MessageSquare, Settings, LogOut, Bell, Compass, Menu, X
+  CreditCard, MessageSquare, Settings, LogOut, Bell, Compass, Menu, X, Home
 } from "lucide-react";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { db } from "../lib/firebase";
@@ -49,6 +49,7 @@ export const PortalLayout = () => {
   }, []);
 
   const navItems = [
+    { label: "Back to Home", path: "/", icon: Home },
     { label: "Dashboard", path: "/portal/dashboard", icon: LayoutDashboard },
     { label: "Applications", path: "/portal/applications", icon: FileText },
     { label: "Documents", path: "/portal/documents", icon: FolderOpen },
