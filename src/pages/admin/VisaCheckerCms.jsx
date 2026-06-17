@@ -74,29 +74,6 @@ const DEFAULT_RULES = [
   { condition: "visaRefusal", operator: "equals", value: "Yes", scoreModifier: -30 }
 ];
 
-const MOCK_APPLICATIONS = [
-  { id: "APP-001", fullName: "Amit Sharma", destination: "Schengen Europe", score: 85, status: "Green", assignedStaff: "Rakhi G Hari", priority: "Medium", createdAt: "2026-06-05", internalNotes: "Pending VFS slot check", formData: { monthlySalary: 14000, employmentStatus: "Employed (Private)" } },
-  { id: "APP-002", fullName: "Lina Mikdadi", destination: "United Kingdom", score: 62, status: "Yellow", assignedStaff: "Suresh Kumar", priority: "High", createdAt: "2026-06-08", internalNotes: "Needs bank file audit", formData: { monthlySalary: 8500, employmentStatus: "Self-Employed" } },
-  { id: "APP-003", fullName: "Hamdan Jassim", destination: "United States", score: 45, status: "Red", assignedStaff: "Hassan Ali", priority: "High", createdAt: "2026-06-09", internalNotes: "Previous US visa refusal reported", formData: { visaRefusal: "Yes", monthlySalary: 18000 } }
-];
-
-const MOCK_LEADS = [
-  { id: "LEAD-001", contactName: "Sarah Connor", contactPhone: "+971501111111", destinationCountry: "Germany", source: "visa-checker-lead", stage: "New Lead", priority: "High", notes: "Prefers email contact", createdAt: "2026-06-09" },
-  { id: "LEAD-002", contactName: "Zayd Al-Mansoori", contactPhone: "+971502222222", destinationCountry: "Schengen", source: "website", stage: "Contacted", priority: "Medium", notes: "Discussing holiday package options", createdAt: "2026-06-08" },
-  { id: "LEAD-003", contactName: "John Doe", contactPhone: "+971503333333", destinationCountry: "United Kingdom", source: "visa-checker-lead", stage: "Consultation", priority: "Medium", notes: "Scheduling VFS prep call", createdAt: "2026-06-07" }
-];
-
-const MOCK_AUDITS = [
-  { timestamp: "2026-06-10 09:30:12", admin: "Super Admin", action: "Updated Theme Config", oldValue: "accent=#fff", newValue: "accent=#D4AF37" },
-  { timestamp: "2026-06-09 16:45:00", admin: "Visa Manager", action: "Added Step Field", oldValue: "Count=5", newValue: "Count=6" },
-  { timestamp: "2026-06-09 11:20:15", admin: "Reviewer Team", action: "Approved Attachment", oldValue: "Pending", newValue: "Verified" }
-];
-
-const MOCK_UPLOADS_STATUS = {
-  "Passport Copy": { status: "Verified", file: "passport_draft.pdf" },
-  "Bank Statement": { status: "Pending Review", file: "bank_stmt_may.pdf" },
-  "Employer NOC": { status: "Rejected", file: "noc_unsealed.pdf", comment: "Missing official stamp." }
-};
 
 export const VisaCheckerCms = ({ activeTab = "cms" }) => {
   // Config states synced to Firebase with immediate local fallbacks
@@ -121,7 +98,7 @@ export const VisaCheckerCms = ({ activeTab = "cms" }) => {
 
   // CRM Applications details state
   const [selectedApp, setSelectedApp] = useState(null);
-  const [appDocsReview, setAppDocsReview] = useState(MOCK_UPLOADS_STATUS);
+  const [appDocsReview, setAppDocsReview] = useState({});
 
   // Form builder editor state
   const [activeStepEdit, setActiveStepEdit] = useState(0);
@@ -390,17 +367,17 @@ export const VisaCheckerCms = ({ activeTab = "cms" }) => {
 
   // Chart analytics configurations
   const barChartData = [
-    { country: "Schengen Europe", apps: applications.filter(a => a.destination?.includes("Schengen")).length + 8 },
-    { country: "UK", apps: applications.filter(a => a.destination?.includes("United Kingdom")).length + 6 },
-    { country: "USA", apps: applications.filter(a => a.destination?.includes("United States")).length + 4 },
-    { country: "UAE", apps: 3 },
-    { country: "Saudi", apps: 2 }
+    { country: "Schengen Europe", apps: applications.filter(a => a.destination?.includes("Schengen")).length },
+    { country: "UK", apps: applications.filter(a => a.destination?.includes("United Kingdom")).length },
+    { country: "USA", apps: applications.filter(a => a.destination?.includes("United States")).length },
+    { country: "UAE", apps: applications.filter(a => a.destination?.includes("United Arab Emirates")).length },
+    { country: "Saudi", apps: applications.filter(a => a.destination?.includes("Saudi Arabia")).length }
   ];
 
   const pieChartData = [
-    { name: "Approved", value: applications.filter(a => a.score >= 80).length + 12, color: "#10B981" },
-    { name: "Additional Docs", value: applications.filter(a => a.score >= 55 && a.score < 80).length + 8, color: "#F59E0B" },
-    { name: "Consultation Req", value: applications.filter(a => a.score < 55).length + 4, color: "#EF4444" }
+    { name: "Approved", value: applications.filter(a => a.score >= 80).length, color: "#10B981" },
+    { name: "Additional Docs", value: applications.filter(a => a.score >= 55 && a.score < 80).length, color: "#F59E0B" },
+    { name: "Consultation Req", value: applications.filter(a => a.score < 55).length, color: "#EF4444" }
   ];
 
   // Restrict tabs editing permissions based on simulated Role
@@ -516,7 +493,7 @@ export const VisaCheckerCms = ({ activeTab = "cms" }) => {
                   <div className="space-y-3 py-2">
                     <div className="flex justify-between border-b border-gray-800 pb-1.5">
                       <span className="text-gray-400">Total Cases Evaluated</span>
-                      <span className="font-bold text-white">{applications.length + 42}</span>
+                      <span className="font-bold text-white">{applications.length}</span>
                     </div>
                     <div className="flex justify-between border-b border-gray-800 pb-1.5">
                       <span className="text-gray-400">High Success Matches</span>
@@ -573,6 +550,7 @@ export const VisaCheckerCms = ({ activeTab = "cms" }) => {
                       </thead>
                       <tbody className="divide-y divide-gray-800">
                         {leads
+                          .filter(l => l.contactName)
                           .filter(l => leadFilters.stage === "All" ? true : l.stage === leadFilters.stage)
                           .map((lead) => (
                             <tr key={lead.id} className="hover:bg-white/2 transition-colors">
@@ -697,7 +675,7 @@ export const VisaCheckerCms = ({ activeTab = "cms" }) => {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-800">
-                      {applications.map((app) => (
+                      {applications.filter(a => a.fullName).map((app) => (
                         <tr key={app.id} className="hover:bg-white/2 transition-colors">
                           <td className="p-3 font-mono text-gray-400">{app.id.slice(0, 7)}</td>
                           <td className="p-3 font-semibold text-white">{app.fullName}</td>

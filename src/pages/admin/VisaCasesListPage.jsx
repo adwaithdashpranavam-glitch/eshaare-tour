@@ -144,7 +144,7 @@ export const VisaCasesListPage = () => {
                 <td className="px-6 py-4 font-mono font-bold text-secondary text-xs">{c.caseNo}</td>
                 <td className="px-6 py-4 font-semibold text-white">{c.travellerName}</td>
                 <td className="px-6 py-4 text-xs">{c.visaType}</td>
-                <td className="px-6 py-4 text-xs font-semibold">{c.destination}</td>
+                <td className="px-6 py-4 text-xs font-semibold">{c.destinationCountry || c.destination}</td>
                 <td className="px-6 py-4 text-xs">{c.assignedOfficer || "Unassigned"}</td>
                 <td className="px-6 py-4"><StatusBadge status={c.stage} /></td>
                 <td className="px-6 py-4">
