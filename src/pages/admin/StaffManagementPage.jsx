@@ -7,56 +7,6 @@ import Modal from "../../components/ui/Modal";
 import { useAuth } from "../../contexts/AuthContext";
 import toast from "react-hot-toast";
 
-const DUMMY_SPECIALISTS = [
-  {
-    name: "Rakhi G Hari",
-    email: "rakhi@eshaareuae.com",
-    role: "manager",
-    designation: "Managing Director",
-    intro: "Coordinating premium custom holiday designs and ensuring absolute file compliance for high-net-worth travelers.",
-    img: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=600&q=80",
-    visasFiled: 2400,
-    experienceYears: 12,
-    successRate: 99,
-    status: "Active"
-  },
-  {
-    name: "Suresh Kumar",
-    email: "suresh@eshaareuae.com",
-    role: "visa_ops",
-    designation: "Senior Visa Specialist",
-    intro: "Expert in Schengen, UK, and USA document audits with deep knowledge of VFS visa operations and embassy protocols.",
-    img: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=600&q=80",
-    visasFiled: 1850,
-    experienceYears: 9,
-    successRate: 98,
-    status: "Active"
-  },
-  {
-    name: "Aisha Al-Mansoori",
-    email: "aisha@eshaareuae.com",
-    role: "sales",
-    designation: "Luxury Tour Consultant",
-    intro: "Crafting bespoke global itineraries for European tours, Japan escapes, and exotic destination getaways.",
-    img: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=600&q=80",
-    visasFiled: 950,
-    experienceYears: 6,
-    successRate: 100,
-    status: "Active"
-  },
-  {
-    name: "Hassan Ali",
-    email: "hassan@eshaareuae.com",
-    role: "sales",
-    designation: "VFS Operations Lead",
-    intro: "Managing slot bookings, biometric appointments, and rapid document dispatch for all Eshaare clients.",
-    img: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=600&q=80",
-    visasFiled: 3200,
-    experienceYears: 11,
-    successRate: 98,
-    status: "Active"
-  }
-];
 
 export const StaffManagementPage = () => {
   const { userProfile } = useAuth();
@@ -264,26 +214,6 @@ export const StaffManagementPage = () => {
     }
   };
 
-  const [seeding, setSeeding] = useState(false);
-
-  const handleSeedDummies = async () => {
-    if (!window.confirm("Would you like to seed 4 dummy specialists into the database? This will populate the homepage experts carousel!")) {
-      return;
-    }
-    setSeeding(true);
-    try {
-      for (const spec of DUMMY_SPECIALISTS) {
-        const docId = `dummy_${spec.name.toLowerCase().replace(/\s+/g, "_")}`;
-        await setDoc(doc(db, "users", docId), spec);
-      }
-      toast.success("Successfully seeded 4 dummy specialists!");
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to seed specialists: " + err.message);
-    } finally {
-      setSeeding(false);
-    }
-  };
 
   return (
     <div className="space-y-6 font-sans">
@@ -295,14 +225,7 @@ export const StaffManagementPage = () => {
           <p className="text-xs text-on-primary-container/50">Manage internal officer roles, permission credentials, and dashboard assignees.</p>
         </div>
         <div className="flex flex-wrap gap-2.5">
-          <button
-            onClick={handleSeedDummies}
-            disabled={seeding}
-            className="px-4 py-2 border border-[#4D4740] text-white hover:border-[#7A8F6B] hover:text-[#7A8F6B] font-bold text-xs rounded-button flex items-center space-x-1.5 shadow-sm hover:-translate-y-0.5 transition-all disabled:opacity-50"
-          >
-            <Sparkles className="h-4 w-4" />
-            <span>{seeding ? "Importing..." : "Seed Dummy Experts"}</span>
-          </button>
+
           {userProfile?.role === "super_admin" && (
             <button
               onClick={() => setIsAddOpen(true)}
