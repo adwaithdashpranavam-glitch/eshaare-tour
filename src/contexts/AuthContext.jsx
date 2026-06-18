@@ -210,6 +210,7 @@ export const AuthProvider = ({ children }) => {
         uid: user.uid,
         email: email.trim(),
         role: ROLES.CLIENT, // Default to client role, no auto-elevation
+        status: "Active",
         createdAt: new Date(),
         lastLoginAt,
         name: extraData.name || "Client User",

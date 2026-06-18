@@ -87,21 +87,21 @@ service cloud.firestore {
     // ==========================================
 
     function validateUserSchema(data) {
-      return (data.uid == null || data.uid is string) &&
-             (data.name == null || data.name is string) &&
+      return (!('uid' in data) || data.uid is string) &&
+             (!('name' in data) || data.name is string) &&
              data.email is string &&
              data.role in ['super_admin', 'admin', 'manager', 'sales', 'visa_ops', 'finance', 'support', 'client', 'customer'] &&
-             (data.status == null || data.status in ['Active', 'Suspended', 'Disabled']) &&
-             (data.casesHandled == null || data.casesHandled is int || data.casesHandled is float);
+             (!('status' in data) || data.status in ['Active', 'Suspended', 'Disabled']) &&
+             (!('casesHandled' in data) || data.casesHandled is int || data.casesHandled is float);
     }
 
     function validateCustomerSchema(data) {
       return data.uid is string &&
              data.name is string &&
              data.email is string &&
-             (data.phone == null || data.phone is string) &&
-             (data.nationality == null || data.nationality is string) &&
-             (data.status == null || data.status in ['Active', 'Suspended', 'Disabled']);
+             (!('phone' in data) || data.phone is string) &&
+             (!('nationality' in data) || data.nationality is string) &&
+             (!('status' in data) || data.status in ['Active', 'Suspended', 'Disabled']);
     }
 
     function validatePaymentSchema(data) {
