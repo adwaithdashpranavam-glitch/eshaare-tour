@@ -207,10 +207,6 @@ export const PublicLayout = () => {
       path: "/visa-eligibility"
     },
     {
-      title: "APPOINTMENTS",
-      path: "/appointment"
-    },
-    {
       title: "DOCUMENTATION",
       path: "/resources"
     },
