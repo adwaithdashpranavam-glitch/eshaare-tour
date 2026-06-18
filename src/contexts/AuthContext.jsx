@@ -138,7 +138,7 @@ export const AuthProvider = ({ children }) => {
         console.warn("Could not update lastLoginAt in background:", e);
       });
       // If they are a client/customer, update the 'customers' collection as well (in background)
-      if (profileData.role === ROLES.CLIENT || profileData.role === "customer") {
+      if (profileData.role && (profileData.role.toLowerCase() === ROLES.CLIENT || profileData.role.toLowerCase() === "customer")) {
         const customerRef = doc(db, "customers", currentUser.uid);
         const originalProfile = { ...profileData };
         
@@ -284,7 +284,7 @@ export const AuthProvider = ({ children }) => {
             return;
           }
 
-          if (profile && (profile.role === ROLES.CLIENT || profile.role === "customer")) {
+          if (profile && profile.role && (profile.role.toLowerCase() === ROLES.CLIENT || profile.role.toLowerCase() === "customer")) {
             const customerDoc = await getDoc(doc(db, "customers", currentUser.uid));
             if (customerDoc.exists()) {
               const custData = customerDoc.data();
@@ -346,7 +346,7 @@ export const AuthProvider = ({ children }) => {
     ROLES.FINANCE,
     ROLES.SUPPORT
   ].includes(role);
-  const isClient = role === ROLES.CLIENT || role === "customer";
+  const isClient = role && (role.toLowerCase() === ROLES.CLIENT || role.toLowerCase() === "customer");
 
   const value = {
     user,

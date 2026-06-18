@@ -301,7 +301,7 @@ export const HomePage = () => {
       if (!snapshot.empty) {
         const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         // Filter: role exists, is not client/customer
-        const staffOnly = list.filter(u => u.role && !["client", "customer"].includes(u.role));
+        const staffOnly = list.filter(u => u.role && !["client", "customer"].includes(u.role.toLowerCase()));
 
         const mapped = staffOnly.map(member => ({
           id: member.id,
