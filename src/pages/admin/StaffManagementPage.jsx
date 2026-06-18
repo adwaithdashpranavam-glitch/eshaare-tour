@@ -51,7 +51,7 @@ export const StaffManagementPage = () => {
       if (!snapshot.empty) {
         const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         // Filter to display only staff members (exclude client/customer roles)
-        const staffOnly = list.filter(u => u.role && !["client", "customer"].includes(u.role));
+        const staffOnly = list.filter(u => u.role && !["client", "customer"].includes(u.role.toLowerCase()));
         setStaff(staffOnly);
       } else {
         setStaff([]);
