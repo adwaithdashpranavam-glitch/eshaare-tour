@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { createLead } from "../../lib/firestore";
+import { createLead, getPackages } from "../../lib/firestore";
 import { generateLeadNo } from "../../utils/helpers";
 import { db, serverTimestamp } from "../../lib/firebase";
 import { collection, onSnapshot } from "firebase/firestore";
@@ -24,17 +24,17 @@ const SERVICE_IMAGES = [
 export const HomePage = () => {
   const navigate = useNavigate();
 
+  const [dbPackages, setDbPackages] = useState([]);
+  useEffect(() => {
+    const unsubscribe = getPackages((items) => {
+      setDbPackages(items);
+    });
+    return () => unsubscribe();
+  }, []);
+
   // ─── Hero Slider ────────────────────────────────────────────────────────
   const [activeSlide, setActiveSlide] = useState(0);
   const slides = [
-        {
-      image: "https://plus.unsplash.com/premium_photo-1684407617181-275e50374e95?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-      headline: "Visa Assistance From  Dubai",
-      subtext: "Fast and reliable visa assistance from Dubai. Get expert help with Schengen, UK, USA, Canada, Australia, New Zealand, and other international visas.",
-      animated: false,
-      ctaText: "Start Your Visa Process",
-      ctaLink: "/appointment"
-    },
     {
       image: "https://images.unsplash.com/photo-1531366936337-7c912a4589a7?auto=format&fit=crop&w=1600&q=80",
       headline: "Holiday Packages from Dubai",
@@ -43,6 +43,15 @@ export const HomePage = () => {
       ctaText: "Plan Your Trip Today",
       ctaLink: "/packages"
     },
+    {
+      image: "https://plus.unsplash.com/premium_photo-1684407617181-275e50374e95?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      headline: "Visa Assistance From  Dubai",
+      subtext: "Fast and reliable visa assistance from Dubai. Get expert help with Schengen, UK, USA, Canada, Australia, New Zealand, and other international visas.",
+      animated: false,
+      ctaText: "Start Your Visa Process",
+      ctaLink: "/appointment"
+    },
+
     {
       image: "https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=1600&q=80",
       headline: "Luxury Travel, Visa Assistance & Holiday Planning from Dubai",
@@ -213,39 +222,61 @@ export const HomePage = () => {
     },
   ];
 
+  const getFeaturedPackageData = (index, defaultData) => {
+    const idsGroup = [
+      ["d24", "kerala-backwater-escape"],
+      ["d2", "interlaken-holu"],
+      ["d4", "d5", "bespoke-honeymoon"],
+      ["custom-package"]
+    ];
+    const ids = idsGroup[index];
+    const dbPkg = dbPackages.find(p => ids.includes(p.id));
+    if (dbPkg) {
+      return {
+        title: dbPkg.title || defaultData.title,
+        location: dbPkg.country || dbPkg.location || defaultData.location,
+        price: typeof dbPkg.price === "number" ? `${dbPkg.price} AED` : dbPkg.price || defaultData.price,
+        priceSub: defaultData.priceSub || "/ Person",
+        img: dbPkg.imageUrl || dbPkg.image || defaultData.img,
+        link: `/packages/${dbPkg.id}`
+      };
+    }
+    return defaultData;
+  };
+
   const featuredPackages = [
-    {
+    getFeaturedPackageData(0, {
       title: "Kerala Backwaters",
       location: "Kerala, India",
       price: "$224",
       priceSub: "/ Person",
       img: "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=800&q=80",
       link: "/packages/kerala-backwater-escape"
-    },
-    {
+    }),
+    getFeaturedPackageData(1, {
       title: "Interlaken Holu",
       location: "Gentrisch, Switzerland",
       price: "$224",
       priceSub: "/ Person",
       img: "https://images.unsplash.com/photo-1502784444187-359ac186c5bb?q=80&w=800&auto=format&fit=crop",
       link: "/packages"
-    },
-    {
+    }),
+    getFeaturedPackageData(2, {
       title: "Bespoke Honeymoon",
       location: "Maldives Escape",
       price: "$399",
       priceSub: "/ Person",
       img: "https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=800&q=80",
       link: "/packages/customise"
-    },
-    {
+    }),
+    getFeaturedPackageData(3, {
       title: "Custom Package",
       location: "Tailor-made Journeys",
       price: "Bespoke",
       priceSub: "Pricing",
       img: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=800&auto=format&fit=crop",
       link: "/packages/customise"
-    }
+    })
   ];
 
   const fallbackSpecialists = [
@@ -693,7 +724,7 @@ export const HomePage = () => {
             className={`text-center max-w-3xl mx-auto space-y-3 transition-opacity duration-1000 ${visibleSections["visa-services"] ? "opacity-100" : "opacity-0"}`}
           >
             <h2 className="font-headline-lg text-[26px] sm:text-[32px] md:text-[40px] text-primary leading-tight whitespace-normal break-words">
-              Visa Services From Dubai 
+              Visa Services From Dubai
             </h2>
             <p className="text-on-surface-variant text-body-md">
               From Schengen visa audits to business slots, we manage the complete document checking lists for UAE residents.
@@ -1504,7 +1535,7 @@ export const HomePage = () => {
             <div className="absolute -top-3 -right-3 size-6 border-t-2 border-r-2 border-[#D4AF37]/60 z-10" />
             <div className="absolute -bottom-3 -left-3 size-6 border-b-2 border-l-2 border-[#D4AF37]/60 z-10" />
             <div className="absolute -bottom-3 -right-3 size-6 border-b-2 border-r-2 border-[#D4AF37]/60 z-10" />
-            
+
             <div className="relative bg-white/95 backdrop-blur-md ring-1 ring-[#D4AF37]/20 shadow-[0_30px_80px_-30px_rgba(29,80,58,0.25)] px-8 md:px-16 py-12 md:py-16 rounded-[4px] overflow-hidden">
               {/* Elegant luxury gold inner dashed frame */}
               <div className="absolute inset-3 border border-dashed border-[#D4AF37]/25 pointer-events-none rounded-[2px]" />
@@ -1576,16 +1607,14 @@ export const HomePage = () => {
                     aria-label={`Read testimonial from ${item.name}`}
                   >
                     <span
-                      className={`size-2 rotate-45 transition-all ${
-                        isActive
+                      className={`size-2 rotate-45 transition-all ${isActive
                           ? "bg-[#D4AF37] scale-125"
                           : "bg-[#1D503A]/20 group-hover:bg-[#1D503A]/40"
-                      }`}
+                        }`}
                     />
                     <span
-                      className={`text-[10px] uppercase tracking-[0.22em] transition-colors hidden sm:inline ${
-                        isActive ? "text-[#1D503A]" : "text-[#1D503A]/40 group-hover:text-[#1D503A]/70"
-                      }`}
+                      className={`text-[10px] uppercase tracking-[0.22em] transition-colors hidden sm:inline ${isActive ? "text-[#1D503A]" : "text-[#1D503A]/40 group-hover:text-[#1D503A]/70"
+                        }`}
                     >
                       {item.name.split(" ")[0]}
                     </span>

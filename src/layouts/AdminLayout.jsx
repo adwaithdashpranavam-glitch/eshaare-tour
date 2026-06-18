@@ -119,24 +119,11 @@ export const AdminLayout = () => {
       ]
     },
     {
-      title: "Website Content",
+      title: "Web & App Content",
       items: [
-        { label: "Visa Pages", path: "/admin/visa-types", icon: Globe, roles: ["super_admin", "admin", "manager"] },
+        { label: "Visa Services", path: "/admin/visa-types", icon: Globe, roles: ["super_admin", "admin", "manager"] },
+        { label: "Tour Packages", path: "/admin/app/packages", icon: Compass, roles: ["super_admin", "admin", "manager"] },
         { label: "Visa Checker CMS", path: "/admin/cms/visa-checker", icon: Settings, roles: ["super_admin", "admin", "manager"] }
-      ]
-    },
-    {
-      title: "App Content",
-      items: [
-        { label: "Packages", path: "/admin/app/packages", icon: Compass, roles: ["super_admin", "admin", "manager"] },
-        { label: "Visa", path: "/admin/app/visa", icon: Globe, roles: ["super_admin", "admin", "manager"] }
-      ]
-    },
-    {
-      title: "App Content",
-      items: [
-        { label: "Packages", path: "/admin/app/packages", icon: Compass },
-        { label: "Visa", path: "/admin/app/visa", icon: Globe }
       ]
     },
     {

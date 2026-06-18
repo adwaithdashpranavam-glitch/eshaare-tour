@@ -360,6 +360,21 @@ export async function saveVisaType(id, data) {
       updatedAt: serverTimestamp(),
       updatedBy: uid
     }, { merge: true });
+
+    // Sync to visas collection for mobile app
+    const appVisaRef = doc(db, "visas", id);
+    await setDoc(appVisaRef, {
+      id: id,
+      country: data.name || data.country || "",
+      visaType: data.tagline || data.visaType || "",
+      processingTime: (data.heroStats && data.heroStats[0] && data.heroStats[0].value) || data.processingTime || "10-15 Days",
+      price: (data.feeStructure && data.feeStructure[0] && data.feeStructure[0].embassyFee) || data.price || "280 AED",
+      description: data.overviewText || data.description || "",
+      requirements: data.requiredDocuments || data.requirements || [],
+      imageUrl: data.imageUrl || "",
+      updatedAt: serverTimestamp(),
+      updatedBy: uid
+    }, { merge: true });
   } catch (error) {
     handleError(error, "saveVisaType");
   }
@@ -369,6 +384,9 @@ export async function deleteVisaType(id) {
   try {
     const docRef = doc(db, "visa_types", id);
     await deleteDoc(docRef);
+
+    const appVisaRef = doc(db, "visas", id);
+    await deleteDoc(appVisaRef);
   } catch (error) {
     handleError(error, "deleteVisaType");
   }
@@ -1844,6 +1862,20 @@ export async function saveVisa(id, data) {
       updatedAt: serverTimestamp(),
       updatedBy: uid
     }, { merge: true });
+
+    // Sync to visa_types collection for web
+    const webVisaRef = doc(db, "visa_types", id);
+    await setDoc(webVisaRef, {
+      slug: id,
+      name: data.country || data.name || "",
+      tagline: data.visaType || data.tagline || "",
+      imageUrl: data.imageUrl || "",
+      overviewText: data.description || "",
+      requiredDocuments: data.requirements || [],
+      isPublished: true,
+      updatedAt: serverTimestamp(),
+      updatedBy: uid
+    }, { merge: true });
   } catch (error) {
     handleError(error, "saveVisa");
   }
@@ -1853,6 +1885,9 @@ export async function deleteVisa(id) {
   try {
     const docRef = doc(db, "visas", id);
     await deleteDoc(docRef);
+
+    const webVisaRef = doc(db, "visa_types", id);
+    await deleteDoc(webVisaRef);
   } catch (error) {
     handleError(error, "deleteVisa");
   }
