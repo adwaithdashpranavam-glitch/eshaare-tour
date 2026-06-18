@@ -161,26 +161,55 @@ exports.updateStaffRole = functions.https.onCall(async (data, context) => {
 // 4. Delete Staff Account
 exports.deleteStaff = functions.https.onCall(async (data, context) => {
   const callerUid = await verifySuperAdmin(context);
+  // `uid` is the Firestore document id of the staff record. For legacy/pre-created
+  // staff it may be the email address rather than a real Auth UID.
   const { uid } = data;
 
   if (!uid) {
     throw new functions.https.HttpsError("invalid-argument", "Missing uid.");
   }
 
-  // Delete Auth User
-  try {
-    await admin.auth().deleteUser(uid);
-  } catch (err) {
-    console.error("Auth user delete warning:", err);
+  if (uid === callerUid) {
+    throw new functions.https.HttpsError("failed-precondition", "You cannot delete your own account.");
   }
 
-  // Get User Details for Audit
+  // Read the Firestore record first so we know the email even if the doc id is a UID.
   const userDoc = await db.collection("users").doc(uid).get();
-  const userData = userDoc.exists ? userDoc.data() : { email: "unknown", name: "unknown" };
+  const userData = userDoc.exists ? userDoc.data() : null;
+  const email = (userData && userData.email) ? userData.email : (uid.includes("@") ? uid : null);
 
-  // Delete Firestore doc
-  await db.collection("users").doc(uid).delete();
-  await db.collection("customers").doc(uid).delete().catch(() => {});
+  // Resolve the real Auth UID. The doc id might be an email (legacy) or a real UID.
+  let authUid = null;
+  if (!uid.includes("@")) {
+    authUid = uid; // doc id already looks like a UID
+  } else if (email) {
+    // doc id is an email — find the matching Auth account, if any
+    try {
+      const userRecord = await admin.auth().getUserByEmail(email);
+      authUid = userRecord.uid;
+    } catch (err) {
+      console.warn("No Auth account for email", email, err.code || err.message);
+    }
+  }
+
+  // Delete the Auth user if we found one. Never let this abort the Firestore cleanup.
+  if (authUid) {
+    try {
+      await admin.auth().deleteUser(authUid);
+    } catch (err) {
+      console.warn("Auth user delete warning:", err.code || err.message);
+    }
+  }
+
+  // Delete Firestore docs — both the doc id passed in and the resolved Auth UID
+  // (these differ for legacy email-keyed records). Best-effort on each.
+  const idsToClean = [...new Set([uid, authUid].filter(Boolean))];
+  await Promise.all(
+    idsToClean.flatMap((id) => [
+      db.collection("users").doc(id).delete().catch(() => {}),
+      db.collection("customers").doc(id).delete().catch(() => {})
+    ])
+  );
 
   // Write Audit Log
   await db.collection("audit_logs").add({
@@ -189,7 +218,7 @@ exports.deleteStaff = functions.https.onCall(async (data, context) => {
     performedByRole: "super_admin",
     targetId: uid,
     timestamp: FieldValue.serverTimestamp(),
-    details: { email: userData.email, name: userData.name }
+    details: { email: email || "unknown", name: (userData && userData.name) || "unknown" }
   });
 
   return { success: true };
