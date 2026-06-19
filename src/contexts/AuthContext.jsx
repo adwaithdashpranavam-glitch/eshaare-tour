@@ -1,11 +1,11 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from "react";
-import { 
-  onAuthStateChanged, 
-  signInWithEmailAndPassword, 
+import {
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
   signOut,
-  createUserWithEmailAndPassword,
   setPersistence,
-  browserLocalPersistence
+  browserLocalPersistence,
+  sendEmailVerification
 } from "firebase/auth";
 import { doc, getDoc, setDoc, deleteDoc, collection } from "firebase/firestore";
 import { Navigate, useLocation } from "react-router-dom";
@@ -13,6 +13,7 @@ import { auth, db, functions, httpsCallable } from "../lib/firebase";
 import { ROLES } from "../utils/constants";
 import toast from "react-hot-toast";
 import { LoadingSpinner } from "../components/ui/LoadingSpinner";
+import { getAuthErrorMessage } from "../utils/authErrors";
 
 const AuthContext = createContext(null);
 
@@ -28,10 +29,14 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [emailVerified, setEmailVerified] = useState(false);
 
   // Refs to avoid stale closures and duplicate concurrent fetching/writes in auth listeners
   const userProfileRef = useRef(null);
   const userRef = useRef(null);
+  // True while register() is mid-flight, so the auth listener does not race-create a
+  // default profile or react to the transient sign-in before registration finishes.
+  const registeringRef = useRef(false);
 
   const setUserProfileAndRef = (profile) => {
     userProfileRef.current = profile;
@@ -93,18 +98,11 @@ export const AuthProvider = ({ children }) => {
       }
     }
     
-    // Default fallback: Create a client profile
-    const profileData = {
-      uid: currentUser.uid,
-      email: currentUser.email || "",
-      name: currentUser.displayName || "Client User",
-      role: ROLES.CLIENT,
-      status: 'Active',
-      createdAt: new Date(),
-      lastLoginAt
-    };
-    await setDoc(userDocRef, profileData);
-    return profileData;
+    // No UID doc and no legacy email-keyed staff doc to link. Do NOT auto-create a
+    // profile here — accounts are created atomically via the registerClient Cloud
+    // Function. Returning null lets callers treat this as an invalid/incomplete session
+    // instead of silently materializing an orphaned client doc.
+    return null;
   };
 
   const login = async (email, password) => {
@@ -118,6 +116,13 @@ export const AuthProvider = ({ children }) => {
       if (!profileData || userRef.current?.uid !== currentUser.uid) {
         // Fetch profile data without blocking on the write
         profileData = await fetchAndLinkProfile(currentUser, true);
+      }
+
+      // No profile doc (and no legacy doc to link) = invalid/incomplete account.
+      // Don't leave a half-authenticated session.
+      if (!profileData) {
+        await signOut(auth);
+        throw new Error("No account profile found. Please sign up or contact support.");
       }
 
       if (profileData.status === "Suspended" || profileData.status === "Disabled") {
@@ -190,6 +195,7 @@ export const AuthProvider = ({ children }) => {
       }
       setUserProfileAndRef(profileData);
       setUserAndRef(currentUser);
+      setEmailVerified(!!currentUser.emailVerified);
       return currentUser;
     } catch (error) {
       console.error("Login failed:", error);
@@ -199,48 +205,93 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Interim verification-email config: plain web continueUrl (no Firebase Dynamic Links —
+  // FDL was shut down Aug 2025). eshaareuae.com must be in Firebase Auth → Authorized domains.
+  const VERIFICATION_EMAIL_SETTINGS = {
+    url: "https://eshaareuae.com/portal/verify-email",
+    handleCodeInApp: false
+  };
+
+  // Single, swappable email-send step. Best-effort: never throws.
+  // TODO(Track B): replace this built-in send with a server-side Resend branded send.
+  const sendVerificationEmailInterim = async (firebaseUser) => {
+    if (!firebaseUser) return;
+    try {
+      await sendEmailVerification(firebaseUser, VERIFICATION_EMAIL_SETTINGS);
+    } catch (verifyErr) {
+      // Account already exists; user can resend later. Do not fail the calling flow.
+      console.warn("Verification email send failed (non-fatal):", verifyErr);
+    }
+  };
+
   const register = async (email, password, extraData) => {
     setLoading(true);
+    registeringRef.current = true;
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-      
-      const lastLoginAt = new Date();
-      const profileData = {
-        uid: user.uid,
+      // Atomic account creation happens server-side (Admin SDK). The callable creates the
+      // Auth user + users/customers docs and rolls everything back on any failure, so the
+      // client never has to manage partial-registration cleanup.
+      const registerClientFn = httpsCallable(functions, "registerClient");
+      await registerClientFn({
         email: email.trim(),
-        role: ROLES.CLIENT, // Default to client role, no auto-elevation
-        status: "Active",
-        createdAt: new Date(),
-        lastLoginAt,
-        name: extraData.name || "Client User",
-        ...extraData
-      };
-
-      // Save profile to Firestore 'users' and 'customers' (await them during registration)
-      await setDoc(doc(db, "users", user.uid), profileData);
-      await setDoc(doc(db, "customers", user.uid), {
-        uid: user.uid,
-        name: extraData.name || "Client User",
-        email: email.trim(),
-        phone: extraData.phoneNumber || extraData.phone || "",
-        nationality: extraData.nationality || "",
-        createdAt: new Date(),
-        lastLoginAt,
-        status: "Active"
+        password,
+        name: extraData.name,
+        phoneNumber: extraData.phoneNumber,
+        nationality: extraData.nationality
       });
-      
-      // Set state directly immediately to prevent race condition
-      setUserProfileAndRef(profileData);
-      setUserAndRef(user);
 
-      return user;
+      // Account exists and is consistent — now establish the client session.
+      const userCredential = await signInWithEmailAndPassword(auth, email.trim(), password);
+      const currentUser = userCredential.user;
+
+      // INTERIM verification email (best-effort, swappable — see sendVerificationEmailInterim).
+      await sendVerificationEmailInterim(currentUser);
+
+      // Load the profile the callable just created (no auto-create — it already exists).
+      const profile = await fetchAndLinkProfile(currentUser, true);
+      setUserProfileAndRef(profile || null);
+      setUserAndRef(currentUser);
+      setEmailVerified(!!currentUser.emailVerified);
+
+      return currentUser;
     } catch (error) {
       console.error("Registration failed:", error);
-      throw error;
+
+      // No client-side rollback needed — the callable is authoritative. Just ensure no
+      // partial client session lingers, then surface a sanitized, friendly message.
+      try { await signOut(auth); } catch (_) { /* noop */ }
+      setUserAndRef(null);
+      setUserProfileAndRef(null);
+      setEmailVerified(false);
+
+      const friendly = new Error(getAuthErrorMessage(error, "Registration failed. Please try again."));
+      friendly.code = error.code;
+      throw friendly;
     } finally {
+      registeringRef.current = false;
       setLoading(false);
     }
+  };
+
+  // Resend the verification email to the currently signed-in (unverified) user.
+  // Uses the same interim send so behaviour matches signup.
+  // TODO(Track B): this resends via the same swappable step — will use Resend in Track B.
+  const resendVerificationEmail = async () => {
+    if (!auth.currentUser) throw new Error("You are not signed in.");
+    await sendEmailVerification(auth.currentUser, VERIFICATION_EMAIL_SETTINGS);
+  };
+
+  // Reload the Auth user and refresh the cached email-verified flag + ID token.
+  // Returns the up-to-date verified boolean.
+  const refreshEmailVerified = async () => {
+    if (!auth.currentUser) return false;
+    await auth.currentUser.reload();
+    // Force a token refresh so downstream Firestore rules see the new email_verified claim.
+    await auth.currentUser.getIdToken(true);
+    const verified = !!auth.currentUser.emailVerified;
+    setEmailVerified(verified);
+    setUserAndRef(auth.currentUser);
+    return verified;
   };
 
   const logout = async () => {
@@ -255,6 +306,7 @@ export const AuthProvider = ({ children }) => {
       await signOut(auth);
       setUserAndRef(null);
       setUserProfileAndRef(null);
+      setEmailVerified(false);
     } catch (error) {
       console.error("Logout failed:", error);
     } finally {
@@ -264,8 +316,14 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      // While register() is running, ignore the transient sign-in event it triggers —
+      // register() owns the profile writes and final state for this flow.
+      if (registeringRef.current) {
+        return;
+      }
       setLoading(true);
       if (currentUser) {
+        setEmailVerified(!!currentUser.emailVerified);
         // Skip re-fetching if login() already set the profile for this user (avoids race condition)
         if (userProfileRef.current && userRef.current?.uid === currentUser.uid) {
           setLoading(false);
@@ -273,7 +331,18 @@ export const AuthProvider = ({ children }) => {
         }
         try {
           const profile = await fetchAndLinkProfile(currentUser, true);
-          
+
+          // Authenticated session with no profile doc = invalid/incomplete account.
+          // Sign out rather than leaving a half-authenticated state (no auto-create).
+          if (!profile) {
+            await signOut(auth);
+            setUserAndRef(null);
+            setUserProfileAndRef(null);
+            setEmailVerified(false);
+            setLoading(false);
+            return;
+          }
+
           let updatedProfile = { ...profile };
 
           if (updatedProfile && (updatedProfile.status === "Suspended" || updatedProfile.status === "Disabled")) {
@@ -330,6 +399,7 @@ export const AuthProvider = ({ children }) => {
       } else {
         setUserAndRef(null);
         setUserProfileAndRef(null);
+        setEmailVerified(false);
       }
       setLoading(false);
     });
@@ -358,7 +428,10 @@ export const AuthProvider = ({ children }) => {
     logout,
     isAdmin,
     isClient,
-    role
+    role,
+    emailVerified,
+    resendVerificationEmail,
+    refreshEmailVerified
   };
 
   return (
@@ -409,6 +482,28 @@ export const ClientRoute = ({ children }) => {
   if (isAdmin) {
     // Redirect admin to admin dashboard
     return <Navigate to="/admin/dashboard" replace />;
+  }
+
+  return children;
+};
+
+// Require a verified email for client portal access (excluding the verify-email screen).
+// Routing ladder: unauthenticated -> login; authenticated+unverified -> verify-email;
+// verified+incomplete profile -> verify-profile; verified+complete -> dashboard.
+export const RequireVerifiedEmail = ({ children }) => {
+  const { user, loading, emailVerified } = useAuth();
+  const location = useLocation();
+
+  if (loading) {
+    return <LoadingSpinner message="Loading client portal..." fullScreen={true} />;
+  }
+
+  if (!user) {
+    return <Navigate to="/portal/login" state={{ from: location }} replace />;
+  }
+
+  if (!emailVerified) {
+    return <Navigate to="/portal/verify-email" replace />;
   }
 
   return children;

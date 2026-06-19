@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "react-hot-toast";
 
 // Contexts
-import { AuthProvider, ProtectedRoute, ClientRoute } from "./contexts/AuthContext";
+import { AuthProvider, ProtectedRoute, ClientRoute, RequireVerifiedEmail } from "./contexts/AuthContext";
 import { TravelerProfileProvider, ProfileCompleteGuard } from "./contexts/TravelerProfileContext";
 import { AppProvider } from "./contexts/AppContext";
 import { Analytics } from "@vercel/analytics/react";
@@ -66,6 +66,7 @@ import PortalPaymentsPage from "./pages/portal/PortalPaymentsPage";
 import PortalMessagesPage from "./pages/portal/PortalMessagesPage";
 import PortalSettingsPage from "./pages/portal/PortalSettingsPage";
 import PortalNotificationsPage from "./pages/portal/PortalNotificationsPage";
+import PortalVerifyEmailPage from "./pages/portal/PortalVerifyEmailPage";
 import PortalVerifyProfilePage from "./pages/portal/PortalVerifyProfilePage";
 import PortalProfilePage from "./pages/portal/PortalProfilePage";
 import PortalFamilyMembersPage from "./pages/portal/PortalFamilyMembersPage";
@@ -107,24 +108,38 @@ function App() {
                 <Route path="visa-eligibility" element={<VisaEligibilityPage />} />
                 <Route path="packages/customise" element={<CustomisePackagePage />} />
 
-                {/* PROFILE VERIFICATION ONBOARDING (full-screen, accessible before completion) */}
+                {/* EMAIL VERIFICATION (authenticated but unverified) */}
                 <Route
-                  path="portal/verify-profile"
+                  path="portal/verify-email"
                   element={
                     <ClientRoute>
-                      <PortalVerifyProfilePage />
+                      <PortalVerifyEmailPage />
                     </ClientRoute>
                   }
                 />
 
-                {/* CLIENT TRAVELLER PORTAL */}
+                {/* PROFILE VERIFICATION ONBOARDING (requires a verified email) */}
+                <Route
+                  path="portal/verify-profile"
+                  element={
+                    <ClientRoute>
+                      <RequireVerifiedEmail>
+                        <PortalVerifyProfilePage />
+                      </RequireVerifiedEmail>
+                    </ClientRoute>
+                  }
+                />
+
+                {/* CLIENT TRAVELLER PORTAL (requires verified email + complete profile) */}
                 <Route
                   path="portal"
                   element={
                     <ClientRoute>
-                      <TravelerProfileProvider>
-                        <PortalLayout />
-                      </TravelerProfileProvider>
+                      <RequireVerifiedEmail>
+                        <TravelerProfileProvider>
+                          <PortalLayout />
+                        </TravelerProfileProvider>
+                      </RequireVerifiedEmail>
                     </ClientRoute>
                   }
                 >

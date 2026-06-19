@@ -14,7 +14,7 @@ import { STEP_VALIDATORS } from "../../utils/profileValidation";
 import { LoadingSpinner } from "../../components/ui/LoadingSpinner";
 import {
   ShieldCheck, ChevronLeft, ChevronRight, Check, Loader2,
-  CloudUpload, Pencil, BadgeCheck
+  CloudUpload, Pencil, BadgeCheck, LogOut
 } from "lucide-react";
 import foxLogo from "../../assets/fox-logo.png";
 import toast from "react-hot-toast";
@@ -39,8 +39,13 @@ const INTRO_POINTS = [
 ];
 
 export const PortalVerifyProfilePage = () => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/portal/login", { replace: true });
+  };
 
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState(createEmptyProfile());
@@ -232,6 +237,13 @@ export const PortalVerifyProfilePage = () => {
               <CloudUpload className="h-3.5 w-3.5" /> Save &amp; finish later
             </button>
           )}
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#E5E7EB] text-[#6B7280] hover:text-red-600 hover:border-red-200 hover:bg-red-50 font-semibold transition-colors"
+            title="Log out"
+          >
+            <LogOut className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Log out</span>
+          </button>
         </div>
       </header>
 
