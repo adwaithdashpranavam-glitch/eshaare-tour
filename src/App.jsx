@@ -55,6 +55,7 @@ import AppPackagesListPage from "./pages/admin/AppPackagesListPage";
 import AppPackageEditorPage from "./pages/admin/AppPackageEditorPage";
 import AppVisasListPage from "./pages/admin/AppVisasListPage";
 import AppVisaEditorPage from "./pages/admin/AppVisaEditorPage";
+import AdminDocumentsPage from "./pages/admin/AdminDocumentsPage";
 
 // Portal Pages
 import PortalDashboard from "./pages/portal/PortalDashboard";
@@ -66,6 +67,7 @@ import PortalPaymentsPage from "./pages/portal/PortalPaymentsPage";
 import PortalMessagesPage from "./pages/portal/PortalMessagesPage";
 import PortalSettingsPage from "./pages/portal/PortalSettingsPage";
 import PortalNotificationsPage from "./pages/portal/PortalNotificationsPage";
+import SchengenWizard from "./pages/portal/SchengenWizard";
 import PortalVerifyEmailPage from "./pages/portal/PortalVerifyEmailPage";
 import PortalVerifyProfilePage from "./pages/portal/PortalVerifyProfilePage";
 import PortalProfilePage from "./pages/portal/PortalProfilePage";
@@ -151,6 +153,7 @@ function App() {
                     <Route path="family" element={<PortalFamilyMembersPage />} />
                     <Route path="applications" element={<PortalApplicationsPage />} />
                     <Route path="applications/:id" element={<PortalApplicationDetailPage />} />
+                    <Route path="applications/:id/wizard" element={<SchengenWizard />} />
                     <Route path="documents" element={<PortalDocumentsPage />} />
                     <Route path="appointments" element={<PortalAppointmentsPage />} />
                     <Route path="payments" element={<PortalPaymentsPage />} />
@@ -180,6 +183,7 @@ function App() {
                 <Route path="leads/:id" element={<LeadDetailPage />} />
                 <Route path="cases" element={<VisaCasesListPage />} />
                 <Route path="cases/:id" element={<CaseDetailPage />} />
+                <Route path="documents" element={<AdminDocumentsPage />} />
                 <Route path="appointments" element={<AppointmentsPage />} />
                 <Route path="quotations" element={<QuotationsListPage />} />
                 <Route path="quotations/new" element={<QuotationBuilderPage />} />

@@ -98,5 +98,17 @@ service firebase.storage {
       allow read: if true;
       allow write: if isManager();
     }
+
+    // 6. System Documents (e.g., universal templates)
+    match /system-documents/{allPaths=**} {
+      allow read: if true;
+      allow write: if canAccessTravelDocs();
+    }
+
+    // 7. Application specific files
+    match /applications/{applicationId}/{allPaths=**} {
+      allow read: if isSignedIn();
+      allow write: if canAccessTravelDocs() && request.resource.size < 15 * 1024 * 1024;
+    }
   }
 }

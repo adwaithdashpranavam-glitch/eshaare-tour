@@ -1657,18 +1657,139 @@ export async function seedVisaTypes() {
 
 import { generateCaseNo } from "../utils/helpers";
 
-export const createApplicationDraft = async (customerId, visaId, visaName, userProfile, packageType = "standard", amount = 299) => {
+export const createApplicationDraft = async (
+  customerId,
+  visaId,
+  visaName,
+  userProfile,
+  packageType = "standard",
+  amount = 299,
+  sourcePageType = "general-schengen",
+  destinationCountry = "",
+  applicationType = ""
+) => {
   try {
     const appRef = collection(db, "applications");
+    
+    // Check for existing draft
+    const q = query(appRef, where("customerId", "==", customerId), where("status", "==", "Draft"));
+    const snapshot = await getDocs(q);
+    const existingDrafts = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+    
+    const determinedAppType = applicationType || (visaId === "schengen" ? "schengen" : "standard");
+    
+    let matchedDraft = null;
+    if (determinedAppType === "schengen") {
+      matchedDraft = existingDrafts.find(d => 
+        (d.applicationType === "schengen" || d.visaId === "schengen") &&
+        (!destinationCountry || d.destinationCountry === destinationCountry)
+      );
+    } else {
+      matchedDraft = existingDrafts.find(d => d.visaId === visaId);
+    }
+    
+    if (matchedDraft) {
+      return matchedDraft.id;
+    }
+
     const docRef = await addDoc(appRef, {
       customerId,
       visaId,
       visaName,
       status: "Draft",
-      paymentStatus: "Unpaid",
+      applicationType: determinedAppType,
+      sourcePageType,
+      destinationCountry,
+      visaType: "",
+      appointmentPreference: {
+        startDate: "",
+        endDate: ""
+      },
+      paymentStatus: "pending",
+      assignedConsultant: {
+        name: "Mr. Adwaith Das",
+        whatsapp: "+971 55 733 8429"
+      },
+      documents: [
+        {
+          key: "visa_application_form",
+          name: "Visa Application Form",
+          status: "pending_consultant_upload",
+          fileUrl: null,
+          uploadedBy: null,
+          uploadedAt: null,
+          scope: "client_specific"
+        },
+        {
+          key: "appointment_letter",
+          name: "Appointment Letter",
+          status: "pending_consultant_upload",
+          fileUrl: null,
+          uploadedBy: null,
+          uploadedAt: null,
+          scope: "client_specific"
+        },
+        {
+          key: "hotel_reservation",
+          name: "Hotel Reservation",
+          status: "pending_consultant_upload",
+          fileUrl: null,
+          uploadedBy: null,
+          uploadedAt: null,
+          scope: "client_specific"
+        },
+        {
+          key: "flight_reservation",
+          name: "Flight Reservation",
+          status: "pending_consultant_upload",
+          fileUrl: null,
+          uploadedBy: null,
+          uploadedAt: null,
+          scope: "client_specific"
+        },
+        {
+          key: "travel_insurance",
+          name: "Travel Insurance",
+          status: "pending_consultant_upload",
+          fileUrl: null,
+          uploadedBy: null,
+          uploadedAt: null,
+          scope: "client_specific"
+        },
+        {
+          key: "cover_letter",
+          name: "Cover Letter",
+          status: "pending_consultant_upload",
+          fileUrl: null,
+          uploadedBy: null,
+          uploadedAt: null,
+          scope: "client_specific"
+        },
+        {
+          key: "detailed_itinerary",
+          name: "Detailed Itinerary",
+          status: "pending_consultant_upload",
+          fileUrl: null,
+          uploadedBy: null,
+          uploadedAt: null,
+          scope: "client_specific"
+        }
+      ],
+      schengenQuestionnaire: {
+        journeyPurpose: {},
+        destinationAndEntry: {},
+        previousBiometrics: {},
+        residenceOutsideNationalityCountry: {},
+        accommodationOrInvitation: {},
+        invitingCompanyOrganisation: {},
+        travelCostCoverage: {},
+        declarations: {}
+      },
+      travelProfileSnapshot: {},
       packageType,
       amount: Number(amount) || 0,
       createdAt: new Date(),
+      updatedAt: new Date(),
       submittedAt: null,
       formData: {
         name: userProfile?.name || "",
@@ -1682,6 +1803,19 @@ export const createApplicationDraft = async (customerId, visaId, visaName, userP
     return docRef.id;
   } catch (error) {
     handleError(error, "createApplicationDraft");
+  }
+};
+
+export const getApplicationById = async (id) => {
+  try {
+    const docRef = doc(db, "applications", id);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      return { id: docSnap.id, ...docSnap.data() };
+    }
+    return null;
+  } catch (error) {
+    handleError(error, "getApplicationById");
   }
 };
 

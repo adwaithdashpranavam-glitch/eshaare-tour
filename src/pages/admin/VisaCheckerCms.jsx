@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { doc, onSnapshot, setDoc, collection, addDoc, getDocs, updateDoc, serverTimestamp, query, limit, orderBy } from "firebase/firestore";
-import { db } from "../../lib/firebase";
+import { db, storage, auth } from "../../lib/firebase";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { 
   ResponsiveContainer, AreaChart, Area, BarChart, Bar, 
   XAxis, YAxis, Tooltip, Legend, PieChart, Pie, Cell 
@@ -9,7 +10,7 @@ import {
   Plus, Trash2, Edit2, Save, FileText, CheckCircle2, AlertTriangle, 
   Settings, Users, Layers, Award, Layout, Compass, ShieldAlert, 
   Info, ArrowRight, Upload, Phone, Download, Eye, RotateCcw, 
-  Briefcase, Activity, Calendar, Copy, Check, Filter, Search
+  Briefcase, Activity, Calendar, Copy, Check, Filter, Search, X, Loader2
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -47,6 +48,16 @@ const DEFAULT_HERO = {
 const DEFAULT_FAQ = [
   { question: "How do I check my eligibility?", answer: "Simply fill in our 5-step form with destination, personal details, passport validity, employment details, and travel dates." },
   { question: "What documents are required?", answer: "Generally, UAE residents require valid passport, residency visa, Emirates ID, employer NOC, salary certificate, bank statements, travel insurance, and bookings." }
+];
+
+const DEFAULT_CLIENT_SPECIFIC_DOCUMENTS = [
+  { key: "visa_application_form", name: "Visa Application Form", status: "pending_consultant_upload", fileUrl: null, uploadedBy: null, uploadedAt: null, scope: "client_specific" },
+  { key: "appointment_letter", name: "Appointment Letter", status: "pending_consultant_upload", fileUrl: null, uploadedBy: null, uploadedAt: null, scope: "client_specific" },
+  { key: "hotel_reservation", name: "Hotel Reservation", status: "pending_consultant_upload", fileUrl: null, uploadedBy: null, uploadedAt: null, scope: "client_specific" },
+  { key: "flight_reservation", name: "Flight Reservation", status: "pending_consultant_upload", fileUrl: null, uploadedBy: null, uploadedAt: null, scope: "client_specific" },
+  { key: "travel_insurance", name: "Travel Insurance", status: "pending_consultant_upload", fileUrl: null, uploadedBy: null, uploadedAt: null, scope: "client_specific" },
+  { key: "cover_letter", name: "Cover Letter", status: "pending_consultant_upload", fileUrl: null, uploadedBy: null, uploadedAt: null, scope: "client_specific" },
+  { key: "detailed_itinerary", name: "Detailed Itinerary", status: "pending_consultant_upload", fileUrl: null, uploadedBy: null, uploadedAt: null, scope: "client_specific" }
 ];
 
 const DEFAULT_FORM_STEPS = [
@@ -99,6 +110,7 @@ export const VisaCheckerCms = ({ activeTab = "cms" }) => {
   // CRM Applications details state
   const [selectedApp, setSelectedApp] = useState(null);
   const [appDocsReview, setAppDocsReview] = useState({});
+  const [adminUploadingDocKey, setAdminUploadingDocKey] = useState(null);
 
   // Form builder editor state
   const [activeStepEdit, setActiveStepEdit] = useState(0);
@@ -363,6 +375,88 @@ export const VisaCheckerCms = ({ activeTab = "cms" }) => {
     }));
     toast.success(`Document check updated: ${verifiedStatus}`);
     logAudit("Reviewed customer document attachment", docName, verifiedStatus);
+  };
+
+  const handleAdminUploadDocument = async (appId, docKey, file) => {
+    if (!file) {
+      toast.error("Please select a file to upload.");
+      return;
+    }
+    if (file.type !== "application/pdf") {
+      toast.error("Please upload a PDF document only.");
+      return;
+    }
+
+    setAdminUploadingDocKey(docKey);
+    try {
+      // 1. Upload file to Storage
+      const fileRef = ref(storage, `applications/${appId}/documents/${docKey}.pdf`);
+      const uploadResult = await uploadBytes(fileRef, file);
+      const downloadUrl = await getDownloadURL(uploadResult.ref);
+
+      // 2. Fetch current app's documents
+      const app = applications.find(a => a.id === appId);
+      const currentDocs = app?.documents && app.documents.length > 0
+        ? [...app.documents]
+        : DEFAULT_CLIENT_SPECIFIC_DOCUMENTS.map(d => ({ ...d }));
+
+      // 3. Update entry
+      const updatedDocs = currentDocs.map(d => {
+        if (d.key === docKey) {
+          return {
+            ...d,
+            status: "uploaded",
+            fileUrl: downloadUrl,
+            uploadedBy: auth.currentUser?.email || auth.currentUser?.uid || "admin",
+            uploadedAt: new Date().toISOString(),
+            scope: "client_specific"
+          };
+        }
+        return d;
+      });
+
+      // 4. Update Firestore
+      const docRef = doc(db, "applications", appId);
+      await updateDoc(docRef, { documents: updatedDocs, updatedAt: serverTimestamp() });
+      toast.success("Document uploaded and synced successfully!");
+    } catch (error) {
+      console.error("Failed to upload document as admin:", error);
+      toast.error(`Upload failed: ${error.message}`);
+    } finally {
+      setAdminUploadingDocKey(null);
+    }
+  };
+
+  const handleAdminDeleteDocument = async (appId, docKey) => {
+    try {
+      const app = applications.find(a => a.id === appId);
+      if (!app) return;
+
+      const currentDocs = app.documents && app.documents.length > 0
+        ? [...app.documents]
+        : DEFAULT_CLIENT_SPECIFIC_DOCUMENTS.map(d => ({ ...d }));
+
+      const updatedDocs = currentDocs.map(d => {
+        if (d.key === docKey) {
+          return {
+            ...d,
+            status: "pending_consultant_upload",
+            fileUrl: null,
+            uploadedBy: null,
+            uploadedAt: null,
+            scope: "client_specific"
+          };
+        }
+        return d;
+      });
+
+      const docRef = doc(db, "applications", appId);
+      await updateDoc(docRef, { documents: updatedDocs, updatedAt: serverTimestamp() });
+      toast.success("Document removed successfully.");
+    } catch (error) {
+      console.error("Failed to remove document:", error);
+      toast.error("Failed to remove document.");
+    }
   };
 
   // Chart analytics configurations
@@ -699,110 +793,151 @@ export const VisaCheckerCms = ({ activeTab = "cms" }) => {
                 </div>
 
                 {/* Audit panel details */}
-                <div className="md:col-span-5 bg-white/2 border border-gray-800 p-4 rounded-xl space-y-4">
-                  {selectedApp ? (
-                    <div className="space-y-4">
-                      <div className="border-b border-gray-800 pb-2 flex justify-between items-start">
-                        <div>
-                          <h4 className="font-bold text-white text-sm">{selectedApp.fullName}</h4>
-                          <p className="text-[10px] text-gray-400 uppercase font-mono">{selectedApp.destination} (Score: {selectedApp.score}%)</p>
+                {selectedApp ? (
+                  <div className="md:col-span-5 bg-white/2 border border-gray-800 p-4 rounded-xl space-y-4">
+                    {(() => {
+                    const currentApp = applications.find(a => a.id === selectedApp?.id) || selectedApp;
+                    if (!currentApp) return null;
+                    
+                    const appDocuments = currentApp.documents && currentApp.documents.length > 0
+                      ? currentApp.documents
+                      : DEFAULT_CLIENT_SPECIFIC_DOCUMENTS;
+
+                    return (
+                      <div className="space-y-4">
+                        <div className="border-b border-gray-800 pb-2 flex justify-between items-start">
+                          <div>
+                            <h4 className="font-bold text-white text-sm">{currentApp.fullName}</h4>
+                            <p className="text-[10px] text-gray-400 uppercase font-mono">{currentApp.destination} (Score: {currentApp.score}%)</p>
+                          </div>
+                          <button
+                            onClick={() => setSelectedApp(null)}
+                            className="text-gray-500 hover:text-white"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
                         </div>
-                        <button
-                          onClick={() => setSelectedApp(null)}
-                          className="text-gray-500 hover:text-white"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
 
-                      {/* Snapshots info logs banner */}
-                      <div className="p-2.5 bg-[#D4AF37]/5 border border-[#D4AF37]/10 rounded-lg text-[10px]">
-                        💾 <strong>Configuration Snapshot Active</strong>. This application retains version histories frozen at checkout.
-                      </div>
+                        {/* Snapshots info logs banner */}
+                        <div className="p-2.5 bg-[#D4AF37]/5 border border-[#D4AF37]/10 rounded-lg text-[10px]">
+                          💾 <strong>Configuration Snapshot Active</strong>. This application retains version histories frozen at checkout.
+                        </div>
 
-                      {/* Document checker review pipeline list */}
-                      <div className="space-y-3">
-                        <span className="text-[10px] text-gray-500 uppercase font-bold">Attached files review checklist</span>
-                        
-                        {Object.keys(appDocsReview).map((docName) => {
-                          const docObj = appDocsReview[docName];
-                          return (
-                            <div key={docName} className="p-3 bg-white/5 rounded-xl border border-white/10 space-y-2">
-                              <div className="flex justify-between items-center">
-                                <span className="font-bold text-white">{docName}</span>
-                                <span className={`px-2 py-0.5 rounded text-[8px] font-bold uppercase ${
-                                  docObj.status === "Verified" 
-                                    ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" 
-                                    : docObj.status === "Rejected" 
-                                      ? "bg-rose-500/10 text-rose-400 border border-rose-500/20" 
+                        {/* Document checker review pipeline list */}
+                        <div className="space-y-3">
+                          <span className="text-[10px] text-gray-500 uppercase font-bold">Client-Specific Documents Checklist</span>
+                          
+                          {appDocuments.map((docObj) => {
+                            const isUploaded = docObj.status === "uploaded" && docObj.fileUrl;
+                            
+                            return (
+                              <div key={docObj.key} className="p-3 bg-white/5 rounded-xl border border-white/10 space-y-2">
+                                <div className="flex justify-between items-center">
+                                  <span className="font-bold text-white text-xs">{docObj.name}</span>
+                                  <span className={`px-2 py-0.5 rounded text-[8px] font-bold uppercase ${
+                                    isUploaded 
+                                      ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" 
                                       : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
-                                }`}>
-                                  {docObj.status}
-                                </span>
-                              </div>
-                              <div className="flex justify-between items-center text-[10px] text-gray-400">
-                                <span>📄 {docObj.file}</span>
-                                <div className="flex gap-1.5">
-                                  <button
-                                    onClick={() => handleVerifyDocument(docName, "Verified")}
-                                    className="p-1 hover:bg-emerald-500/15 rounded text-emerald-500 hover:scale-105 transition-transform"
-                                    title="Verify Document"
-                                  >
-                                    <Check className="w-3.5 h-3.5" />
-                                  </button>
-                                  <button
-                                    onClick={() => handleVerifyDocument(docName, "Rejected")}
-                                    className="p-1 hover:bg-rose-500/15 rounded text-rose-500 hover:scale-105 transition-transform"
-                                    title="Reject Document"
-                                  >
-                                    <X className="w-3.5 h-3.5" />
-                                  </button>
+                                  }`}>
+                                    {isUploaded ? "Uploaded" : "Pending Upload"}
+                                  </span>
                                 </div>
+
+                                {isUploaded ? (
+                                  <div className="space-y-1">
+                                    <div className="flex justify-between items-center text-[10px] text-gray-400">
+                                      <a
+                                        href={docObj.fileUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="font-medium text-[#D4AF37] hover:underline flex items-center gap-1"
+                                      >
+                                        📄 View Document
+                                      </a>
+                                      <button
+                                        onClick={() => handleAdminDeleteDocument(currentApp.id, docObj.key)}
+                                        className="text-[9px] text-rose-500 hover:text-rose-400 uppercase font-bold"
+                                      >
+                                        Remove
+                                      </button>
+                                    </div>
+                                    {docObj.uploadedAt && (
+                                      <p className="text-[9px] text-gray-500">
+                                        Uploaded by {docObj.uploadedBy || 'specialist'} on {new Date(docObj.uploadedAt).toLocaleString()}
+                                      </p>
+                                    )}
+                                  </div>
+                                ) : (
+                                  <div className="flex items-center gap-2">
+                                    <input
+                                      type="file"
+                                      accept=".pdf"
+                                      id={`upload-${docObj.key}`}
+                                      className="hidden"
+                                      onChange={(e) => {
+                                        if (e.target.files && e.target.files[0]) {
+                                          handleAdminUploadDocument(currentApp.id, docObj.key, e.target.files[0]);
+                                        }
+                                      }}
+                                    />
+                                    {adminUploadingDocKey === docObj.key ? (
+                                      <div className="flex items-center gap-1 text-[10px] text-gray-400 py-1">
+                                        <Loader2 className="w-3.5 h-3.5 animate-spin text-[#D4AF37]" />
+                                        <span>Uploading...</span>
+                                      </div>
+                                    ) : (
+                                      <label
+                                        htmlFor={`upload-${docObj.key}`}
+                                        className="cursor-pointer px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-gray-500 rounded text-[9px] font-bold uppercase transition-all flex items-center gap-1"
+                                      >
+                                        <Upload className="w-3 h-3 text-[#D4AF37]" /> Upload PDF
+                                      </label>
+                                    )}
+                                  </div>
+                                )}
                               </div>
-                              {docObj.comment && (
-                                <p className="text-[10px] text-rose-400 italic">Comment: {docObj.comment}</p>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
-
-                      {/* Staff assignment & priority configs */}
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <label className="text-[10px] text-gray-500 uppercase font-bold">Owner Agent</label>
-                          <select
-                            value={selectedApp.assignedStaff || "Rakhi G Hari"}
-                            onChange={(e) => {
-                              toast.success("Assigned staff owner updated.");
-                              logAudit("Updated Application staff allocation", selectedApp.id, e.target.value);
-                            }}
-                            className="w-full bg-[#0b1624] border border-gray-800 rounded-lg p-2 text-xs text-white focus:outline-none mt-1"
-                          >
-                            <option value="Rakhi G Hari">Rakhi G Hari</option>
-                            <option value="Suresh Kumar">Suresh Kumar</option>
-                            <option value="Hassan Ali">Hassan Ali</option>
-                          </select>
+                            );
+                          })}
                         </div>
-                        <div>
-                          <label className="text-[10px] text-gray-500 uppercase font-bold font-sans">Priority level</label>
-                          <select
-                            value={selectedApp.priority || "Medium"}
-                            onChange={(e) => {
-                              toast.success("Application priority tag shifted.");
-                              logAudit("Shifts priority values", selectedApp.id, e.target.value);
-                            }}
-                            className="w-full bg-[#0b1624] border border-gray-800 rounded-lg p-2 text-xs text-white focus:outline-none mt-1"
-                          >
-                            <option value="High">High</option>
-                            <option value="Medium">Medium</option>
-                            <option value="Low">Low</option>
-                          </select>
+
+                        {/* Staff assignment & priority configs */}
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="text-[10px] text-gray-500 uppercase font-bold">Owner Agent</label>
+                            <select
+                              value={currentApp.assignedStaff || "Rakhi G Hari"}
+                              onChange={(e) => {
+                                toast.success("Assigned staff owner updated.");
+                                logAudit("Updated Application staff allocation", currentApp.id, e.target.value);
+                              }}
+                              className="w-full bg-[#0b1624] border border-gray-800 rounded-lg p-2 text-xs text-white focus:outline-none mt-1"
+                            >
+                              <option value="Rakhi G Hari">Rakhi G Hari</option>
+                              <option value="Suresh Kumar">Suresh Kumar</option>
+                              <option value="Hassan Ali">Hassan Ali</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="text-[10px] text-gray-500 uppercase font-bold font-sans">Priority level</label>
+                            <select
+                              value={currentApp.priority || "Medium"}
+                              onChange={(e) => {
+                                toast.success("Application priority tag shifted.");
+                                logAudit("Shifts priority values", currentApp.id, e.target.value);
+                              }}
+                              className="w-full bg-[#0b1624] border border-gray-800 rounded-lg p-2 text-xs text-white focus:outline-none mt-1"
+                            >
+                              <option value="High">High</option>
+                              <option value="Medium">Medium</option>
+                              <option value="Low">Low</option>
+                            </select>
+                          </div>
                         </div>
                       </div>
-
-                    </div>
-                  ) : (
+                    );
+                  })()}
+                  </div>
+                ) : (
                     <div className="h-full flex flex-col items-center justify-center text-center p-6 text-gray-500 space-y-2">
                       <FileText className="w-8 h-8 opacity-40" />
                       <p className="font-semibold text-xs uppercase tracking-wider">Select case file</p>
@@ -811,8 +946,7 @@ export const VisaCheckerCms = ({ activeTab = "cms" }) => {
                   )}
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
           {/* ====================================================
               TAB 3: CMS DESIGN FORM & RULE BUILDERS

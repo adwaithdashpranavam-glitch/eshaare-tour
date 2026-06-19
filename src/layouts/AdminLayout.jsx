@@ -96,7 +96,8 @@ export const AdminLayout = () => {
       items: [
         { label: "Visa Cases", path: "/admin/cases", icon: FileText, roles: ["super_admin", "admin", "manager", "visa_ops"] },
         { label: "Applications", path: "/admin/crm/applications", icon: FileSpreadsheet, roles: ["super_admin", "admin", "manager", "visa_ops"] },
-        { label: "Appointments", path: "/admin/appointments", icon: CalendarCheck, roles: ["super_admin", "admin", "manager", "sales", "visa_ops"] }
+        { label: "Appointments", path: "/admin/appointments", icon: CalendarCheck, roles: ["super_admin", "admin", "manager", "sales", "visa_ops"] },
+        { label: "Documents/Templates", path: "/admin/documents", icon: FileText, roles: ["super_admin", "admin", "manager", "visa_ops"] }
       ]
     },
     {

@@ -126,7 +126,7 @@ service cloud.firestore {
     }
 
     function validateApplicationSchema(data) {
-      let allowedFields = ['id', 'customerId', 'customerName', 'visaId', 'visaName', 'status', 'paymentStatus', 'packageType', 'amount', 'createdAt', 'updatedAt', 'submittedAt', 'formData', 'step', 'price', 'nationality', 'phone', 'fullName', 'destination', 'score', 'assignedStaff'];
+      let allowedFields = ['id', 'customerId', 'customerName', 'visaId', 'visaName', 'status', 'paymentStatus', 'packageType', 'amount', 'createdAt', 'updatedAt', 'submittedAt', 'formData', 'step', 'price', 'nationality', 'phone', 'fullName', 'destination', 'score', 'assignedStaff', 'applicationType', 'sourcePageType', 'destinationCountry', 'visaType', 'appointmentPreference', 'assignedConsultant', 'documents', 'schengenQuestionnaire', 'travelProfileSnapshot'];
       return data.keys().hasOnly(allowedFields) &&
              data.customerId is string &&
              (data.visaId == null || data.visaId is string) &&
@@ -481,6 +481,14 @@ service cloud.firestore {
     // ==========================================
     match /visas/{visaId} {
       // Public read access; write only by staff
+      allow read: if true;
+      allow write: if isStaff();
+    }
+
+    // ==========================================
+    // 25. System Documents Collection (NOC template)
+    // ==========================================
+    match /systemDocuments/{documentId} {
       allow read: if true;
       allow write: if isStaff();
     }
