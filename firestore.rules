@@ -175,15 +175,18 @@ service cloud.firestore {
     // 1. Users Collection
     // ==========================================
     match /users/{userId} {
-      allow read: if true;
-      allow list: if isManager();
-      
+      // Reads are restricted: owners read their own doc; managers read any; a user may
+      // read the email-keyed doc that matches their own email (legacy staff linking).
+      // No public access — staff/client docs hold PII (email, role, uid, status, lastLoginAt).
+      allow read: if isOwner(userId) || isManager() ||
+                    (request.auth != null && request.auth.token != null && request.auth.token.email != null && userId == request.auth.token.email.lower());
+
       // Regular customers create their user doc on sign-up, or staff links pre-created profile
-      allow create: if isSignedIn() && 
+      allow create: if isSignedIn() &&
                     userId == request.auth.uid &&
                     (
-                      // New client self-registration
-                      (request.resource.data.role == 'client' && request.resource.data.status == 'Active') ||
+                      // New client self-registration (treat missing status as Active for robustness)
+                      (request.resource.data.role == 'client' && (!('status' in request.resource.data) || request.resource.data.status == 'Active')) ||
                       // Staff linking: email-keyed doc exists with matching role (status may be absent in legacy docs)
                       (
                         exists(/databases/$(database)/documents/users/$(request.resource.data.email.lower())) &&
@@ -215,7 +218,10 @@ service cloud.firestore {
     match /user_profiles/{userId} {
       // Owner can read/write their own profile; managers can read for case handling.
       allow read: if isOwner(userId) || isManager();
-      allow create: if isSignedIn() && request.auth.uid == userId;
+      // Prevent orphaned profiles: a traveler profile can only be created by the owner
+      // AND only when a valid registration (users doc) already exists for them.
+      allow create: if isSignedIn() && request.auth.uid == userId &&
+                    exists(/databases/$(database)/documents/users/$(request.auth.uid));
       allow update: if isOwner(userId) || isManager();
       allow delete: if isSuperAdmin();
 

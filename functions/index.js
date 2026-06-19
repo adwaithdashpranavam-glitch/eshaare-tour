@@ -73,6 +73,90 @@ exports.createStaff = functions.https.onCall(async (data, context) => {
   return { success: true, uid: userRecord.uid };
 });
 
+// 1b. Register Client (public, atomic self-signup)
+// Creates the Auth account + users/customers docs in one authoritative place. On ANY
+// failure after the Auth user exists, it rolls back via Admin SDK (deleteUser + doc
+// deletes, which bypass security rules) so no partial registration can survive.
+// NOTE: this writes Firestore via the Admin SDK and therefore requires the functions
+// runtime service account to hold roles/datastore.user.
+// Email verification is intentionally NOT sent here — account creation is the atomic
+// core; the verification email is best-effort and handled client-side (interim).
+exports.registerClient = functions.https.onCall(async (data) => {
+  const { email, password, name, phoneNumber, nationality } = data || {};
+
+  // ---- Validation ----
+  if (!email || !password || !name) {
+    throw new functions.https.HttpsError("invalid-argument", "Please fill in all required fields.");
+  }
+  const emailLower = String(email).toLowerCase().trim();
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(emailLower)) {
+    throw new functions.https.HttpsError("invalid-argument", "Invalid email address.");
+  }
+  if (typeof password !== "string" || password.length < 6) {
+    throw new functions.https.HttpsError("invalid-argument", "Weak password — please use at least 6 characters.");
+  }
+
+  // ---- Create Auth user ----
+  let userRecord;
+  try {
+    userRecord = await admin.auth().createUser({
+      email: emailLower,
+      password,
+      displayName: name
+    });
+  } catch (err) {
+    if (err.code === "auth/email-already-exists") {
+      throw new functions.https.HttpsError("already-exists", "Email already registered.");
+    }
+    if (err.code === "auth/invalid-password") {
+      throw new functions.https.HttpsError("invalid-argument", "Weak password — please use at least 6 characters.");
+    }
+    if (err.code === "auth/invalid-email") {
+      throw new functions.https.HttpsError("invalid-argument", "Invalid email address.");
+    }
+    console.error("registerClient createUser failed:", err);
+    throw new functions.https.HttpsError("internal", "Registration failed. Please try again.");
+  }
+
+  const uid = userRecord.uid;
+
+  // ---- Write profile docs; roll back authoritatively on failure ----
+  try {
+    const now = FieldValue.serverTimestamp();
+    await db.collection("users").doc(uid).set({
+      uid,
+      email: emailLower,
+      role: "client",
+      status: "Active",
+      name,
+      phone: phoneNumber || "",
+      phoneNumber: phoneNumber || "",
+      nationality: nationality || "",
+      createdAt: now,
+      lastLoginAt: null
+    });
+    await db.collection("customers").doc(uid).set({
+      uid,
+      name,
+      email: emailLower,
+      phone: phoneNumber || "",
+      nationality: nationality || "",
+      createdAt: now,
+      status: "Active"
+    });
+  } catch (err) {
+    console.error("registerClient profile write failed — rolling back:", err);
+    // Authoritative rollback (Admin SDK bypasses rules): remove the Auth user and any partial docs.
+    await admin.auth().deleteUser(uid).catch((e) => console.error("Rollback deleteUser failed:", e));
+    await db.collection("users").doc(uid).delete().catch(() => {});
+    await db.collection("customers").doc(uid).delete().catch(() => {});
+    throw new functions.https.HttpsError("internal", "Registration failed. Please try again.");
+  }
+
+  return { success: true, uid };
+});
+
 // 2. Update Staff Status (Activate/Suspend/Disable)
 exports.updateStaffStatus = functions.https.onCall(async (data, context) => {
   const callerUid = await verifySuperAdmin(context);

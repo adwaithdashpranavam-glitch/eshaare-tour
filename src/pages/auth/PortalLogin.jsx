@@ -3,6 +3,7 @@ import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { Compass, UserCheck, Mail, Lock, User, Phone, Globe, LogIn } from "lucide-react";
 import toast from "react-hot-toast";
+import { getAuthErrorMessage } from "../../utils/authErrors";
 
 export const PortalLogin = () => {
   const location = useLocation();
@@ -41,7 +42,7 @@ export const PortalLogin = () => {
       navigate(redirectUrl);
     } catch (err) {
       console.error(err);
-      toast.error("Login failed. Check your credentials.");
+      toast.error(getAuthErrorMessage(err, "Login failed. Please check your credentials."));
     } finally {
       setLoading(false);
     }
@@ -71,11 +72,11 @@ export const PortalLogin = () => {
         phoneNumber: phoneNumber.trim(),
         nationality: nationality.trim()
       });
-      toast.success("Registration successful! Welcome to ESHAAR Tours.");
-      navigate(redirectUrl);
+      toast.success("Account created! Please verify your email to continue.");
+      navigate("/portal/verify-email", { replace: true });
     } catch (err) {
       console.error(err);
-      toast.error("Sign up failed. " + (err.message || "Please check your inputs."));
+      toast.error(getAuthErrorMessage(err, "Sign up failed. Please check your inputs."));
     } finally {
       setLoading(false);
     }

@@ -14,10 +14,35 @@ import { STEP_VALIDATORS } from "../../utils/profileValidation";
 import { LoadingSpinner } from "../../components/ui/LoadingSpinner";
 import {
   ShieldCheck, ChevronLeft, ChevronRight, Check, Loader2,
-  CloudUpload, Pencil, BadgeCheck
+  CloudUpload, Pencil, BadgeCheck, LogOut
 } from "lucide-react";
 import foxLogo from "../../assets/fox-logo.png";
 import toast from "react-hot-toast";
+import { COUNTRIES, DEFAULT_DIAL_CODE } from "../../utils/countries";
+
+// Parse phone number string from registration/customer record into { dialCode, number }
+const parsePhoneString = (phoneStr) => {
+  if (!phoneStr) return { dialCode: DEFAULT_DIAL_CODE, number: "" };
+  const clean = phoneStr.trim();
+  const spaceIndex = clean.indexOf(" ");
+  if (spaceIndex !== -1) {
+    const dialPart = clean.substring(0, spaceIndex).trim();
+    const numberPart = clean.substring(spaceIndex + 1).trim();
+    if (dialPart.startsWith("+") && /^\+\d+$/.test(dialPart)) {
+      return { dialCode: dialPart, number: numberPart.replace(/[^\d\s]/g, "") };
+    }
+  }
+  if (clean.startsWith("+")) {
+    const sortedCountries = [...COUNTRIES].sort((a, b) => b.dial.length - a.dial.length);
+    for (const c of sortedCountries) {
+      if (clean.startsWith(c.dial)) {
+        const numberPart = clean.substring(c.dial.length).trim();
+        return { dialCode: c.dial, number: numberPart.replace(/[^\d\s]/g, "") };
+      }
+    }
+  }
+  return { dialCode: DEFAULT_DIAL_CODE, number: clean.replace(/[^\d\s]/g, "") };
+};
 
 // Deep-merge a saved profile over the empty template so missing keys are filled.
 const mergeProfile = (saved) => {
@@ -39,8 +64,13 @@ const INTRO_POINTS = [
 ];
 
 export const PortalVerifyProfilePage = () => {
-  const { user } = useAuth();
+  const { user, logout, userProfile } = useAuth();
   const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/portal/login", { replace: true });
+  };
 
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState(createEmptyProfile());
@@ -82,6 +112,41 @@ export const PortalVerifyProfilePage = () => {
     })();
     return () => { active = false; };
   }, [user?.uid]);
+
+  // Handle prefilling from user / userProfile
+  useEffect(() => {
+    if (loading) return; // Wait for draft load to complete
+
+    setProfile((prev) => {
+      let updated = { ...prev };
+      let changed = false;
+
+      // 1. Prefill email if empty or mismatching
+      if (user?.email && (!updated.contactInformation?.email || updated.contactInformation.email !== user.email)) {
+        updated.contactInformation = {
+          ...updated.contactInformation,
+          email: user.email
+        };
+        changed = true;
+      }
+
+      // 2. Prefill mobile if registration phone is available and draft mobile is empty
+      const registeredPhone = userProfile?.phone || userProfile?.phoneNumber || "";
+      if (registeredPhone) {
+        const currentMobileNum = updated.contactInformation?.mobile?.number || "";
+        if (!currentMobileNum) {
+          const parsed = parsePhoneString(registeredPhone);
+          updated.contactInformation = {
+            ...updated.contactInformation,
+            mobile: parsed
+          };
+          changed = true;
+        }
+      }
+
+      return changed ? updated : prev;
+    });
+  }, [user, userProfile, loading]);
 
   // Debounced autosave whenever profile or screen changes (after initial load)
   const scheduleSave = useCallback((nextProfile, nextScreen) => {
@@ -232,6 +297,13 @@ export const PortalVerifyProfilePage = () => {
               <CloudUpload className="h-3.5 w-3.5" /> Save &amp; finish later
             </button>
           )}
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#E5E7EB] text-[#6B7280] hover:text-red-600 hover:border-red-200 hover:bg-red-50 font-semibold transition-colors"
+            title="Log out"
+          >
+            <LogOut className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Log out</span>
+          </button>
         </div>
       </header>
 
@@ -334,7 +406,9 @@ export const PortalVerifyProfilePage = () => {
               {React.createElement(STEP_META[screen - 1].Section, {
                 data: profile[STEP_META[screen - 1].key],
                 onChange: (val) => updateSection(STEP_META[screen - 1].key, val),
-                errors
+                errors,
+                user,
+                userProfile
               })}
             </div>
 

@@ -119,7 +119,7 @@ export const PortalApplicationDetailPage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
         {/* Case Progress Timeline */}
-        <div className="lg:col-span-8 space-y-6">
+        <div className={`${caseData.assignedOfficer || caseData.assignedOfficerName ? "lg:col-span-8" : "lg:col-span-12"} space-y-6`}>
           <div className="bg-white border border-[#E5E7EB] rounded-[24px] p-6 shadow-sm space-y-4">
             <h3 className="text-base font-semibold text-[#1A1A1A] border-b border-[#E5E7EB] pb-2">
               Application Progress
@@ -184,30 +184,32 @@ export const PortalApplicationDetailPage = () => {
         </div>
 
         {/* Advisor contact sidebar */}
-        <div className="lg:col-span-4 space-y-6">
-          <div className="bg-white border border-[#E5E7EB] rounded-[24px] p-6 shadow-sm space-y-4 text-xs">
-            <h3 className="text-sm font-semibold text-[#1A1A1A] border-b border-[#E5E7EB] pb-2">
-              Your Consultant
-            </h3>
-            <div className="flex items-center space-x-3 py-2">
-              <div className="h-10 w-10 rounded-full bg-[#0F3D2E]/10 border border-[#0F3D2E]/25 text-[#0F3D2E] font-bold flex items-center justify-center shadow-inner">
-                {caseData.assignedOfficerName?.slice(0, 2).toUpperCase() || "SJ"}
+        {(caseData.assignedOfficer || caseData.assignedOfficerName) && (
+          <div className="lg:col-span-4 space-y-6">
+            <div className="bg-white border border-[#E5E7EB] rounded-[24px] p-6 shadow-sm space-y-4 text-xs">
+              <h3 className="text-sm font-semibold text-[#1A1A1A] border-b border-[#E5E7EB] pb-2">
+                Your Consultant
+              </h3>
+              <div className="flex items-center space-x-3 py-2">
+                <div className="h-10 w-10 rounded-full bg-[#0F3D2E]/10 border border-[#0F3D2E]/25 text-[#0F3D2E] font-bold flex items-center justify-center shadow-inner">
+                  {(caseData.assignedOfficer || caseData.assignedOfficerName).slice(0, 2).toUpperCase()}
+                </div>
+                <div>
+                  <h4 className="font-bold text-[#1A1A1A]">
+                    {caseData.assignedOfficer || caseData.assignedOfficerName}
+                  </h4>
+                  <span className="text-[10px] text-gray-500 font-medium">Immigration Consultant</span>
+                </div>
               </div>
-              <div>
-                <h4 className="font-bold text-[#1A1A1A]">
-                  {caseData.assignedOfficerName || "Sarah Johnson"}
-                </h4>
-                <span className="text-[10px] text-gray-500 font-medium">Immigration Consultant</span>
-              </div>
+              <Link
+                to="/portal/messages"
+                className="w-full block text-center py-2.5 bg-[#0F3D2E] hover:bg-[#0F3D2E]/95 text-white font-bold rounded-xl uppercase tracking-wider shadow-sm transition-colors"
+              >
+                Message Advisor
+              </Link>
             </div>
-            <Link
-              to="/portal/messages"
-              className="w-full block text-center py-2.5 bg-[#0F3D2E] hover:bg-[#0F3D2E]/95 text-white font-bold rounded-xl uppercase tracking-wider shadow-sm transition-colors"
-            >
-              Message Advisor
-            </Link>
           </div>
-        </div>
+        )}
 
       </div>
     </div>

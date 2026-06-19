@@ -333,44 +333,11 @@ export const HomePage = () => {
     }
   ];
 
-  const [specialists, setSpecialists] = useState([]);
+  // Specialists are sourced from the curated static list. The public site no longer
+  // queries the `users` collection (it holds staff/client PII and is now owner/manager-read only).
+  const [specialists] = useState(fallbackSpecialists);
   const [activeSpecIndex, setActiveSpecIndex] = useState(0);
 
-  // Firestore sync for specialists
-  useEffect(() => {
-    const sRef = collection(db, "users");
-    const unsubscribe = onSnapshot(sRef, (snapshot) => {
-      if (!snapshot.empty) {
-        const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        // Filter: role exists, is not client/customer
-        const staffOnly = list.filter(u => u.role && !["client", "customer"].includes(u.role.toLowerCase()));
-
-        const mapped = staffOnly.map(member => ({
-          id: member.id,
-          name: member.name || "Specialist",
-          designation: member.designation || member.role || "Visa Expert",
-          intro: member.intro || "Expert document auditor and travel coordinator at Eshaare.",
-          img: member.img || "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80",
-          visasFiled: Number(member.visasFiled) || 1200,
-          experienceYears: Number(member.experienceYears) || 8,
-          successRate: Number(member.successRate) || 98
-        }));
-
-        if (mapped.length > 0) {
-          setSpecialists(mapped);
-        } else {
-          setSpecialists(fallbackSpecialists);
-        }
-      } else {
-        setSpecialists(fallbackSpecialists);
-      }
-    }, (error) => {
-      console.warn("Error loading specialists:", error);
-      setSpecialists(fallbackSpecialists);
-    });
-
-    return () => unsubscribe();
-  }, []);
 
   // Auto-skip rotation timer for specialists (every 5 seconds)
   useEffect(() => {
