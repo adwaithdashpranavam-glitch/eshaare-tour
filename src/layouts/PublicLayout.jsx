@@ -207,10 +207,6 @@ export const PublicLayout = () => {
       path: "/visa-eligibility"
     },
     {
-      title: "APPOINTMENTS",
-      path: "/appointment"
-    },
-    {
       title: "DOCUMENTATION",
       path: "/resources"
     },
@@ -269,7 +265,11 @@ export const PublicLayout = () => {
       return "/packages";
     }
 
-    if (t === "Travel Insurance" || t === "Apply Online") {
+    if (t === "Travel Insurance") {
+      return "/contact";
+    }
+
+    if (t === "Apply Online") {
       return "/appointment";
     }
 
@@ -535,7 +535,7 @@ export const PublicLayout = () => {
             )}
 
             <Link
-              to="/appointment"
+              to="/contact"
               className="group relative flex items-center gap-2 h-9 bg-[#1D503A] border border-[#1D503A] text-white px-3 rounded-full font-semibold text-sm hover:bg-[#0e4a1e] transition-all duration-300 overflow-hidden shadow-md"
             >
               <Phone className="h-4 w-4" />
@@ -712,7 +712,7 @@ export const PublicLayout = () => {
               )}
 
               <Link
-                to="/appointment"
+                to="/contact"
                 className="bg-[#1D503A] text-white py-3 rounded-full text-center font-semibold text-sm shadow-md hover:bg-[#0e4a1e]"
                 onClick={() => setMobileMenuOpen(false)}
               >
@@ -831,7 +831,7 @@ export const PublicLayout = () => {
             <p>{"\u00A9"} {new Date().getFullYear()} Eshaare Tours UAE. All rights reserved.</p>
             <div className="flex gap-6 mt-4 md:mt-0">
               <a href="https://instagram.com" target="_blank" rel="noreferrer" className="hover:text-[#D4AF37] transition-colors">Instagram</a>
-              <a href="https://wa.me/971501234567" target="_blank" rel="noreferrer" className="hover:text-[#D4AF37] transition-colors">WhatsApp</a>
+              <a href="https://wa.me/971557338429" target="_blank" rel="noreferrer" className="hover:text-[#D4AF37] transition-colors">WhatsApp</a>
               <a href="https://facebook.com" target="_blank" rel="noreferrer" className="hover:text-[#D4AF37] transition-colors">Facebook</a>
             </div>
           </div>
@@ -853,7 +853,7 @@ export const PublicLayout = () => {
 
           {/* Fox Button */}
           <a
-            href="https://wa.me/971501234567"
+            href="https://wa.me/971557338429"
             target="_blank"
             rel="noopener noreferrer"
             className="w-16 h-16 bg-white border border-[#1D503A]/15 rounded-full flex items-center justify-center shadow-[0_8px_32px_rgba(0,0,0,0.15)] hover:scale-110 transition-transform duration-300 relative group-btn"

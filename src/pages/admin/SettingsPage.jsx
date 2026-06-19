@@ -28,7 +28,7 @@ export const SettingsPage = () => {
   // General settings state
   const [generalSettings, setGeneralSettings] = useState({
     agencyName: "ESHAARE Travel & Tourism LLC",
-    whatsappHelpdesk: "+971501234567"
+    whatsappHelpdesk: "+971557338429"
   });
 
   // Visa fee master list state

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { getVisaTypes, createLead } from "../../lib/firestore";
-import { generateLeadNo } from "../../utils/helpers";
+import { generateLeadNo, formatWhatsAppPhone } from "../../utils/helpers";
 import { serverTimestamp } from "../../lib/firebase";
 import Modal from "../../components/ui/Modal";
 import { Clock, TrendingUp, FileText, Calendar, AlertCircle, Phone, ArrowRight, ShieldCheck, ClipboardCheck, ChevronRight } from "lucide-react";
@@ -251,6 +251,11 @@ const StatIcon = ({ name, className }) => {
 
 export const VisaServicesPage = () => {
   const navigate = useNavigate();
+  
+  useEffect(() => {
+    document.title = "Schengen Visa UAE & Visa Services Dubai | ESHAARE";
+  }, []);
+
   const [visaTypes, setVisaTypes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -274,8 +279,8 @@ export const VisaServicesPage = () => {
   // Eligibility Checker State
   const [checkerStep, setCheckerStep] = useState(0);
   const [checkerForm, setCheckerForm] = useState({
-    destination: "Schengen Europe",
-    nationality: "Indian",
+    destination: "",
+    nationality: "",
     employment: "Salaried",
     noc: "Yes",
     salary: "10,000 - 15,000 AED",
@@ -344,7 +349,7 @@ export const VisaServicesPage = () => {
       const submission = {
         leadNo: generatedNo,
         contactName: formData.name,
-        contactPhone: formData.phone.startsWith("+") ? formData.phone : `+971${formData.phone}`,
+        contactPhone: formatWhatsAppPhone(formData.phone),
         contactEmail: formData.email,
         nationality: formData.nationality,
         destinationCountry: selectedVisa?.name || "Global Visa",
@@ -377,17 +382,19 @@ export const VisaServicesPage = () => {
     let factors = [];
     let recommendations = [];
 
-    const dest = checkerForm.destination.toLowerCase();
-    const isStrict = dest.includes("schengen") || dest.includes("kingdom") || dest.includes("united states") || dest.includes("canada") || dest.includes("uk") || dest.includes("us");
+    const dest = (checkerForm.destination || "").toLowerCase();
+    const isStrict = dest && (dest.includes("schengen") || dest.includes("kingdom") || dest.includes("united states") || dest.includes("canada") || dest.includes("uk") || dest.includes("us"));
 
     // Nationality factor
-    const nat = checkerForm.nationality.toLowerCase().trim();
-    if (["indian", "pakistani", "egyptian", "filipino", "syrian", "jordanian", "bangladeshi"].includes(nat)) {
-      score -= 5;
-      factors.push("Standard passport controls apply for this route.");
-    } else {
-      score += 10;
-      factors.push("Favorable visa-on-arrival/access profile for nationality.");
+    const nat = (checkerForm.nationality || "").toLowerCase().trim();
+    if (nat) {
+      if (["indian", "pakistani", "egyptian", "filipino", "syrian", "jordanian", "bangladeshi"].includes(nat)) {
+        score -= 5;
+        factors.push("Standard passport controls apply for this route.");
+      } else {
+        score += 10;
+        factors.push("Favorable visa-on-arrival/access profile for nationality.");
+      }
     }
 
     // Employment
@@ -548,7 +555,7 @@ export const VisaServicesPage = () => {
       className="min-h-screen text-on-surface font-body-md pb-24"
     >
       {/* Page Hero Banner */}
-      <section className="relative h-[540px] py-10 md:py-14 overflow-hidden bg-[#1D503A] flex items-center justify-center">
+      <section className="relative min-h-[540px] py-12 md:py-20 overflow-hidden bg-[#1D503A] flex items-center justify-center">
         {/* Background Image with elegant overlay */}
         <div className="absolute inset-0 z-0">
           <img
@@ -625,6 +632,7 @@ export const VisaServicesPage = () => {
                               onChange={(e) => setCheckerForm((prev) => ({ ...prev, destination: e.target.value }))}
                               className="w-full px-3.5 py-3 bg-surface border border-outline-variant/20 rounded-xl focus:border-[#1D503A] outline-none text-sm text-gray-900 font-medium"
                             >
+                              <option value="">Select Destination</option>
                               <option>Schengen Europe</option>
                               <option>United Kingdom</option>
                               <option>United States</option>
@@ -641,6 +649,7 @@ export const VisaServicesPage = () => {
                               onChange={(e) => setCheckerForm((prev) => ({ ...prev, nationality: e.target.value }))}
                               className="w-full px-3.5 py-3 bg-surface border border-outline-variant/20 rounded-xl focus:border-[#1D503A] outline-none text-sm text-gray-900 font-medium"
                             >
+                              <option value="">Select Nationality</option>
                               <option>Indian</option>
                               <option>Egyptian</option>
                               <option>Syrian</option>
@@ -654,8 +663,15 @@ export const VisaServicesPage = () => {
                         </div>
                         <div className="pt-4 border-t border-outline-variant/5 flex justify-end">
                           <button
-                            onClick={() => setCheckerStep(1)}
-                            className="px-5 py-2.5 bg-[#1D503A] hover:bg-[#0e4a1e] text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all shadow-md"
+                            onClick={() => {
+                              if (!checkerForm.destination || !checkerForm.nationality) {
+                                toast.error("Please select both a destination and a nationality.");
+                                return;
+                              }
+                              setCheckerStep(1);
+                            }}
+                            disabled={!checkerForm.destination || !checkerForm.nationality}
+                            className="px-5 py-2.5 bg-[#1D503A] hover:bg-[#0e4a1e] text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             <span>Next Step</span>
                             <ChevronRight size={14} />
@@ -1031,7 +1047,7 @@ export const VisaServicesPage = () => {
                   </p>
                 </div>
                 <a
-                  href="https://wa.me/971501234567?text=Hi%2C%20I'm%20inquiring%20about%20visa%20services."
+                  href="https://wa.me/971557338429?text=Hi%2C%20I'm%20inquiring%20about%20visa%20services."
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 bg-[#25D366] text-white px-6 py-3 rounded-xl font-bold text-xs uppercase tracking-wider hover:opacity-95 transition-all shadow-md shadow-green-500/10"
@@ -1063,7 +1079,7 @@ export const VisaServicesPage = () => {
                       </p>
                     </div>
                     <a
-                      href="https://wa.me/971501234567?text=Hi%2C%20I'm%20inquiring%20about%20visa%20services."
+                      href="https://wa.me/971557338429?text=Hi%2C%20I'm%20inquiring%20about%20visa%20services."
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-2 bg-[#25D366] text-white px-6 py-3 rounded-xl font-bold text-xs uppercase tracking-wider hover:opacity-95 transition-all shadow-md shadow-green-500/10"

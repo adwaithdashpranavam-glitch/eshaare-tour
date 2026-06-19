@@ -123,12 +123,70 @@ export const AppPackagesListPage = () => {
     }
     setSeeding(true);
     try {
-      for (const pkg of DEFAULT_PACKAGES) {
+      // 1. Fetch and seed API destinations
+      const response = await fetch("https://eeshare-crm-backend.onrender.com/api/destinations");
+      if (!response.ok) {
+        throw new Error(`Failed to fetch: ${response.status} ${response.statusText}`);
+      }
+      const destinations = await response.json();
+      if (!Array.isArray(destinations)) {
+        throw new Error("API response is not an array");
+      }
+      for (const pkg of destinations) {
+        const pkgId = pkg.id || pkg.title.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+        await savePackage(pkgId, pkg);
+      }
+
+      // 2. Seed custom homepage packages
+      const HOME_PACKAGES = [
+        {
+          id: "kerala-backwater-escape",
+          title: "Kerala Backwaters",
+          country: "India",
+          price: "$224",
+          imageUrl: "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=800&q=80",
+          rating: 4.8,
+          reviewCount: 95,
+          category: "Packages",
+          description: "Serene houseboat cruise through palm-fringed canals, traditional homestays, and authentic Ayurvedic rejuvenation therapies in God's Own Country.",
+          duration: "5 Days / 4 Nights",
+          nextDeparture: "October 10, 2026"
+        },
+        {
+          id: "interlaken-holu",
+          title: "Interlaken Holu",
+          country: "Switzerland",
+          price: "$224",
+          imageUrl: "https://images.unsplash.com/photo-1502784444187-359ac186c5bb?q=80&w=800&auto=format&fit=crop",
+          rating: 4.9,
+          reviewCount: 112,
+          category: "Packages",
+          description: "Experience the majestic peaks of Jungfraujoch, crystalline Alpine lakes, and cozy chalet stays in the heart of Switzerland.",
+          duration: "6 Days / 5 Nights",
+          nextDeparture: "July 22, 2026"
+        },
+        {
+          id: "bespoke-honeymoon",
+          title: "Bespoke Honeymoon",
+          country: "Maldives",
+          price: "$399",
+          imageUrl: "https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=800&q=80",
+          rating: 5.0,
+          reviewCount: 150,
+          category: "Packages",
+          description: "Ultra-luxury overwater villa stay, private candlelit beach dinners, couples spa treatments, and snorkeling in crystal clear lagoons.",
+          duration: "5 Days / 4 Nights",
+          nextDeparture: "Available Daily"
+        }
+      ];
+
+      for (const pkg of HOME_PACKAGES) {
         await savePackage(pkg.id, pkg);
       }
-      toast.success("Default packages seeded successfully!");
+
+      toast.success(`Successfully seeded ${destinations.length + HOME_PACKAGES.length} packages!`);
     } catch (err) {
-      toast.error("Failed to seed packages");
+      toast.error(`Failed to seed packages: ${err.message}`);
       console.error(err);
     } finally {
       setSeeding(false);
@@ -146,7 +204,7 @@ export const AppPackagesListPage = () => {
           </p>
         </div>
         <div className="flex gap-2">
-          {canModifyCMS && packages.length === 0 && (
+          {canModifyCMS && (
             <button
               onClick={handleSeedDefaults}
               disabled={seeding}

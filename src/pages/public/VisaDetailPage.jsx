@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
 import { getVisaTypeBySlug, saveVisaType, createLead, createApplicationDraft, getVisaTypes } from "../../lib/firestore";
 import { useAuth } from "../../contexts/AuthContext";
-import { generateLeadNo } from "../../utils/helpers";
+import { generateLeadNo, formatWhatsAppPhone } from "../../utils/helpers";
 import { serverTimestamp } from "../../lib/firebase";
 import Modal from "../../components/ui/Modal";
 import {
@@ -172,6 +172,16 @@ export const VisaDetailPage = () => {
   });
   const [submitting, setSubmitting] = useState(false);
 
+  useEffect(() => {
+    if (visaData) {
+      document.title = visaData.metaTitle || `${visaData.name} from Dubai - Visa Consultant | ESHAARE`;
+      const metaDesc = document.querySelector('meta[name="description"]');
+      if (metaDesc && visaData.metaDescription) {
+        metaDesc.setAttribute("content", visaData.metaDescription);
+      }
+    }
+  }, [visaData]);
+
   // Minimum loading state duration (500ms)
   useEffect(() => {
     setLoading(true);
@@ -291,7 +301,7 @@ export const VisaDetailPage = () => {
       const submission = {
         leadNo: generatedNo,
         contactName: formData.name,
-        contactPhone: formData.phone.startsWith("+") ? formData.phone : `+971${formData.phone}`,
+        contactPhone: formatWhatsAppPhone(formData.phone),
         contactEmail: formData.email,
         nationality: formData.nationality,
         destinationCountry: visaData?.name || "Global Visa",
@@ -1155,7 +1165,7 @@ export const VisaDetailPage = () => {
                 Apply Now
               </button>
               <a
-                href={`https://wa.me/971501234567?text=Hi%2C%20I'm%20inquiring%20about%20${encodeURIComponent(visaData.name)}.`}
+                href={`https://wa.me/971557338429?text=Hi%2C%20I'm%20inquiring%20about%20${encodeURIComponent(visaData.name)}.`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-6 py-3.5 bg-[#25D366] text-white font-bold rounded-xl text-xs uppercase tracking-wider hover:opacity-95 transition-all shadow-md flex items-center justify-center gap-1.5"

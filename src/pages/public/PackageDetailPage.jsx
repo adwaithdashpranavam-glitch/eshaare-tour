@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "../../lib/firestore";
+import { doc, getDoc, serverTimestamp } from "firebase/firestore";
+import { db, createLead } from "../../lib/firestore";
+import { generateLeadNo, formatWhatsAppPhone } from "../../utils/helpers";
 import LoadingSpinner from "../../components/ui/LoadingSpinner";
 import toast from "react-hot-toast";
 
@@ -36,12 +37,35 @@ export const PackageDetailPage = () => {
     fetchPackage();
   }, [slug, navigate]);
 
-  const handleBookSubmit = (e) => {
+  const handleBookSubmit = async (e) => {
     e.preventDefault();
-    if (!currentPkg) return;
-    toast.success(`Booking request sent for ${currentPkg.title}! Our agent will contact you shortly.`);
-    setName("");
-    setPhone("");
+    if (!currentPkg || !name || !phone) return;
+    try {
+      const generatedNo = await generateLeadNo();
+      const submission = {
+        leadNo: generatedNo,
+        contactName: name,
+        contactPhone: formatWhatsAppPhone(phone),
+        contactEmail: "",
+        nationality: "Unknown",
+        destinationCountry: currentPkg.country || currentPkg.destination || "Global",
+        serviceType: "Tour",
+        source: "website_package_detail",
+        stage: "New",
+        priority: "Medium",
+        ownerId: null,
+        notes: `Booking Request for Package: ${currentPkg.title}\nPrice: ${currentPkg.price}\nDuration: ${currentPkg.duration}`,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      };
+      await createLead(submission);
+      toast.success(`Booking request sent for ${currentPkg.title}! Ref: ${generatedNo}`);
+      setName("");
+      setPhone("");
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to submit booking request. Please try again.");
+    }
   };
 
   if (loading) {

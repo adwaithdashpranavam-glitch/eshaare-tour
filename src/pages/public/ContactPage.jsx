@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { createLead } from "../../lib/firestore";
-import { generateLeadNo } from "../../utils/helpers";
+import { generateLeadNo, formatWhatsAppPhone } from "../../utils/helpers";
 import toast from "react-hot-toast";
 
 export const ContactPage = () => {
@@ -13,6 +13,10 @@ export const ContactPage = () => {
     honeypot: ""
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    document.title = "Contact Visa Agency & Travel Consultant Dubai | ESHAARE";
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -28,7 +32,7 @@ export const ContactPage = () => {
         leadNo: generatedNo,
         contactName: formData.name,
         contactEmail: formData.email,
-        contactPhone: formData.phone.startsWith("+") ? formData.phone : `+971${formData.phone}`,
+        contactPhone: formatWhatsAppPhone(formData.phone),
         destination: formData.subject, // Store subject in destination/notes
         message: formData.message,
         source: "contact_form",
@@ -56,8 +60,8 @@ export const ContactPage = () => {
   };
 
   const contactCards = [
-    { title: "Phone", info: "+971 4 123 4567", sub: "Call our Dubai office", action: "tel:+97141234567", icon: "call" },
-    { title: "WhatsApp", info: "+971 50 123 4567", sub: "Instant chat support", action: "https://wa.me/971501234567", icon: "chat" },
+    { title: "Phone", info: "+971 55 733 8429", sub: "Call our Dubai office", action: "tel:+971557338429", icon: "call" },
+    { title: "WhatsApp", info: "+971 55 733 8429", sub: "Instant chat support", action: "https://wa.me/971557338429", icon: "chat" },
     { title: "Email", info: "info@eshaaretours.com", sub: "General & corporate enquiries", action: "mailto:info@eshaaretours.com", icon: "mail" },
     { title: "Location", info: "Business Bay, Dubai", sub: "Executive Business Center, 14th Floor", action: "https://maps.google.com", icon: "pin_drop" }
   ];
@@ -212,19 +216,9 @@ export const ContactPage = () => {
                 <span className="material-symbols-outlined text-secondary">schedule</span>
                 <span>Business Hours</span>
               </h4>
-              <div className="divide-y divide-outline-variant/15 text-body-sm text-on-surface-variant">
-                <div className="flex justify-between py-2">
-                  <span>Monday - Friday</span> 
-                  <span className="font-semibold text-primary">09:00 AM - 06:00 PM</span>
-                </div>
-                <div className="flex justify-between py-2">
-                  <span>Saturday</span> 
-                  <span className="font-semibold text-primary">10:00 AM - 04:00 PM</span>
-                </div>
-                <div className="flex justify-between py-2">
-                  <span>Sunday</span> 
-                  <span className="text-error font-semibold">Closed</span>
-                </div>
+              <div className="text-body-sm text-on-surface-variant py-2">
+                <span className="font-bold text-[#1D503A] text-lg block mb-1">24/7 Available</span>
+                <p className="leading-relaxed">We are online and available 24 hours a day, 7 days a week to assist you with your visa and travel requests.</p>
               </div>
             </div>
           </div>
