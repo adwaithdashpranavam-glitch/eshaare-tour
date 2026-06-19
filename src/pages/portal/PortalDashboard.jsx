@@ -464,7 +464,7 @@ export const PortalDashboard = () => {
 
             <div className="flex flex-col gap-2.5 pt-1">
               <a 
-                href="tel:+971501234567" 
+                href="tel:+971557338429" 
                 className="flex items-center justify-center gap-2 py-2 px-4 rounded-xl border border-[#E5E7EB] hover:border-[#0F3D2E] text-xs font-semibold text-[#1A1A1A] hover:bg-[#F8F6F2]/30 transition-all"
               >
                 <Phone className="w-3.5 h-3.5 text-[#0F3D2E]" />
@@ -472,7 +472,7 @@ export const PortalDashboard = () => {
               </a>
               
               <a 
-                href="https://wa.me/971501234567" 
+                href="https://wa.me/971557338429" 
                 target="_blank" 
                 rel="noreferrer" 
                 className="flex items-center justify-center gap-2 py-2 px-4 rounded-xl border border-transparent bg-[#0F3D2E] hover:bg-[#0F3D2E]/95 text-xs font-semibold text-white transition-all shadow-sm"

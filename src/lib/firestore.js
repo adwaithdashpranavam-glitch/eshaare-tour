@@ -36,14 +36,36 @@ export const createLead = async (data) => {
       contactName: data.contactName || data.name || "",
       contactEmail: data.contactEmail || data.email || "",
       contactPhone: data.contactPhone || data.phone || "",
-      destinationCountry: data.destinationCountry || data.country || "",
+      destinationCountry: data.destinationCountry || data.country || data.destination || "",
       serviceType: data.serviceType || "Visa",
       notes: data.notes || data.message || "",
       honeypot: data.honeypot || ""
     });
     return result.data.id;
   } catch (error) {
-    handleError(error, "createLead");
+    console.warn("Cloud function submitLead failed, falling back to direct Firestore insert:", error);
+    try {
+      const leadsRef = collection(db, "leads");
+      const docRef = await addDoc(leadsRef, {
+        leadNo: data.leadNo || `E-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`,
+        contactName: data.contactName || data.name || "",
+        contactEmail: data.contactEmail || data.email || "",
+        contactPhone: data.contactPhone || data.phone || "",
+        destination: data.destination || data.destinationCountry || data.country || "General",
+        message: data.notes || data.message || "",
+        notes: data.notes || data.message || "",
+        source: data.source || "contact_form",
+        stage: data.stage || "New",
+        assignedTo: data.assignedTo || "Unassigned",
+        isDeleted: false,
+        isActive: true,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
+      return docRef.id;
+    } catch (dbError) {
+      handleError(dbError, "createLead (direct fallback)");
+    }
   }
 };
 

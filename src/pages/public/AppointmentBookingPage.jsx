@@ -953,7 +953,7 @@ export const AppointmentBookingPage = () => {
                     </div>
                     <div className="space-y-1">
                       <p className="text-label-md font-label-md text-on-surface-variant">PHONE NUMBER</p>
-                      <p className="text-body-lg font-semibold">{formData.whatsapp || "+971 50 123 4567"}</p>
+                      <p className="text-body-lg font-semibold">{formData.whatsapp || "+971 55 733 8429"}</p>
                     </div>
                     <div className="space-y-1">
                       <p className="text-label-md font-label-md text-on-surface-variant">EMAIL ADDRESS</p>
@@ -1096,11 +1096,11 @@ export const AppointmentBookingPage = () => {
                 <div className="bg-white p-8 rounded-xl shadow-sm border border-outline-variant/10 text-left">
                   <h4 className="font-label-md text-label-md text-primary mb-4 font-semibold">Need Help?</h4>
                   <div className="flex flex-col gap-4">
-                    <a className="flex items-center gap-3 text-body-md hover:text-secondary transition-colors" href="tel:+97141234567">
-                      <div className="w-10 h-10 rounded-full bg-whatsapp-green/10 flex items-center justify-center">
-                        <span className="material-symbols-outlined text-whatsapp-green">call</span>
+                    <a className="flex items-center gap-3 text-body-md hover:text-secondary transition-colors" href="tel:+971557338429">
+                      <div className="p-2.5 rounded-full bg-secondary-container text-on-secondary-container">
+                        <span className="material-symbols-outlined text-lg">call</span>
                       </div>
-                      <span>+971 4 123 4567</span>
+                      <span>+971 55 733 8429</span>
                     </a>
                     <a className="flex items-center gap-3 text-body-md hover:text-secondary transition-colors" href="mailto:support@eshaaretours.com">
                       <div className="w-10 h-10 rounded-full bg-secondary-container/10 flex items-center justify-center">

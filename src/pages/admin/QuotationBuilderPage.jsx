@@ -463,7 +463,7 @@ export const QuotationBuilderPage = () => {
                   }`}
                   value={client.phone}
                   onChange={(e) => setClient({ ...client, phone: e.target.value })}
-                  placeholder="e.g. +971501234567"
+                  placeholder="e.g. +971557338429"
                 />
               </div>
 
@@ -903,7 +903,7 @@ export const QuotationBuilderPage = () => {
             <div>
               <h2 className="text-lg font-display font-bold text-white uppercase tracking-wider">ESHAARE TRAVEL & SERVICES</h2>
               <span className="text-on-primary-container/50 block mt-0.5">Sheikh Zayed Road, G-Tower, Dubai, UAE</span>
-              <span className="text-on-primary-container/40 block mt-0.5">WhatsApp support: +971 50 123 4567</span>
+              <span className="text-on-primary-container/40 block mt-0.5">WhatsApp support: +971 55 733 8429</span>
             </div>
             <div className="text-right">
               <h3 className="text-sm font-mono font-bold text-secondary">{quoteNo || "QT-DRAFT"}</h3>

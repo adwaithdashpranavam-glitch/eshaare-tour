@@ -57,3 +57,28 @@ export const generateQuoteNo = () => generateRefNo("QT", "quotations", "quoteNo"
 export const generateOrderNo = () => generateRefNo("ORD", "orders", "orderNo");
 export const generatePaymentNo = () => generateRefNo("PAY", "payments", "paymentNo");
 export const generateDocNo = () => generateRefNo("DOC", "documents", "docNo");
+
+/**
+ * Formats a phone number for WhatsApp, stripping leading zeros and spaces,
+ * and prepending the UAE country code +971 if no country code is present.
+ */
+export const formatWhatsAppPhone = (phone) => {
+  if (!phone) return "";
+  let clean = phone.trim().replace(/[\s\-\(\)]/g, "");
+  if (clean.startsWith("+")) {
+    return clean;
+  }
+  // Strip leading double zeros or single zero
+  if (clean.startsWith("00")) {
+    clean = clean.substring(2);
+  } else if (clean.startsWith("0")) {
+    clean = clean.substring(1);
+  }
+  
+  // If it already starts with 971, prepend '+'
+  if (clean.startsWith("971")) {
+    return `+${clean}`;
+  }
+  
+  return `+971${clean}`;
+};

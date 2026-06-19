@@ -9,6 +9,10 @@ export const PackagesPage = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    document.title = "Holiday Packages from Dubai & Tour Packages UAE | ESHAARE";
+  }, []);
+
+  useEffect(() => {
     const unsubscribe = getPackages(
       (items) => {
         setPackages(items);

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { getVisaTypes, createLead } from "../../lib/firestore";
-import { generateLeadNo } from "../../utils/helpers";
+import { generateLeadNo, formatWhatsAppPhone } from "../../utils/helpers";
 import { serverTimestamp } from "../../lib/firebase";
 import Modal from "../../components/ui/Modal";
 import { Clock, TrendingUp, FileText, Calendar, AlertCircle, Phone, ArrowRight, ShieldCheck, ClipboardCheck, ChevronRight } from "lucide-react";
@@ -251,6 +251,11 @@ const StatIcon = ({ name, className }) => {
 
 export const VisaServicesPage = () => {
   const navigate = useNavigate();
+  
+  useEffect(() => {
+    document.title = "Schengen Visa UAE & Visa Services Dubai | ESHAARE";
+  }, []);
+
   const [visaTypes, setVisaTypes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -344,7 +349,7 @@ export const VisaServicesPage = () => {
       const submission = {
         leadNo: generatedNo,
         contactName: formData.name,
-        contactPhone: formData.phone.startsWith("+") ? formData.phone : `+971${formData.phone}`,
+        contactPhone: formatWhatsAppPhone(formData.phone),
         contactEmail: formData.email,
         nationality: formData.nationality,
         destinationCountry: selectedVisa?.name || "Global Visa",
@@ -1042,7 +1047,7 @@ export const VisaServicesPage = () => {
                   </p>
                 </div>
                 <a
-                  href="https://wa.me/971501234567?text=Hi%2C%20I'm%20inquiring%20about%20visa%20services."
+                  href="https://wa.me/971557338429?text=Hi%2C%20I'm%20inquiring%20about%20visa%20services."
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 bg-[#25D366] text-white px-6 py-3 rounded-xl font-bold text-xs uppercase tracking-wider hover:opacity-95 transition-all shadow-md shadow-green-500/10"
@@ -1074,7 +1079,7 @@ export const VisaServicesPage = () => {
                       </p>
                     </div>
                     <a
-                      href="https://wa.me/971501234567?text=Hi%2C%20I'm%20inquiring%20about%20visa%20services."
+                      href="https://wa.me/971557338429?text=Hi%2C%20I'm%20inquiring%20about%20visa%20services."
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-2 bg-[#25D366] text-white px-6 py-3 rounded-xl font-bold text-xs uppercase tracking-wider hover:opacity-95 transition-all shadow-md shadow-green-500/10"

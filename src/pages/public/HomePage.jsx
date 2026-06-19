@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { createLead, getPackages } from "../../lib/firestore";
-import { generateLeadNo } from "../../utils/helpers";
+import { generateLeadNo, formatWhatsAppPhone } from "../../utils/helpers";
 import { db, serverTimestamp } from "../../lib/firebase";
 import { collection, onSnapshot } from "firebase/firestore";
 import toast from "react-hot-toast";
@@ -37,32 +37,33 @@ export const HomePage = () => {
   const slides = [
     {
       image: "https://images.unsplash.com/photo-1531366936337-7c912a4589a7?auto=format&fit=crop&w=1600&q=80",
-      headline: "Holiday Packages from Dubai",
-      subtext: "Book the best holiday packages from Dubai with Eshaare Tours UAE. Enjoy tailor-made vacations, family holidays, honeymoon trips, and international tours.",
+      headline: "Holiday Packages from Dubai | Eshaare Tours",
+      subtext: "Book the best custom holiday packages from Dubai with Eshaare Tours UAE. Enjoy tailor-made vacations, family holidays, honeymoon trips, and premium international tours.",
       animated: true,
       ctaText: "Plan Your Trip Today",
       ctaLink: "/packages"
     },
     {
       image: "https://plus.unsplash.com/premium_photo-1684407617181-275e50374e95?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-      headline: "Visa Assistance From  Dubai",
-      subtext: "Fast and reliable visa assistance from Dubai. Get expert help with Schengen, UK, USA, Canada, Australia, New Zealand, and other international visas.",
+      headline: "Visa Services & Visa Consultant in Dubai",
+      subtext: "Get expert visa assistance from Dubai for Schengen Visa UAE, UK, USA, Canada, and Australia. Fast VFS appointment booking support and complete document compliance audits.",
       animated: false,
       ctaText: "Start Your Visa Process",
-      ctaLink: "/appointment"
+      ctaLink: "/contact"
     },
 
     {
       image: "https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=1600&q=80",
-      headline: "Luxury Travel, Visa Assistance & Holiday Planning from Dubai",
-      subtext: "Luxury travel, visa assistance, holiday packages, flights, hotels, and customized tours from Dubai. Expert travel planning for UAE residents worldwide.",
+      headline: "Best Travel Agency in Dubai | Eshaare UAE",
+      subtext: "Premium travel agency in Dubai providing custom travel and visa services. We manage flights, luxury hotels, express VFS slot bookings, and custom holiday planning worldwide.",
       animated: false,
       ctaText: "Chat on WhatsApp",
-      ctaLink: "https://wa.me/971501234567"
+      ctaLink: "https://wa.me/971557338429"
     }
   ];
 
   useEffect(() => {
+    document.title = "ESHAARE | Visa Consultant & Travel Agency in Dubai";
     const timer = setInterval(() => {
       setActiveSlide((prev) => (prev + 1) % slides.length);
     }, 5000);
@@ -130,6 +131,9 @@ export const HomePage = () => {
 
   // ─── Contact Us Form ─────────────────────────────────────────────────────
   const [form, setForm] = useState({
+    name: "",
+    phone: "",
+    email: "",
     date: "",
     destination: "",
     adults: 1,
@@ -143,15 +147,19 @@ export const HomePage = () => {
 
   const onSubmit = async (e) => {
     e.preventDefault();
+    if (!form.name || !form.phone || !form.email) {
+      toast.error("Please fill in Name, Phone, and Email.");
+      return;
+    }
     setIsSubmitting(true);
     try {
       const generatedNo = await generateLeadNo();
       const submission = {
         leadNo: generatedNo,
-        contactName: "Web Enquiry",
-        contactPhone: "",
-        contactEmail: "",
-        nationality: "",
+        contactName: form.name,
+        contactPhone: formatWhatsAppPhone(form.phone),
+        contactEmail: form.email,
+        nationality: "Unknown",
         destinationCountry: form.destination,
         serviceType: "Visa",
         travelStart: form.date,
@@ -166,6 +174,9 @@ export const HomePage = () => {
       await createLead(submission);
       toast.success(`Request sent! reference number: ${generatedNo}`);
       setForm({
+        name: "",
+        phone: "",
+        email: "",
         date: "",
         destination: "",
         adults: 1,
@@ -724,7 +735,7 @@ export const HomePage = () => {
             className={`text-center max-w-3xl mx-auto space-y-3 transition-opacity duration-1000 ${visibleSections["visa-services"] ? "opacity-100" : "opacity-0"}`}
           >
             <h2 className="font-headline-lg text-[26px] sm:text-[32px] md:text-[40px] text-primary leading-tight whitespace-normal break-words">
-              Visa Services From Dubai
+              Visa Services & Assistance in Dubai
             </h2>
             <p className="text-on-surface-variant text-body-md">
               From Schengen visa audits to business slots, we manage the complete document checking lists for UAE residents.
@@ -825,7 +836,7 @@ export const HomePage = () => {
                       </div>
 
                       <Link
-                        to={`/visa-services/${srv.slug}`}
+                        to={srv.slug === "insurance" ? "/contact" : `/visa-services/${srv.slug}`}
                         className="inline-flex items-center gap-2 hover:gap-4 transition-all w-fit mt-4
                           text-secondary font-bold text-body-sm
                           border border-secondary/30 px-6 py-3 rounded-xl
@@ -952,7 +963,7 @@ export const HomePage = () => {
               className={`space-y-2 transition-opacity duration-1000 ${visibleSections["holiday-packages"] ? "opacity-100" : "opacity-0"}`}
             >
               <h2 className={`font-headline-lg text-[30px] sm:text-2xl md:text-headline-lg text-primary ${typewriterClass("holiday-packages")}`}>
-                Featured Holiday Packages
+                Featured Holiday Packages from Dubai
               </h2>
               <p className="text-on-surface-variant text-body-md">Explore curated luxury tours designed for UAE travellers.</p>
             </div>
@@ -1166,7 +1177,7 @@ export const HomePage = () => {
             className={`space-y-6 transition-opacity duration-1000 ${visibleSections["about-eshaare"] ? "opacity-100" : "opacity-0"}`}
           >
             <h2 className={`font-headline-lg text-[20px] sm:text-2xl md:text-headline-lg text-primary ${typewriterClass("about-eshaare")}`}>
-              About Eshaare Tours
+              About Eshaare Travel Agency & Visa Consultant
             </h2>
             <p className="text-on-surface-variant text-body-md leading-relaxed">
               Eshaare Tours UAE is a Dubai-based travel agency and visa consultancy offering complete travel solutions for UAE residents, families, couples, tourists, students, and corporate travelers. </p>
@@ -1440,6 +1451,38 @@ export const HomePage = () => {
               onSubmit={onSubmit}
               className="p-8 md:p-12 flex flex-col gap-6 bg-[#FCFBF8]"
             >
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <Field label="Your Name *">
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. John Doe"
+                    value={form.name}
+                    onChange={(e) => update("name", e.target.value)}
+                    className="contact-input"
+                  />
+                </Field>
+                <Field label="WhatsApp Phone *">
+                  <input
+                    type="tel"
+                    required
+                    placeholder="e.g. 501234567"
+                    value={form.phone}
+                    onChange={(e) => update("phone", e.target.value)}
+                    className="contact-input"
+                  />
+                </Field>
+              </div>
+              <Field label="Email Address *">
+                <input
+                  type="email"
+                  required
+                  placeholder="e.g. john@example.com"
+                  value={form.email}
+                  onChange={(e) => update("email", e.target.value)}
+                  className="contact-input"
+                />
+              </Field>
               <Field label="When do you need it?">
                 <input
                   type="date"

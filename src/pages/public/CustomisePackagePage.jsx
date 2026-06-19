@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createLead } from "../../lib/firestore";
-import { generateLeadNo } from "../../utils/helpers";
+import { generateLeadNo, formatWhatsAppPhone } from "../../utils/helpers";
 import { serverTimestamp } from "../../lib/firebase";
 import toast from "react-hot-toast";
 
@@ -58,7 +58,7 @@ ${formData.message}
       const submission = {
         leadNo: generatedNo,
         contactName: formData.name,
-        contactPhone: formData.phone.startsWith("+") ? formData.phone : `+971${formData.phone}`,
+        contactPhone: formatWhatsAppPhone(formData.phone),
         contactEmail: formData.email,
         nationality: "Unknown",
         destinationCountry: formData.destination,

@@ -33,7 +33,7 @@ const DEFAULT_HERO = {
   headline: "Check Your Visa Eligibility in Minutes",
   subheadline: "Get an instant visa eligibility assessment and personalized document checklist based on your nationality, destination, and travel profile.",
   ctaText: "Check Eligibility",
-  ctaWhatsApp: "+971501234567",
+  ctaWhatsApp: "+971557338429",
   globeEnabled: true,
   visasProcessed: "15,000+",
   countriesCovered: "120+",
