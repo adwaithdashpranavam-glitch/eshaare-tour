@@ -17,6 +17,35 @@ export const PortalMessagesPage = () => {
   const [attachment, setAttachment] = useState(null);
   const messagesEndRef = useRef(null);
 
+  const [advisorName, setAdvisorName] = useState("Support Advisor");
+  const [advisorInitials, setAdvisorInitials] = useState("SA");
+
+  useEffect(() => {
+    if (!user?.email) return;
+    const casesRef = collection(db, "visa_cases");
+    const q = query(casesRef, where("travellerEmail", "==", user.email.toLowerCase()));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      if (!snapshot.empty) {
+        const cases = snapshot.docs.map(d => d.data());
+        const assigned = cases.find(c => c.assignedOfficer);
+        if (assigned && assigned.assignedOfficer) {
+          setAdvisorName(assigned.assignedOfficer);
+          setAdvisorInitials(
+            assigned.assignedOfficer
+              .split(" ")
+              .map(p => p[0])
+              .join("")
+              .toUpperCase()
+              .slice(0, 2)
+          );
+        }
+      }
+    }, (error) => {
+      console.warn("Error fetching cases for advisor name:", error);
+    });
+    return () => unsubscribe();
+  }, [user?.email]);
+
   useEffect(() => {
     if (!user) return;
 
@@ -91,10 +120,10 @@ export const PortalMessagesPage = () => {
       <div className="px-6 py-4 bg-[#F8F6F2] border-b border-[#E5E7EB] flex items-center justify-between">
         <div className="flex items-center space-x-3.5">
           <div className="h-10 w-10 rounded-full bg-[#0F3D2E] text-[#C6A969] border border-[#C6A969]/30 font-bold flex items-center justify-center text-sm shadow-inner">
-            SJ
+            {advisorInitials}
           </div>
           <div>
-            <h3 className="text-xs font-bold text-[#1A1A1A] uppercase tracking-wider">Sarah Johnson (Visa Advisor)</h3>
+            <h3 className="text-xs font-bold text-[#1A1A1A] uppercase tracking-wider">{advisorName} (Visa Advisor)</h3>
             <span className="text-[9px] text-green-600 font-bold flex items-center animate-pulse mt-0.5">
               ● Online Support
             </span>

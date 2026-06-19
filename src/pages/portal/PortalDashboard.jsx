@@ -14,6 +14,44 @@ import toast from "react-hot-toast";
 import { auth } from "../../lib/firebase";
 import { getApplicationsForCustomer } from "../../lib/firestore";
 
+const PUBLIC_CONSULTANTS = {
+  "Sarah Johnson": {
+    name: "Sarah Johnson",
+    designation: "Senior Visa Specialist",
+    phone: "+971501234567",
+    email: "support@esharetour.com",
+    initials: "SJ"
+  },
+  "Suresh Kumar": {
+    name: "Suresh Kumar",
+    designation: "Senior Visa Specialist",
+    phone: "+971501234567",
+    email: "suresh@eshaareuae.com",
+    initials: "SK"
+  },
+  "Rakhi G Hari": {
+    name: "Rakhi G Hari",
+    designation: "Managing Director",
+    phone: "+971501234567",
+    email: "rakhi@eshaareuae.com",
+    initials: "RH"
+  },
+  "Aisha Al-Mansoori": {
+    name: "Aisha Al-Mansoori",
+    designation: "Luxury Tour Consultant",
+    phone: "+971501234567",
+    email: "aisha@eshaareuae.com",
+    initials: "AA"
+  },
+  "Hassan Ali": {
+    name: "Hassan Ali",
+    designation: "VFS Operations Lead",
+    phone: "+971501234567",
+    email: "hassan@eshaareuae.com",
+    initials: "HA"
+  }
+};
+
 export const PortalDashboard = () => {
   const { userProfile } = useAuth();
   const navigate = useNavigate();
@@ -26,6 +64,7 @@ export const PortalDashboard = () => {
   const [appointmentsCount, setAppointmentsCount] = useState(0);
   const [paymentsCount, setPaymentsCount] = useState(0);
   const [recentNotifications, setRecentNotifications] = useState([]);
+  const [consultant, setConsultant] = useState(null);
 
   // Fetch drafts, notifications, appointments, and payments
   useEffect(() => {
@@ -146,6 +185,20 @@ export const PortalDashboard = () => {
     };
   }, [userProfile]);
 
+  useEffect(() => {
+    if (activeCases.length === 0) {
+      setConsultant(null);
+      return;
+    }
+    const firstCase = activeCases[0];
+    const officerName = firstCase?.assignedOfficer || firstCase?.assignedOfficerName;
+    if (officerName && PUBLIC_CONSULTANTS[officerName]) {
+      setConsultant(PUBLIC_CONSULTANTS[officerName]);
+    } else {
+      setConsultant(null);
+    }
+  }, [activeCases]);
+
   // Visa tracker configuration
   const TRACKER_STAGES = [
     "Profile Completed",
@@ -157,20 +210,18 @@ export const PortalDashboard = () => {
     "Passport Collection"
   ];
 
-  // Default mock details if no applications exist
-  const sampleCase = activeCases[0] || {
-    visaType: "Schengen Tourist Visa",
-    destination: "France",
-    stage: "Under Review"
-  };
+  const sampleCase = activeCases[0];
 
   const getStageIndex = (stageName) => {
+    if (!stageName) return 0;
     const idx = TRACKER_STAGES.findIndex(s => stageName.toLowerCase().includes(s.toLowerCase()) || s.toLowerCase().includes(stageName.toLowerCase()));
     return idx !== -1 ? idx : 4; // Under Review is default
   };
 
-  const currentStageIdx = getStageIndex(sampleCase.stage);
-  const completionPercentage = Math.round(((currentStageIdx + 1) / TRACKER_STAGES.length) * 100);
+  const currentStageIdx = sampleCase ? getStageIndex(sampleCase.stage) : 0;
+  const completionPercentage = sampleCase
+    ? Math.round(((currentStageIdx + 1) / TRACKER_STAGES.length) * 100)
+    : 100;
 
   return (
     <div className="space-y-8 font-sans">
@@ -185,10 +236,17 @@ export const PortalDashboard = () => {
           <p className="text-sm text-[#6B7280] leading-relaxed">
             Track your visa applications, appointments, documents and consultant communications from one secure portal.
           </p>
-          <div className="pt-2 text-xs font-semibold text-[#0F3D2E] flex items-center justify-center md:justify-start gap-1.5">
-            <span className="inline-block w-2.5 h-2.5 rounded-full bg-[#C6A969]"></span>
-            <span>Current Case Progress: {completionPercentage}%</span>
-          </div>
+          {activeCases.length > 0 ? (
+            <div className="pt-2 text-xs font-semibold text-[#0F3D2E] flex items-center justify-center md:justify-start gap-1.5">
+              <span className="inline-block w-2.5 h-2.5 rounded-full bg-[#C6A969]"></span>
+              <span>Current Case Progress: {completionPercentage}%</span>
+            </div>
+          ) : (
+            <div className="pt-2 text-xs font-semibold text-[#0F3D2E] flex items-center justify-center md:justify-start gap-1.5">
+              <span className="inline-block w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></span>
+              <span>Profile Completion: 100% (Verified)</span>
+            </div>
+          )}
         </div>
 
         {/* Right side: Progress Ring */}
@@ -207,18 +265,22 @@ export const PortalDashboard = () => {
                 cx="56"
                 cy="56"
                 r="46"
-                className="stroke-[#0F3D2E]"
+                className={activeCases.length > 0 ? "stroke-[#0F3D2E]" : "stroke-green-600"}
                 strokeWidth="6"
                 fill="transparent"
                 strokeDasharray={2 * Math.PI * 46}
-                strokeDashoffset={2 * Math.PI * 46 * (1 - completionPercentage / 100)}
+                strokeDashoffset={2 * Math.PI * 46 * (1 - (activeCases.length > 0 ? completionPercentage : 100) / 100)}
                 strokeLinecap="round"
                 style={{ transition: "stroke-dashoffset 0.8s ease-in-out" }}
               />
             </svg>
             <div className="absolute flex flex-col items-center justify-center text-center">
-              <span className="text-xl font-bold text-[#0F3D2E]">{completionPercentage}%</span>
-              <span className="text-[9px] text-[#6B7280] uppercase tracking-widest font-bold">Complete</span>
+              <span className="text-xl font-bold text-[#0F3D2E]">
+                {activeCases.length > 0 ? `${completionPercentage}%` : "100%"}
+              </span>
+              <span className="text-[9px] text-[#6B7280] uppercase tracking-widest font-bold">
+                {activeCases.length > 0 ? "Complete" : "Profile"}
+              </span>
             </div>
           </div>
         </div>
@@ -236,7 +298,7 @@ export const PortalDashboard = () => {
           </div>
           <div className="mt-4">
             <h3 className="text-3xl font-semibold text-[#1A1A1A]">{activeCases.length.toString().padStart(2, '0')}</h3>
-            <p className="text-[10px] text-green-600 font-semibold mt-1">+1 this month</p>
+            <p className="text-[10px] text-gray-500 font-semibold mt-1">Submitted cases</p>
           </div>
         </div>
 
@@ -287,124 +349,136 @@ export const PortalDashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Left Column (70%) */}
         <div className="lg:col-span-8 space-y-8">
-          
-          {/* Visa Progress Card */}
-          <div className="bg-white border border-[#E5E7EB] rounded-[24px] p-6 shadow-sm space-y-6">
-            <div className="flex justify-between items-start border-b border-[#E5E7EB] pb-4">
-              <div>
-                <span className="text-[10px] font-bold text-[#C6A969] uppercase tracking-wider">Active File Status</span>
-                <h3 className="text-lg font-semibold text-[#1A1A1A] mt-0.5">
-                  {sampleCase.visaType} — {sampleCase.destination}
-                </h3>
-              </div>
-              <span className="text-xs font-bold text-[#0F3D2E] px-3 py-1 bg-[#0F3D2E]/10 rounded-full">
-                {sampleCase.stage}
-              </span>
-            </div>
-
-            {/* Stage Timeline representation */}
-            <div className="relative pl-6 border-l-2 border-[#E5E7EB]/80 space-y-6">
-              {TRACKER_STAGES.map((stage, idx) => {
-                const isCompleted = idx < currentStageIdx;
-                const isActive = idx === currentStageIdx;
-                return (
-                  <div key={stage} className="relative flex items-center justify-between">
-                    {/* Circle bullet */}
-                    <div
-                      className={`absolute -left-[31px] w-4.5 h-4.5 rounded-full border-2 flex items-center justify-center bg-white transition-colors duration-300 ${
-                        isCompleted
-                          ? "border-[#0F3D2E] bg-[#0F3D2E]"
-                          : isActive
-                          ? "border-[#C6A969] bg-white shadow-sm"
-                          : "border-gray-300"
-                      }`}
-                    >
-                      {isCompleted && (
-                        <CheckCircle2 className="w-2.5 h-2.5 text-white" />
-                      )}
-                    </div>
-
-                    <span
-                      className={`text-xs font-semibold transition-all ${
-                        isCompleted
-                          ? "text-gray-400"
-                          : isActive
-                          ? "text-[#0F3D2E] font-bold text-sm"
-                          : "text-[#6B7280]"
-                      }`}
-                    >
-                      {stage}
-                    </span>
-
-                    {isActive && (
-                      <span className="text-[9px] bg-[#C6A969]/10 text-[#C6A969] border border-[#C6A969]/20 px-2 py-0.5 rounded font-bold uppercase tracking-wider">
-                        Current Stage
-                      </span>
-                    )}
+          {activeCases.length > 0 ? (
+            <>
+              {/* Visa Progress Card */}
+              <div className="bg-white border border-[#E5E7EB] rounded-[24px] p-6 shadow-sm space-y-6">
+                <div className="flex justify-between items-start border-b border-[#E5E7EB] pb-4">
+                  <div>
+                    <span className="text-[10px] font-bold text-[#C6A969] uppercase tracking-wider">Active File Status</span>
+                    <h3 className="text-lg font-semibold text-[#1A1A1A] mt-0.5">
+                      {sampleCase.visaType} — {sampleCase.destination}
+                    </h3>
                   </div>
-                );
-              })}
-            </div>
-          </div>
+                  <span className="text-xs font-bold text-[#0F3D2E] px-3 py-1 bg-[#0F3D2E]/10 rounded-full">
+                    {sampleCase.stage}
+                  </span>
+                </div>
 
-          {/* Recent Applications Table */}
-          <div className="bg-white border border-[#E5E7EB] rounded-[24px] p-6 shadow-sm space-y-4 overflow-hidden">
-            <div className="flex justify-between items-center border-b border-[#E5E7EB] pb-3">
-              <h3 className="text-base font-semibold text-[#1A1A1A]">Recent Applications</h3>
-              <Link to="/portal/applications" className="text-xs font-bold text-[#0F3D2E] hover:text-[#C6A969] transition-all">
-                View All
-              </Link>
-            </div>
-
-            <div className="overflow-x-auto">
-              <table className="min-w-full text-left text-xs text-[#1A1A1A]">
-                <thead>
-                  <tr className="border-b border-[#E5E7EB] text-[#6B7280] font-semibold uppercase tracking-wider">
-                    <th className="py-3 pr-4">Application</th>
-                    <th className="py-3 px-4">Country</th>
-                    <th className="py-3 px-4">Submitted Date</th>
-                    <th className="py-3 px-4">Status</th>
-                    <th className="py-3 pl-4 text-right">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#E5E7EB]/50">
-                  {activeCases.slice(0, 4).map((c) => (
-                    <tr key={c.id} className="hover:bg-[#F8F6F2]/30 transition-colors">
-                      <td className="py-3.5 pr-4 font-semibold text-[#1A1A1A]">
-                        {c.visaType}
-                      </td>
-                      <td className="py-3.5 px-4 text-[#6B7280]">
-                        {c.destination || "Worldwide"}
-                      </td>
-                      <td className="py-3.5 px-4 text-gray-500 font-mono">
-                        {formatShortDate(c.createdAt)}
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <StatusBadge status={c.stage} />
-                      </td>
-                      <td className="py-3.5 pl-4 text-right">
-                        <Link
-                          to={`/portal/applications/${c.id}`}
-                          className="inline-flex items-center text-[10px] font-bold uppercase tracking-wider text-[#0F3D2E] hover:text-[#C6A969] transition-colors"
+                {/* Stage Timeline representation */}
+                <div className="relative pl-6 border-l-2 border-[#E5E7EB]/80 space-y-6">
+                  {TRACKER_STAGES.map((stage, idx) => {
+                    const isCompleted = idx < currentStageIdx;
+                    const isActive = idx === currentStageIdx;
+                    return (
+                      <div key={stage} className="relative flex items-center justify-between">
+                        {/* Circle bullet */}
+                        <div
+                          className={`absolute -left-[31px] w-4.5 h-4.5 rounded-full border-2 flex items-center justify-center bg-white transition-colors duration-300 ${
+                            isCompleted
+                              ? "border-[#0F3D2E] bg-[#0F3D2E]"
+                              : isActive
+                              ? "border-[#C6A969] bg-white shadow-sm"
+                              : "border-gray-300"
+                          }`}
                         >
-                          <span>Track</span>
-                          <ChevronRight className="h-3 w-3 ml-0.5" />
-                        </Link>
-                      </td>
-                    </tr>
-                  ))}
-                  {activeCases.length === 0 && (
-                    <tr>
-                      <td colSpan={5} className="py-8 text-center text-gray-400 italic">
-                        No recent visa application cases found.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
+                          {isCompleted && (
+                            <CheckCircle2 className="w-2.5 h-2.5 text-white" />
+                          )}
+                        </div>
 
+                        <span
+                          className={`text-xs font-semibold transition-all ${
+                            isCompleted
+                              ? "text-gray-400"
+                              : isActive
+                              ? "text-[#0F3D2E] font-bold text-sm"
+                              : "text-[#6B7280]"
+                          }`}
+                        >
+                          {stage}
+                        </span>
+
+                        {isActive && (
+                          <span className="text-[9px] bg-[#C6A969]/10 text-[#C6A969] border border-[#C6A969]/20 px-2 py-0.5 rounded font-bold uppercase tracking-wider">
+                            Current Stage
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Recent Applications Table */}
+              <div className="bg-white border border-[#E5E7EB] rounded-[24px] p-6 shadow-sm space-y-4 overflow-hidden">
+                <div className="flex justify-between items-center border-b border-[#E5E7EB] pb-3">
+                  <h3 className="text-base font-semibold text-[#1A1A1A]">Recent Applications</h3>
+                  <Link to="/portal/applications" className="text-xs font-bold text-[#0F3D2E] hover:text-[#C6A969] transition-all">
+                    View All
+                  </Link>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="min-w-full text-left text-xs text-[#1A1A1A]">
+                    <thead>
+                      <tr className="border-b border-[#E5E7EB] text-[#6B7280] font-semibold uppercase tracking-wider">
+                        <th className="py-3 pr-4">Application</th>
+                        <th className="py-3 px-4">Country</th>
+                        <th className="py-3 px-4">Submitted Date</th>
+                        <th className="py-3 px-4">Status</th>
+                        <th className="py-3 pl-4 text-right">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#E5E7EB]/50">
+                      {activeCases.slice(0, 4).map((c) => (
+                        <tr key={c.id} className="hover:bg-[#F8F6F2]/30 transition-colors">
+                          <td className="py-3.5 pr-4 font-semibold text-[#1A1A1A]">
+                            {c.visaType}
+                          </td>
+                          <td className="py-3.5 px-4 text-[#6B7280]">
+                            {c.destination || "Worldwide"}
+                          </td>
+                          <td className="py-3.5 px-4 text-gray-500 font-mono">
+                            {formatShortDate(c.createdAt)}
+                          </td>
+                          <td className="py-3.5 px-4">
+                            <StatusBadge status={c.stage} />
+                          </td>
+                          <td className="py-3.5 pl-4 text-right">
+                            <Link
+                              to={`/portal/applications/${c.id}`}
+                              className="inline-flex items-center text-[10px] font-bold uppercase tracking-wider text-[#0F3D2E] hover:text-[#C6A969] transition-colors"
+                            >
+                              <span>Track</span>
+                              <ChevronRight className="h-3 w-3 ml-0.5" />
+                            </Link>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </>
+          ) : (
+            /* Empty State */
+            <div className="bg-white border border-[#E5E7EB] rounded-[24px] p-8 text-center shadow-sm space-y-6 flex flex-col items-center justify-center min-h-[300px]">
+              <div className="h-16 w-16 rounded-2xl bg-[#F8F6F2] flex items-center justify-center text-[#C6A969]">
+                <FileText className="h-8 w-8" />
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-lg font-semibold text-[#1A1A1A]">No Active Visa Applications</h3>
+                <p className="text-sm text-[#6B7280] max-w-sm">You have not submitted any visa applications yet.</p>
+              </div>
+              <button
+                onClick={() => navigate("/visa-services")}
+                className="px-6 py-3 bg-[#0F3D2E] text-white hover:bg-[#0F3D2E]/90 font-bold uppercase tracking-wider text-xs rounded-xl shadow-sm transition-colors"
+              >
+                Start New Application
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Right Column (30%) */}
@@ -449,47 +523,55 @@ export const PortalDashboard = () => {
           </div>
 
           {/* Consultant Card */}
-          <div className="bg-white border border-[#E5E7EB] rounded-[24px] p-6 shadow-sm space-y-5">
-            <h3 className="text-sm font-semibold text-[#1A1A1A] border-b border-[#E5E7EB] pb-2">Your Consultant</h3>
-            <div className="flex items-center space-x-3.5">
-              {/* Luxury gold avatar styling */}
-              <div className="h-12 w-12 rounded-full bg-[#0F3D2E] text-[#C6A969] border border-[#C6A969]/30 font-bold flex items-center justify-center shadow-inner text-sm">
-                SJ
+          {consultant && (
+            <div className="bg-white border border-[#E5E7EB] rounded-[24px] p-6 shadow-sm space-y-5">
+              <h3 className="text-sm font-semibold text-[#1A1A1A] border-b border-[#E5E7EB] pb-2">Your Consultant</h3>
+              <div className="flex items-center space-x-3.5">
+                {/* Luxury gold avatar styling */}
+                <div className="h-12 w-12 rounded-full bg-[#0F3D2E] text-[#C6A969] border border-[#C6A969]/30 font-bold flex items-center justify-center shadow-inner text-sm">
+                  {consultant.initials}
+                </div>
+                <div>
+                  <h4 className="font-semibold text-sm text-[#1A1A1A]">{consultant.name}</h4>
+                  <p className="text-[10px] text-[#6B7280] font-medium mt-0.5">{consultant.designation}</p>
+                </div>
               </div>
-              <div>
-                <h4 className="font-semibold text-sm text-[#1A1A1A]">Sarah Johnson</h4>
-                <p className="text-[10px] text-[#6B7280] font-medium mt-0.5">Senior Visa Specialist</p>
+
+              <div className="flex flex-col gap-2.5 pt-1">
+                {consultant.phone && (
+                  <a 
+                    href={`tel:${consultant.phone}`} 
+                    className="flex items-center justify-center gap-2 py-2 px-4 rounded-xl border border-[#E5E7EB] hover:border-[#0F3D2E] text-xs font-semibold text-[#1A1A1A] hover:bg-[#F8F6F2]/30 transition-all"
+                  >
+                    <Phone className="w-3.5 h-3.5 text-[#0F3D2E]" />
+                    <span>Call Concierge</span>
+                  </a>
+                )}
+                
+                {consultant.phone && (
+                  <a 
+                    href={`https://wa.me/${consultant.phone.replace(/[^\d]/g, "")}`} 
+                    target="_blank" 
+                    rel="noreferrer" 
+                    className="flex items-center justify-center gap-2 py-2 px-4 rounded-xl border border-transparent bg-[#0F3D2E] hover:bg-[#0F3D2E]/95 text-xs font-semibold text-white transition-all shadow-sm"
+                  >
+                    <MessageSquare className="w-3.5 h-3.5 text-[#C6A969]" />
+                    <span>WhatsApp Advisor</span>
+                  </a>
+                )}
+
+                {consultant.email && (
+                  <a 
+                    href={`mailto:${consultant.email}`} 
+                    className="flex items-center justify-center gap-2 py-2 px-4 rounded-xl border border-[#E5E7EB] hover:border-[#0F3D2E] text-xs font-semibold text-[#1A1A1A] hover:bg-[#F8F6F2]/30 transition-all"
+                  >
+                    <Mail className="w-3.5 h-3.5 text-[#6B7280]" />
+                    <span>Send Email</span>
+                  </a>
+                )}
               </div>
             </div>
-
-            <div className="flex flex-col gap-2.5 pt-1">
-              <a 
-                href="tel:+971501234567" 
-                className="flex items-center justify-center gap-2 py-2 px-4 rounded-xl border border-[#E5E7EB] hover:border-[#0F3D2E] text-xs font-semibold text-[#1A1A1A] hover:bg-[#F8F6F2]/30 transition-all"
-              >
-                <Phone className="w-3.5 h-3.5 text-[#0F3D2E]" />
-                <span>Call Concierge</span>
-              </a>
-              
-              <a 
-                href="https://wa.me/971501234567" 
-                target="_blank" 
-                rel="noreferrer" 
-                className="flex items-center justify-center gap-2 py-2 px-4 rounded-xl border border-transparent bg-[#0F3D2E] hover:bg-[#0F3D2E]/95 text-xs font-semibold text-white transition-all shadow-sm"
-              >
-                <MessageSquare className="w-3.5 h-3.5 text-[#C6A969]" />
-                <span>WhatsApp Advisor</span>
-              </a>
-
-              <a 
-                href="mailto:support@esharetour.com" 
-                className="flex items-center justify-center gap-2 py-2 px-4 rounded-xl border border-[#E5E7EB] hover:border-[#0F3D2E] text-xs font-semibold text-[#1A1A1A] hover:bg-[#F8F6F2]/30 transition-all"
-              >
-                <Mail className="w-3.5 h-3.5 text-[#6B7280]" />
-                <span>Send Email</span>
-              </a>
-            </div>
-          </div>
+          )}
 
           {/* Notifications Card */}
           <div className="bg-white border border-[#E5E7EB] rounded-[24px] p-6 shadow-sm space-y-4">
@@ -509,23 +591,7 @@ export const PortalDashboard = () => {
                 </div>
               ))}
               {recentNotifications.length === 0 && (
-                <div className="space-y-4">
-                  <div className="relative space-y-0.5">
-                    <div className="absolute -left-[20.5px] top-1.5 w-2.5 h-2.5 rounded-full bg-[#C6A969]"></div>
-                    <h4 className="text-xs font-semibold text-[#1A1A1A] leading-none">Appointment Confirmed</h4>
-                    <p className="text-[10px] text-[#6B7280] leading-snug">VFS slot verified with Embassy.</p>
-                  </div>
-                  <div className="relative space-y-0.5">
-                    <div className="absolute -left-[20.5px] top-1.5 w-2.5 h-2.5 rounded-full bg-[#C6A969]"></div>
-                    <h4 className="text-xs font-semibold text-[#1A1A1A] leading-none">Passport Received</h4>
-                    <p className="text-[10px] text-[#6B7280] leading-snug">Passport copy verified at operations desk.</p>
-                  </div>
-                  <div className="relative space-y-0.5">
-                    <div className="absolute -left-[20.5px] top-1.5 w-2.5 h-2.5 rounded-full bg-[#C6A969]"></div>
-                    <h4 className="text-xs font-semibold text-[#1A1A1A] leading-none">Additional documents requested</h4>
-                    <p className="text-[10px] text-[#6B7280] leading-snug">Bank statements required for French Schengen file.</p>
-                  </div>
-                </div>
+                <p className="text-xs text-gray-500 italic">No updates available.</p>
               )}
             </div>
           </div>

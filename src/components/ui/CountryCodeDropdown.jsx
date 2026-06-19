@@ -60,13 +60,13 @@ export const CountryCodeDropdown = ({
 
   return (
     <div ref={wrapRef} className="relative">
-      <div className={`flex items-stretch bg-[#F8F6F2] border ${baseBorder} rounded-xl overflow-hidden focus-within:border-[#0F3D2E] transition-colors`}>
+      <div className={`flex items-stretch bg-[#F8F6F2] border ${baseBorder} rounded-xl overflow-hidden focus-within:border-[#0F3D2E] transition-colors ${disabled ? "opacity-75 bg-gray-100 cursor-not-allowed" : ""}`}>
         {/* Dial code selector */}
         <button
           type="button"
           disabled={disabled}
           onClick={() => !disabled && setOpen((o) => !o)}
-          className="flex items-center gap-1 px-3 py-2.5 border-r border-[#E5E7EB] hover:bg-[#0F3D2E]/5 transition-colors shrink-0 text-xs font-semibold text-[#1A1A1A]"
+          className={`flex items-center gap-1 px-3 py-2.5 border-r border-[#E5E7EB] hover:bg-[#0F3D2E]/5 transition-colors shrink-0 text-xs font-semibold text-[#1A1A1A] ${disabled ? "cursor-not-allowed" : ""}`}
         >
           <span className="text-base leading-none">{current?.flag}</span>
           <span>{dialCode}</span>
@@ -80,7 +80,7 @@ export const CountryCodeDropdown = ({
           value={number}
           onChange={(e) => onChange({ dialCode, number: e.target.value.replace(/[^\d\s]/g, "") })}
           placeholder={placeholder}
-          className="flex-1 min-w-0 px-3 py-2.5 bg-transparent text-xs text-[#1A1A1A] focus:outline-none placeholder:text-gray-400"
+          className={`flex-1 min-w-0 px-3 py-2.5 bg-transparent text-xs text-[#1A1A1A] focus:outline-none placeholder:text-gray-400 ${disabled ? "cursor-not-allowed" : ""}`}
         />
       </div>
 

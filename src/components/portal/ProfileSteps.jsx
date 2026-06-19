@@ -61,13 +61,14 @@ export const Field = ({ label, required, error, children, className = "" }) => (
 const inputCls = (error) =>
   `px-3.5 py-2.5 bg-[#F8F6F2] border ${error ? "border-red-400" : "border-[#E5E7EB]"} text-[#1A1A1A] rounded-xl focus:outline-none focus:border-[#0F3D2E] transition-colors w-full`;
 
-export const TextInput = ({ value, onChange, error, type = "text", placeholder, ...rest }) => (
+export const TextInput = ({ value, onChange, error, type = "text", placeholder, readOnly, ...rest }) => (
   <input
     type={type}
     value={value || ""}
     placeholder={placeholder}
-    onChange={(e) => onChange(e.target.value)}
-    className={inputCls(error)}
+    onChange={(e) => !readOnly && onChange(e.target.value)}
+    className={`${inputCls(error)} ${readOnly ? "bg-gray-100 text-gray-500 cursor-not-allowed opacity-75 focus:border-[#E5E7EB]" : ""}`}
+    readOnly={readOnly}
     {...rest}
   />
 );
@@ -230,14 +231,31 @@ export const PassportSection = ({ data, onChange, errors = {} }) => {
 // ==========================================================================
 // STEP 3 — Contact Information
 // ==========================================================================
-export const ContactSection = ({ data, onChange, errors = {} }) => {
+export const ContactSection = ({ data, onChange, errors = {}, userProfile, user }) => {
   const u = makeUpdate(data, onChange);
+  const isEmailReadOnly = true;
+  const isMobileReadOnly = !!(userProfile?.phone || userProfile?.phoneNumber);
+
   return (
     <div className="space-y-4">
       <HelpText>Used by embassies, visa centres and travel consultants to contact applicants.</HelpText>
+      
+      {(isEmailReadOnly || isMobileReadOnly) && (
+        <p className="text-[11px] leading-relaxed text-[#0F3D2E] bg-[#0F3D2E]/[0.03] border border-[#0F3D2E]/10 rounded-xl px-3.5 py-2.5">
+          These details are linked to your account and cannot be modified here.
+        </p>
+      )}
+
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Field label="Email Address" required error={errors.email}>
-          <TextInput type="email" value={data.email} onChange={(v) => u("email", v)} error={errors.email} placeholder="name@example.com" />
+          <TextInput
+            type="email"
+            value={data.email}
+            onChange={(v) => u("email", v)}
+            error={errors.email}
+            placeholder="name@example.com"
+            readOnly={isEmailReadOnly}
+          />
         </Field>
         <Field label="Mobile Number" required error={errors.mobile}>
           <CountryCodeDropdown
@@ -245,6 +263,7 @@ export const ContactSection = ({ data, onChange, errors = {} }) => {
             number={data.mobile?.number}
             onChange={(val) => u("mobile", val)}
             error={errors.mobile}
+            disabled={isMobileReadOnly}
           />
         </Field>
       </div>
