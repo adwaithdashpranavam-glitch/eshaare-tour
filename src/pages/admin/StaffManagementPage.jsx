@@ -134,7 +134,8 @@ export const StaffManagementPage = () => {
       toast.error("Only Super Admins can delete staff accounts.");
       return;
     }
-    if (!window.confirm(`Are you sure you want to permanently delete staff member "${member.name}"? This deletes both Auth and Firestore records.`)) {
+    const memberLabel = member.name || member.email || member.id;
+    if (!window.confirm(`Are you sure you want to permanently delete staff member "${memberLabel}"? This deletes both Auth and Firestore records.`)) {
       return;
     }
     setActionLoading(member.id);
