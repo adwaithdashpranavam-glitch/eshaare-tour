@@ -92,7 +92,7 @@ export const PortalLayout = () => {
             {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
           
-          <Link to="/portal/dashboard" className="flex items-center space-x-2 group">
+          <Link to="/" className="flex items-center space-x-2 group">
             <img
               src={foxLogo}
               alt="Eshaare Tour"

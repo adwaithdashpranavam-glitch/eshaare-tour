@@ -268,15 +268,32 @@ export const VisaDetailPage = () => {
 
     const loadingToast = toast.loading("Creating application draft...");
     try {
+      let destinationCountry = "";
+      let sourcePageType = "general";
+      let applicationType = "";
+      
+      if (slug === "schengen") {
+        sourcePageType = "general-schengen";
+        applicationType = "schengen";
+      } else if (visaData?.id?.includes("schengen") || visaData?.name?.toLowerCase().includes("schengen")) {
+        sourcePageType = "country-schengen";
+        applicationType = "schengen";
+        // Extract "France" from "France Schengen Visa"
+        destinationCountry = visaData.name.split(" Schengen")[0] || visaData.name;
+      }
+
       const draftId = await createApplicationDraft(
         user.uid,
         visaData.id,
         visaData.name,
         userProfile,
         packageType,
-        amount
+        amount,
+        sourcePageType,
+        destinationCountry,
+        applicationType
       );
-      toast.success("Application draft created!", { id: loadingToast });
+      toast.success("Application draft ready!", { id: loadingToast });
       navigate("/portal/applications");
     } catch (error) {
       console.error("Failed to create draft:", error);

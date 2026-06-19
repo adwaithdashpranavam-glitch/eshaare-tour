@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { db } from "../../lib/firebase";
-import { Link } from "react-router-dom";
-import { FileText, ChevronRight, Edit3, Send, Save, AlertCircle, FilePlus } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { FileText, ChevronRight, Edit3, Send, Save, AlertCircle, FilePlus, Globe, Calendar as CalendarIcon } from "lucide-react";
 import StatusBadge from "../../components/ui/StatusBadge";
 import { formatShortDate } from "../../utils/formatters";
 import Modal from "../../components/ui/Modal";
@@ -13,6 +13,7 @@ import toast from "react-hot-toast";
 
 export const PortalApplicationsPage = () => {
   const { user, userProfile } = useAuth();
+  const navigate = useNavigate();
   const [drafts, setDrafts] = useState([]);
   const [cases, setCases] = useState([]);
   const [loadingDrafts, setLoadingDrafts] = useState(true);
@@ -133,16 +134,20 @@ export const PortalApplicationsPage = () => {
   }, [user, userProfile]);
 
   const handleOpenEdit = (draft) => {
-    setSelectedDraft(draft);
-    setFormData({
-      name: draft.formData?.name || userProfile?.name || "",
-      phone: draft.formData?.phone || userProfile?.phone || "",
-      email: draft.formData?.email || userProfile?.email || "",
-      nationality: draft.formData?.nationality || userProfile?.nationality || "",
-      travelDate: draft.formData?.travelDate || "",
-      message: draft.formData?.message || ""
-    });
-    setIsEditModalOpen(true);
+    if (draft.applicationType === "schengen" || draft.visaId === "schengen" || draft?.visaName?.toLowerCase().includes("schengen")) {
+      navigate(`/portal/applications/${draft.id}/wizard`);
+    } else {
+      setSelectedDraft(draft);
+      setFormData({
+        name: draft.formData?.name || userProfile?.name || "",
+        phone: draft.formData?.phone || userProfile?.phone || "",
+        email: draft.formData?.email || userProfile?.email || "",
+        nationality: draft.formData?.nationality || userProfile?.nationality || "",
+        travelDate: draft.formData?.travelDate || "",
+        message: draft.formData?.message || ""
+      });
+      setIsEditModalOpen(true);
+    }
   };
 
   const handleInputChange = (e) => {
@@ -213,25 +218,53 @@ export const PortalApplicationsPage = () => {
             No active drafts. Start an application on any visa type page.
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {drafts.map((d) => (
+          <div className="space-y-4">
+            <p className="text-xs text-[#6B7280]">Already started an application? Continue your latest draft below.</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {drafts.map((d) => {
+              // Calculate rough progress
+              let progress = 20;
+              if (d.destinationCountry) progress += 20;
+              if (d.visaType) progress += 20;
+              if (d.appointmentPreference?.startDate) progress += 20;
+              if (d.paymentStatus === "confirmed") progress += 20;
+              return (
               <div key={d.id} className="bg-white border border-[#E5E7EB] rounded-[20px] p-6 flex flex-col justify-between space-y-4 hover:border-[#C6A969]/40 transition-all duration-200 shadow-sm">
                 <div className="flex justify-between items-start">
                   <div>
                     <span className="text-[9px] font-bold uppercase tracking-wider bg-amber-500/10 text-amber-600 px-2 py-0.5 rounded border border-amber-500/10">Draft</span>
                     <h3 className="text-base font-semibold text-[#1A1A1A] mt-2">{d.visaName} Application</h3>
+                    
+                    {(d.destinationCountry || d.visaType) && (
+                      <div className="flex flex-wrap items-center gap-2 mt-2 text-[10px] text-gray-500 font-medium">
+                        {d.destinationCountry && (
+                          <span className="flex items-center gap-1"><Globe className="h-3 w-3"/> {d.destinationCountry}</span>
+                        )}
+                        {d.visaType && (
+                          <span className="flex items-center gap-1"><FileText className="h-3 w-3"/> {d.visaType}</span>
+                        )}
+                      </div>
+                    )}
                   </div>
                   <button
                     onClick={() => handleOpenEdit(d)}
-                    className="p-2 bg-[#F8F6F2] border border-[#E5E7EB] text-[#0F3D2E] hover:text-[#C6A969] rounded-xl flex items-center justify-center transition-colors"
+                    className="p-2 bg-[#F8F6F2] border border-[#E5E7EB] text-[#0F3D2E] hover:text-[#C6A969] rounded-xl flex items-center justify-center transition-colors shrink-0"
                     title="Continue Application"
                   >
                     <Edit3 className="h-4.5 w-4.5" />
                   </button>
                 </div>
+                
+                {/* Progress Bar */}
+                <div className="w-full bg-gray-100 rounded-full h-1.5 mb-1 mt-2">
+                  <div className="bg-[#0F3D2E] h-1.5 rounded-full" style={{ width: `${progress}%` }}></div>
+                </div>
 
-                <div className="flex justify-between items-center pt-4 border-t border-[#E5E7EB] text-xs text-[#6B7280]">
-                  <span>Created: {formatShortDate(d.createdAt?.toDate ? d.createdAt.toDate() : d.createdAt)}</span>
+                <div className="flex justify-between items-center pt-3 border-t border-[#E5E7EB] text-[10px] text-[#6B7280]">
+                  <div className="flex flex-col">
+                    <span>Created: {formatShortDate(d.createdAt?.toDate ? d.createdAt.toDate() : d.createdAt)}</span>
+                    {d.updatedAt && <span>Updated: {formatShortDate(d.updatedAt?.toDate ? d.updatedAt.toDate() : d.updatedAt)}</span>}
+                  </div>
                   <button
                     onClick={() => handleOpenEdit(d)}
                     className="text-[#0F3D2E] hover:text-[#C6A969] font-bold uppercase tracking-wider text-[10px] flex items-center space-x-1"
@@ -241,7 +274,9 @@ export const PortalApplicationsPage = () => {
                   </button>
                 </div>
               </div>
-            ))}
+              );
+            })}
+            </div>
           </div>
         )}
       </div>
