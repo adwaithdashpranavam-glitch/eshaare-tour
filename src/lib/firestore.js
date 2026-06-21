@@ -1680,8 +1680,16 @@ export const createApplicationDraft = async (
     
     let matchedDraft = null;
     if (determinedAppType === "schengen") {
-      matchedDraft = existingDrafts.find(d => 
-        (d.applicationType === "schengen" || d.visaId === "schengen") &&
+      // Only reuse a draft that already has the full Schengen wizard shape. An older/legacy
+      // Draft doc (pre-dating the wizard's field set) can carry fields outside
+      // validateApplicationSchema()'s allowlist, which makes every later updateDoc() on that
+      // doc fail Firestore rules with "Missing or insufficient permissions" — even though the
+      // new payload itself is clean, because rules evaluate the merged (existing + new) doc.
+      matchedDraft = existingDrafts.find(d =>
+        d.customerId === customerId &&
+        d.applicationType === "schengen" &&
+        "sourcePageType" in d &&
+        "visaType" in d &&
         (!destinationCountry || d.destinationCountry === destinationCountry)
       );
     } else {
