@@ -509,24 +509,35 @@ export default function SchengenWizard() {
 
   const handleSave = async (showToast = true) => {
     setSaving(true);
+    let payload;
     try {
       const docRef = doc(db, "applications", id);
       const cleanDraft = sanitizePayload(draft);
       if (cleanDraft) {
         delete cleanDraft.id;
       }
-      
-      const payload = {
+
+      payload = {
         ...cleanDraft,
         updatedAt: serverTimestamp()
       };
-      
+
       await updateDoc(docRef, payload);
       if (showToast) toast.success("Draft saved successfully!");
       return true;
     } catch (error) {
-      console.error("Failed to save Schengen draft:", error);
-      toast.error("Unable to save draft. Please check your connection and try again.");
+      console.error("[SchengenWizard.handleSave] Failed to save draft", {
+        code: error.code,
+        message: error.message,
+        applicationId: id,
+        uid: auth.currentUser?.uid || user?.uid || null,
+        payloadKeys: payload ? Object.keys(payload) : null
+      });
+      if (error.code === "permission-denied") {
+        toast.error("You don't have permission to update this application. Please contact support.");
+      } else {
+        toast.error("Unable to save draft. Please check your connection and try again.");
+      }
       return false;
     } finally {
       setSaving(false);
