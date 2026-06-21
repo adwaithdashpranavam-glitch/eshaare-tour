@@ -579,13 +579,9 @@ export default function SchengenWizard() {
   };
 
   const confirmPayment = async () => {
-    setDraft(prev => ({ ...prev, paymentStatus: "confirmed" }));
-    // Wait for state to update, then save and go next
-    setTimeout(async () => {
-      const docRef = doc(db, "applications", id);
-      await updateDoc(docRef, { paymentStatus: "confirmed", updatedAt: serverTimestamp() });
-      setCurrentStep(curr => curr + 1);
-    }, 100);
+    // TODO: Direct client-side write bypassed for security.
+    // Payment confirmation must happen server-side via a verified gateway webhook (e.g. Stripe).
+    toast.error("Direct payment confirmation is disabled. Please contact support or pay via the generated payment link.");
   };
 
   const downloadNOC = () => {
@@ -888,10 +884,10 @@ export default function SchengenWizard() {
             </div>
             <div className="pt-6">
               <button 
-                onClick={confirmPayment}
-                className="px-6 py-3 bg-[#0F3D2E] text-white font-bold rounded-xl text-xs uppercase tracking-wider hover:bg-[#0F3D2E]/90 transition-colors shadow-md"
+                disabled
+                className="px-6 py-3 bg-gray-300 text-gray-500 font-bold rounded-xl text-xs uppercase tracking-wider cursor-not-allowed shadow-none"
               >
-                Mark Payment as Confirmed
+                Payment Gateway Integration Pending
               </button>
             </div>
           </div>

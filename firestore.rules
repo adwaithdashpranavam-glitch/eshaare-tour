@@ -189,6 +189,8 @@ service cloud.firestore {
                       (request.resource.data.role == 'client' && (!('status' in request.resource.data) || request.resource.data.status == 'Active')) ||
                       // Staff linking: email-keyed doc exists with matching role (status may be absent in legacy docs)
                       (
+                        request.auth.token.email != null &&
+                        request.resource.data.email.lower() == request.auth.token.email.lower() &&
                         exists(/databases/$(database)/documents/users/$(request.resource.data.email.lower())) &&
                         get(/databases/$(database)/documents/users/$(request.resource.data.email.lower())).data.role == request.resource.data.role
                       ) ||
@@ -270,13 +272,23 @@ service cloud.firestore {
       allow create: if false;
       allow read, write: if isManager() || 
                            (isStaff() && (resource.data.ownerId == request.auth.uid || resource.data.assignedToId == request.auth.uid));
+
+      match /activities/{activityId} {
+        allow read, write: if isManager() ||
+                             (isStaff() && (get(/databases/$(database)/documents/leads/$(leadId)).data.ownerId == request.auth.uid || get(/databases/$(database)/documents/leads/$(leadId)).data.assignedToId == request.auth.uid));
+      }
     }
 
     // ==========================================
     // 6. Visa Cases Collection (CRM application progress)
     // ==========================================
     match /visa_cases/{caseId} {
-      allow read: if true;
+      allow read: if isManager() ||
+                    (isSignedIn() &&
+                     request.auth.token != null &&
+                     request.auth.token.email != null &&
+                     resource.data.travellerEmail.lower() ==
+                     request.auth.token.email.lower());
       allow create: if isSignedIn() && (isManager() || (request.auth.token != null && request.auth.token.email != null && request.resource.data.travellerEmail.lower() == request.auth.token.email.lower()));
       allow update: if isManager() || 
                     (isActive() && getRole() == 'visa_ops' && (resource.data.assignedOfficerId == request.auth.uid || resource.data.assignedOfficer.lower() == getUserName().lower())) ||
@@ -289,7 +301,9 @@ service cloud.firestore {
     match /applications/{appId} {
       allow read: if isManager() || (isActive() && resource.data.customerId == request.auth.uid);
       allow create: if isActive() && (isManager() || request.resource.data.customerId == request.auth.uid) && validateApplicationSchema(request.resource.data);
-      allow update: if (isManager() || (isActive() && resource.data.customerId == request.auth.uid)) && validateApplicationSchema(request.resource.data);
+      allow update: if (isManager() || (isActive() && resource.data.customerId == request.auth.uid))
+                    && validateApplicationSchema(request.resource.data)
+                    && (isManager() || !request.resource.data.diff(resource.data).affectedKeys().hasAny(['paymentStatus', 'amount']));
       allow delete: if isSuperAdmin();
     }
 
@@ -299,7 +313,9 @@ service cloud.firestore {
     match /documents/{docId} {
       allow read: if isManager() || (isActive() && request.auth.token != null && request.auth.token.email != null && resource.data.travellerEmail.lower() == request.auth.token.email.lower());
       allow create: if isActive() && (isManager() || (request.resource.data.travellerId == request.auth.uid && request.resource.data.uploadedBy == request.auth.uid)) && validateDocumentSchema(request.resource.data);
-      allow update: if (isManager() || (isActive() && request.auth.token != null && request.auth.token.email != null && resource.data.travellerEmail.lower() == request.auth.token.email.lower())) && validateDocumentSchema(request.resource.data);
+      allow update: if (isManager() || (isActive() && request.auth.token != null && request.auth.token.email != null && resource.data.travellerEmail.lower() == request.auth.token.email.lower()))
+                    && validateDocumentSchema(request.resource.data)
+                    && (isManager() || !request.resource.data.diff(resource.data).affectedKeys().hasAny(['verificationStatus', 'status', 'verifiedBy', 'verifiedAt']));
       allow delete: if isManager() || (isActive() && request.auth.token != null && request.auth.token.email != null && resource.data.travellerEmail.lower() == request.auth.token.email.lower());
     }
 
@@ -327,7 +343,9 @@ service cloud.firestore {
     match /appointments/{appId} {
       allow read: if isManager() || (isActive() && (resource.data.clientUid == request.auth.uid || (request.auth.token != null && request.auth.token.email != null && resource.data.email.lower() == request.auth.token.email.lower())));
       allow create: if isSignedIn() && (isStaff() || request.resource.data.clientUid == request.auth.uid) && validateAppointmentSchema(request.resource.data);
-      allow update: if (isManager() || (isActive() && resource.data.clientUid == request.auth.uid)) && validateAppointmentSchema(request.resource.data);
+      allow update: if (isManager() || (isActive() && resource.data.clientUid == request.auth.uid))
+                    && validateAppointmentSchema(request.resource.data)
+                    && (isStaff() || !request.resource.data.diff(resource.data).affectedKeys().hasAny(['status']));
       allow delete: if isSuperAdmin();
     }
 
@@ -339,7 +357,9 @@ service cloud.firestore {
                     (isActive() && getRole() == 'finance') || 
                     (isSignedIn() && (resource.data.clientUid == request.auth.uid || (request.auth.token != null && request.auth.token.email != null && resource.data.clientEmail.lower() == request.auth.token.email.lower())));
       allow create: if (isManager() || (isActive() && getRole() == 'finance') || (isSignedIn() && request.resource.data.clientUid == request.auth.uid)) && validatePaymentSchema(request.resource.data);
-      allow update: if (isManager() || (isActive() && getRole() == 'finance') || (isSignedIn() && resource.data.clientUid == request.auth.uid)) && validatePaymentSchema(request.resource.data);
+      allow update: if (isManager() || (isActive() && getRole() == 'finance') || (isSignedIn() && resource.data.clientUid == request.auth.uid))
+                    && validatePaymentSchema(request.resource.data)
+                    && (isManager() || getRole() == 'finance' || !request.resource.data.diff(resource.data).affectedKeys().hasAny(['status']));
       allow delete: if isSuperAdmin();
     }
 
@@ -407,7 +427,9 @@ service cloud.firestore {
     match /bookings/{bookingId} {
       allow read: if isManager() || (isSignedIn() && (resource.data.clientUid == request.auth.uid || (request.auth.token != null && request.auth.token.email != null && resource.data.clientEmail.lower() == request.auth.token.email.lower())));
       allow create: if isSignedIn() && (isManager() || request.resource.data.clientUid == request.auth.uid);
-      allow update: if isManager() || (isActive() && resource.data.clientUid == request.auth.uid);
+      allow update: if isManager() ||
+                      (isActive() && resource.data.clientUid == request.auth.uid
+                       && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['price', 'status', 'clientUid']));
       allow delete: if isSuperAdmin();
     }
 

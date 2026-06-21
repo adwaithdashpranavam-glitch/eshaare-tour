@@ -4,7 +4,7 @@ import { useAuth } from "../contexts/AuthContext";
 import {
   LayoutDashboard, FileText, FolderOpen, Calendar,
   CreditCard, MessageSquare, Settings, LogOut, Bell, Menu, X,
-  UserCircle, Users
+  UserCircle, Users, Home
 } from "lucide-react";
 import toast from "react-hot-toast";
 import foxLogo from "../assets/fox-logo.png";
@@ -21,6 +21,7 @@ export const PortalLayout = () => {
   }, [location.pathname]);
 
   const navItems = [
+    { label: "Home Page", path: "/", icon: Home },
     { label: "Dashboard", path: "/portal/dashboard", icon: LayoutDashboard },
     { label: "My Profile", path: "/portal/profile", icon: UserCircle },
     { label: "Family Members", path: "/portal/family", icon: Users },

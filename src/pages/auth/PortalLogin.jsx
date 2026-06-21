@@ -60,8 +60,9 @@ export const PortalLogin = () => {
       return;
     }
 
-    if (signUpPassword.length < 6) {
-      toast.error("Password must be at least 6 characters.");
+    const passwordPolicy = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/;
+    if (!passwordPolicy.test(signUpPassword)) {
+      toast.error("Password must be at least 8 characters, including uppercase, lowercase, a number, and a symbol.");
       return;
     }
 
@@ -83,44 +84,44 @@ export const PortalLogin = () => {
   };
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#1D503A] px-6 py-12 font-sans relative overflow-hidden">
+    <main className="flex min-h-screen items-center justify-center bg-[#F5F1E8] px-6 py-12 font-sans relative overflow-hidden">
       {/* Background radial glow */}
-      <div className="absolute -top-40 -left-40 h-96 w-96 bg-[#7A8F6B]/5 blur-3xl rounded-full"></div>
-      <div className="absolute -bottom-40 -right-40 h-96 w-96 bg-[#7A8F6B]/5 blur-3xl rounded-full"></div>
+      <div className="absolute -top-40 -left-40 h-96 w-96 bg-[#C6A969]/10 blur-3xl rounded-full"></div>
+      <div className="absolute -bottom-40 -right-40 h-96 w-96 bg-[#C6A969]/10 blur-3xl rounded-full"></div>
 
-      <div className="w-full max-w-md rounded-3xl border border-white/10 bg-white/5 p-8 shadow-2xl relative z-10 space-y-6">
+      <div className="w-full max-w-md rounded-3xl border border-[#0F3D2E]/10 bg-white p-8 shadow-xl relative z-10 space-y-6">
 
         {/* Header */}
         <div className="text-center space-y-3">
           <div className="flex justify-center">
-            <div className="p-3 bg-white/5 border border-white/10 text-[#7A8F6B] rounded-full shadow-lg">
+            <div className="p-3 bg-[#F5F1E8] border border-[#0F3D2E]/10 text-[#0F3D2E] rounded-full shadow-md">
               <Compass className="h-8 w-8 animate-spin-slow" />
             </div>
           </div>
-          <h2 className="text-2xl font-bold text-white tracking-wide">
+          <h2 className="text-2xl font-bold text-[#0F3D2E] tracking-wide">
             Client Portal
           </h2>
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-gray-500">
             Secure Access & Online Registration
           </p>
         </div>
 
         {/* Tab Switcher */}
-        <div className="flex rounded-xl bg-black/40 p-1 border border-white/5">
+        <div className="flex rounded-xl bg-[#F5F1E8] p-1 border border-[#0F3D2E]/10">
           <button
             onClick={() => setActiveTab("login")}
-            className={`flex-1 rounded-lg py-2 text-xs font-semibold uppercase tracking-wider transition-all ${activeTab === "login"
-              ? "bg-[#7A8F6B] text-white shadow-md"
-              : "text-gray-400 hover:text-white"
+            className={`flex-1 rounded-lg py-2 text-xs font-bold uppercase tracking-wider transition-all ${activeTab === "login"
+              ? "bg-gradient-to-r from-[#C6A969] to-[#D4AF37] text-white shadow-sm"
+              : "text-gray-500 hover:text-[#0F3D2E]"
               }`}
           >
             Login
           </button>
           <button
             onClick={() => setActiveTab("signup")}
-            className={`flex-1 rounded-lg py-2 text-xs font-semibold uppercase tracking-wider transition-all ${activeTab === "signup"
-              ? "bg-[#7A8F6B] text-white shadow-md"
-              : "text-gray-400 hover:text-white"
+            className={`flex-1 rounded-lg py-2 text-xs font-bold uppercase tracking-wider transition-all ${activeTab === "signup"
+              ? "bg-gradient-to-r from-[#C6A969] to-[#D4AF37] text-white shadow-sm"
+              : "text-gray-500 hover:text-[#0F3D2E]"
               }`}
           >
             Sign Up
@@ -131,18 +132,18 @@ export const PortalLogin = () => {
         {activeTab === "login" ? (
           <form onSubmit={handleLoginSubmit} className="space-y-4">
             <div className="space-y-1">
-              <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider pl-1">
+              <label className="text-[10px] font-bold text-[#0F3D2E] uppercase tracking-wider pl-1">
                 Email Address
               </label>
               <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-500">
+                <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#0F3D2E]">
                   <Mail className="h-4 w-4" />
                 </span>
                 <input
                   type="email"
                   required
                   placeholder="traveller@example.com"
-                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-white/10 bg-black/40 text-white outline-none focus:border-[#7A8F6B]/50 transition-colors text-sm"
+                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-[#0F3D2E]/20 bg-[#FAF8F5] text-gray-800 outline-none focus:border-[#0F3D2E] focus:ring-1 focus:ring-[#0F3D2E] transition-colors text-sm"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
@@ -150,18 +151,18 @@ export const PortalLogin = () => {
             </div>
 
             <div className="space-y-1">
-              <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider pl-1">
+              <label className="text-[10px] font-bold text-[#0F3D2E] uppercase tracking-wider pl-1">
                 Password
               </label>
               <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-500">
+                <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#0F3D2E]">
                   <Lock className="h-4 w-4" />
                 </span>
                 <input
                   type="password"
                   required
                   placeholder="••••••••"
-                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-white/10 bg-black/40 text-white outline-none focus:border-[#7A8F6B]/50 transition-colors text-sm"
+                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-[#0F3D2E]/20 bg-[#FAF8F5] text-gray-800 outline-none focus:border-[#0F3D2E] focus:ring-1 focus:ring-[#0F3D2E] transition-colors text-sm"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
@@ -171,27 +172,27 @@ export const PortalLogin = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-xl bg-[#7A8F6B] py-3.5 font-semibold text-white hover:bg-[#627555] transition-colors disabled:opacity-50 text-sm mt-6 flex items-center justify-center space-x-2"
+              className="w-full rounded-xl bg-gradient-to-r from-[#C6A969] to-[#D4AF37] py-3.5 font-bold text-white hover:from-[#B59858] hover:to-[#C6A969] transition-all duration-300 disabled:opacity-50 text-sm mt-6 flex items-center justify-center space-x-2 shadow-md shadow-[#C6A969]/25"
             >
-              <LogIn className="h-4 w-4" />
+              <LogIn className="h-4 w-4 text-white" />
               <span>{loading ? "Verifying..." : "Access Portal"}</span>
             </button>
           </form>
         ) : (
           <form onSubmit={handleSignUpSubmit} className="space-y-3.5">
             <div className="space-y-1">
-              <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider pl-1">
+              <label className="text-[10px] font-bold text-[#0F3D2E] uppercase tracking-wider pl-1">
                 Full Name
               </label>
               <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-500">
+                <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#0F3D2E]">
                   <User className="h-4 w-4" />
                 </span>
                 <input
                   type="text"
                   required
                   placeholder="John Doe"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-white/10 bg-black/40 text-white outline-none focus:border-[#7A8F6B]/50 transition-colors text-sm"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#0F3D2E]/20 bg-[#FAF8F5] text-gray-800 outline-none focus:border-[#0F3D2E] focus:ring-1 focus:ring-[#0F3D2E] transition-colors text-sm"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                 />
@@ -199,18 +200,18 @@ export const PortalLogin = () => {
             </div>
 
             <div className="space-y-1">
-              <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider pl-1">
+              <label className="text-[10px] font-bold text-[#0F3D2E] uppercase tracking-wider pl-1">
                 Email Address
               </label>
               <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-500">
+                <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#0F3D2E]">
                   <Mail className="h-4 w-4" />
                 </span>
                 <input
                   type="email"
                   required
                   placeholder="name@domain.com"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-white/10 bg-black/40 text-white outline-none focus:border-[#7A8F6B]/50 transition-colors text-sm"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#0F3D2E]/20 bg-[#FAF8F5] text-gray-800 outline-none focus:border-[#0F3D2E] focus:ring-1 focus:ring-[#0F3D2E] transition-colors text-sm"
                   value={signUpEmail}
                   onChange={(e) => setSignUpEmail(e.target.value)}
                 />
@@ -218,18 +219,18 @@ export const PortalLogin = () => {
             </div>
 
             <div className="space-y-1">
-              <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider pl-1">
+              <label className="text-[10px] font-bold text-[#0F3D2E] uppercase tracking-wider pl-1">
                 Phone Number
               </label>
               <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-500">
+                <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#0F3D2E]">
                   <Phone className="h-4 w-4" />
                 </span>
                 <input
                   type="tel"
                   required
                   placeholder="+971 50 123 4567"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-white/10 bg-black/40 text-white outline-none focus:border-[#7A8F6B]/50 transition-colors text-sm"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#0F3D2E]/20 bg-[#FAF8F5] text-gray-800 outline-none focus:border-[#0F3D2E] focus:ring-1 focus:ring-[#0F3D2E] transition-colors text-sm"
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
                 />
@@ -237,18 +238,18 @@ export const PortalLogin = () => {
             </div>
 
             <div className="space-y-1">
-              <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider pl-1">
+              <label className="text-[10px] font-bold text-[#0F3D2E] uppercase tracking-wider pl-1">
                 Nationality
               </label>
               <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-500">
+                <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#0F3D2E]">
                   <Globe className="h-4 w-4" />
                 </span>
                 <input
                   type="text"
                   required
                   placeholder="UAE / UK / India"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-white/10 bg-black/40 text-white outline-none focus:border-[#7A8F6B]/50 transition-colors text-sm"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#0F3D2E]/20 bg-[#FAF8F5] text-gray-800 outline-none focus:border-[#0F3D2E] focus:ring-1 focus:ring-[#0F3D2E] transition-colors text-sm"
                   value={nationality}
                   onChange={(e) => setNationality(e.target.value)}
                 />
@@ -256,18 +257,18 @@ export const PortalLogin = () => {
             </div>
 
             <div className="space-y-1">
-              <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider pl-1">
+              <label className="text-[10px] font-bold text-[#0F3D2E] uppercase tracking-wider pl-1">
                 Password
               </label>
               <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-500">
+                <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#0F3D2E]">
                   <Lock className="h-4 w-4" />
                 </span>
                 <input
                   type="password"
                   required
-                  placeholder="Min. 6 characters"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-white/10 bg-black/40 text-white outline-none focus:border-[#7A8F6B]/50 transition-colors text-sm"
+                  placeholder="Min. 8 characters (mixed case + symbol)"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#0F3D2E]/20 bg-[#FAF8F5] text-gray-800 outline-none focus:border-[#0F3D2E] focus:ring-1 focus:ring-[#0F3D2E] transition-colors text-sm"
                   value={signUpPassword}
                   onChange={(e) => setSignUpPassword(e.target.value)}
                 />
@@ -275,18 +276,18 @@ export const PortalLogin = () => {
             </div>
 
             <div className="space-y-1">
-              <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider pl-1">
+              <label className="text-[10px] font-bold text-[#0F3D2E] uppercase tracking-wider pl-1">
                 Confirm Password
               </label>
               <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-500">
+                <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#0F3D2E]">
                   <Lock className="h-4 w-4" />
                 </span>
                 <input
                   type="password"
                   required
                   placeholder="Confirm password"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-white/10 bg-black/40 text-white outline-none focus:border-[#7A8F6B]/50 transition-colors text-sm"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#0F3D2E]/20 bg-[#FAF8F5] text-gray-800 outline-none focus:border-[#0F3D2E] focus:ring-1 focus:ring-[#0F3D2E] transition-colors text-sm"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                 />
@@ -296,19 +297,19 @@ export const PortalLogin = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-xl bg-[#7A8F6B] py-3.5 font-semibold text-white hover:bg-[#627555] transition-colors disabled:opacity-50 text-sm mt-6 flex items-center justify-center space-x-2"
+              className="w-full rounded-xl bg-gradient-to-r from-[#C6A969] to-[#D4AF37] py-3.5 font-bold text-white hover:from-[#B59858] hover:to-[#C6A969] transition-all duration-300 disabled:opacity-50 text-sm mt-6 flex items-center justify-center space-x-2 shadow-md shadow-[#C6A969]/25"
             >
               <span>{loading ? "Registering Account..." : "Create Account & Sign In"}</span>
             </button>
           </form>
         )}
 
-        <div className="text-center pt-3 border-t border-white/10 flex items-center justify-center gap-1.5">
-          <Link to="/" className="text-xs text-gray-400 hover:text-[#7A8F6B] transition-colors">
+        <div className="text-center pt-3 border-t border-gray-200 flex items-center justify-center gap-1.5">
+          <Link to="/" className="text-xs text-gray-500 hover:text-[#0F3D2E] transition-colors">
             Back to Home
           </Link>
-          <span className="text-gray-600 text-xs">•</span>
-          <Link to="/login" className="text-xs text-gray-400 hover:text-[#7A8F6B] transition-colors">
+          <span className="text-gray-300 text-xs">•</span>
+          <Link to="/login" className="text-xs text-gray-500 hover:text-[#0F3D2E] transition-colors">
             Staff Login
           </Link>
         </div>

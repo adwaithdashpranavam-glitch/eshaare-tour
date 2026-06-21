@@ -107,7 +107,14 @@ service firebase.storage {
 
     // 7. Application specific files
     match /applications/{applicationId}/{allPaths=**} {
-      allow read: if isSignedIn();
+      allow read:
+        if canAccessTravelDocs() ||
+        (
+          isSignedIn() &&
+          firestore.get(
+            /databases/(default)/documents/applications/$(applicationId)
+          ).data.customerId == request.auth.uid
+        );
       allow write: if canAccessTravelDocs() && request.resource.size < 15 * 1024 * 1024;
     }
   }

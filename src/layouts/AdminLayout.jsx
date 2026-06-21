@@ -6,7 +6,7 @@ import {
   LayoutDashboard, Users, FileText, CalendarCheck, FileSpreadsheet, 
   CreditCard, ShieldAlert, BarChart3, Settings, LogOut, ChevronLeft, 
   ChevronRight, Search, Bell, Plus, Menu, X, HelpCircle, Compass, Globe,
-  AlertTriangle, RefreshCw
+  AlertTriangle, RefreshCw, Home
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -81,6 +81,7 @@ export const AdminLayout = () => {
     {
       title: "Overview",
       items: [
+        { label: "Website Home", path: "/", icon: Home, roles: ["super_admin", "admin", "manager", "sales", "visa_ops", "finance", "support"] },
         { label: "Dashboard", path: "/admin/dashboard", icon: LayoutDashboard, roles: ["super_admin", "admin", "manager", "sales", "visa_ops", "finance", "support"] }
       ]
     },

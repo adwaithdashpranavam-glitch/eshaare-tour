@@ -93,8 +93,12 @@ exports.registerClient = functions.https.onCall(async (data) => {
   if (!emailRegex.test(emailLower)) {
     throw new functions.https.HttpsError("invalid-argument", "Invalid email address.");
   }
-  if (typeof password !== "string" || password.length < 6) {
-    throw new functions.https.HttpsError("invalid-argument", "Weak password — please use at least 6 characters.");
+  const passwordPolicy = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/;
+  if (typeof password !== "string" || !passwordPolicy.test(password)) {
+    throw new functions.https.HttpsError(
+      "invalid-argument",
+      "Weak password — please use at least 8 characters, including uppercase, lowercase, a number, and a symbol."
+    );
   }
 
   // ---- Create Auth user ----
@@ -110,7 +114,10 @@ exports.registerClient = functions.https.onCall(async (data) => {
       throw new functions.https.HttpsError("already-exists", "Email already registered.");
     }
     if (err.code === "auth/invalid-password") {
-      throw new functions.https.HttpsError("invalid-argument", "Weak password — please use at least 6 characters.");
+      throw new functions.https.HttpsError(
+        "invalid-argument",
+        "Weak password — please use at least 8 characters, including uppercase, lowercase, a number, and a symbol."
+      );
     }
     if (err.code === "auth/invalid-email") {
       throw new functions.https.HttpsError("invalid-argument", "Invalid email address.");
@@ -328,6 +335,7 @@ exports.submitLead = functions.https.onCall(async (data, context) => {
   }
 
   const emailLower = contactEmail.toLowerCase().trim();
+  const callerIp = context.rawRequest?.ip || context.rawRequest?.headers?.["x-forwarded-for"] || null;
 
   // Rate Limiting (Max 3 submissions per hour per email)
   const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
@@ -338,6 +346,17 @@ exports.submitLead = functions.https.onCall(async (data, context) => {
 
   if (recentLeads.size >= 3) {
     throw new functions.https.HttpsError("resource-exhausted", "Rate limit exceeded. Please try again later.");
+  }
+
+  // Rate Limiting by IP (Max 5 submissions per hour per IP)
+  if (callerIp) {
+    const recentLeadsByIp = await db.collection("leads")
+      .where("submitterIp", "==", callerIp)
+      .where("createdAt", ">=", oneHourAgo)
+      .get();
+    if (recentLeadsByIp.size >= 5) {
+      throw new functions.https.HttpsError("resource-exhausted", "Rate limit exceeded. Please try again later.");
+    }
   }
 
   // Duplicate submission check (same email/phone/country in last 10 minutes)
@@ -365,6 +384,7 @@ exports.submitLead = functions.https.onCall(async (data, context) => {
     ownerId: null,
     isDeleted: false,
     isActive: true,
+    submitterIp: callerIp,
     createdAt: FieldValue.serverTimestamp(),
     updatedAt: FieldValue.serverTimestamp()
   };
@@ -426,17 +446,6 @@ exports.logAuthEvent = functions.https.onCall(async (data, context) => {
   return { success: true };
 });
 
-exports.tempDumpPackages = functions.https.onRequest(async (req, res) => {
-  try {
-    const snap = await db.collection("packages").get();
-    const list = [];
-    snap.forEach(doc => {
-      list.push({ id: doc.id, ...doc.data() });
-    });
-    res.json(list);
-  } catch (err) {
-    res.status(500).send(err.message);
-  }
-});
+
 
 
