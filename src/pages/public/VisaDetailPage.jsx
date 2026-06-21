@@ -294,7 +294,13 @@ export const VisaDetailPage = () => {
         applicationType
       );
       toast.success("Application draft ready!", { id: loadingToast });
-      navigate("/portal/applications");
+      // Schengen drafts use the multi-step wizard — open it directly so the client
+      // lands on the flow they expect instead of the applications list.
+      if (applicationType === "schengen" && draftId) {
+        navigate(`/portal/applications/${draftId}/wizard`);
+      } else {
+        navigate("/portal/applications");
+      }
     } catch (error) {
       console.error("Failed to create draft:", error);
       toast.error("Failed to create draft application.", { id: loadingToast });

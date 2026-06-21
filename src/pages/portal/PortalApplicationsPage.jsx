@@ -7,7 +7,7 @@ import { FileText, ChevronRight, Edit3, Send, Save, AlertCircle, FilePlus, Globe
 import StatusBadge from "../../components/ui/StatusBadge";
 import { formatShortDate } from "../../utils/formatters";
 import Modal from "../../components/ui/Modal";
-import { getApplicationsForCustomer, updateApplication, submitApplication } from "../../lib/firestore";
+import { getApplicationsForCustomer, updateApplication, submitApplication, isCompatibleSchengenDraft } from "../../lib/firestore";
 import LoadingSpinner from "../../components/ui/LoadingSpinner";
 import toast from "react-hot-toast";
 
@@ -37,8 +37,18 @@ export const PortalApplicationsPage = () => {
     if (!user?.uid) return;
 
     const unsubscribe = getApplicationsForCustomer(user.uid, (data) => {
-      // Show only drafts in the draft section
-      const activeDrafts = data.filter(app => app.status === "Draft");
+      // Show only drafts in the draft section. Hide stale/legacy Schengen drafts that
+      // pre-date the wizard's schema: reopening them routes into the wizard, where every
+      // save fails Firestore rules ("Missing or insufficient permissions"). They can't be
+      // continued from the client, so don't surface them — a fresh draft is created on Apply.
+      const isSchengenDraft = (app) =>
+        app.applicationType === "schengen" ||
+        app.visaId === "schengen" ||
+        app?.visaName?.toLowerCase().includes("schengen");
+      const activeDrafts = data.filter(app =>
+        app.status === "Draft" &&
+        (!isSchengenDraft(app) || isCompatibleSchengenDraft(app))
+      );
       setDrafts(activeDrafts);
       setLoadingDrafts(false);
     });
