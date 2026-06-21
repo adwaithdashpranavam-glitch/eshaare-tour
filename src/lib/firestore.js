@@ -1661,6 +1661,7 @@ import { generateCaseNo } from "../utils/helpers";
 // client-side compatibility check — the Firestore rule itself remains the source of truth.
 const APPLICATION_SCHEMA_ALLOWED_FIELDS = [
   "id", "customerId", "customerName", "visaId", "visaName", "status", "paymentStatus",
+  "paymentMethod", "paymentApprovedAt",
   "packageType", "amount", "createdAt", "updatedAt", "submittedAt", "formData", "step",
   "price", "nationality", "phone", "fullName", "destination", "score", "assignedStaff",
   "applicationType", "sourcePageType", "destinationCountry", "visaType",

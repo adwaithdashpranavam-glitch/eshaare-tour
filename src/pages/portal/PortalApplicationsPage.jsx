@@ -237,7 +237,7 @@ export const PortalApplicationsPage = () => {
               if (d.destinationCountry) progress += 20;
               if (d.visaType) progress += 20;
               if (d.appointmentPreference?.startDate) progress += 20;
-              if (d.paymentStatus === "confirmed") progress += 20;
+              if (d.paymentStatus === "paid" || d.paymentStatus === "confirmed") progress += 20;
               return (
               <div key={d.id} className="bg-white border border-[#E5E7EB] rounded-[20px] p-6 flex flex-col justify-between space-y-4 hover:border-[#C6A969]/40 transition-all duration-200 shadow-sm">
                 <div className="flex justify-between items-start">
