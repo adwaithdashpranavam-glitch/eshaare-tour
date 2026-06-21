@@ -1657,6 +1657,30 @@ export async function seedVisaTypes() {
 
 import { generateCaseNo } from "../utils/helpers";
 
+// Mirrors validateApplicationSchema()'s allowedFields in firestore.rules. Used purely as a
+// client-side compatibility check — the Firestore rule itself remains the source of truth.
+const APPLICATION_SCHEMA_ALLOWED_FIELDS = [
+  "id", "customerId", "customerName", "visaId", "visaName", "status", "paymentStatus",
+  "packageType", "amount", "createdAt", "updatedAt", "submittedAt", "formData", "step",
+  "price", "nationality", "phone", "fullName", "destination", "score", "assignedStaff",
+  "applicationType", "sourcePageType", "destinationCountry", "visaType",
+  "appointmentPreference", "assignedConsultant", "documents", "schengenQuestionnaire",
+  "travelProfileSnapshot"
+];
+
+// A Schengen draft is safe to reuse/continue only if every field it already carries fits
+// validateApplicationSchema()'s allowlist AND it has the wizard's required shape. Legacy
+// drafts that pre-date the wizard (or carry stray fields) can fail Firestore's hasOnly()
+// check on every later update, surfacing as "Missing or insufficient permissions" — even
+// though the new write itself is clean, because rules evaluate the merged (existing + new)
+// document. Such drafts must not be reused or reopened from the client; a fresh one should
+// be created instead.
+export const isCompatibleSchengenDraft = (draft) => {
+  if (!draft || draft.applicationType !== "schengen") return false;
+  if (!("sourcePageType" in draft) || !("visaType" in draft)) return false;
+  return Object.keys(draft).every(key => APPLICATION_SCHEMA_ALLOWED_FIELDS.includes(key));
+};
+
 export const createApplicationDraft = async (
   customerId,
   visaId,
@@ -1670,26 +1694,19 @@ export const createApplicationDraft = async (
 ) => {
   try {
     const appRef = collection(db, "applications");
-    
+
     // Check for existing draft
     const q = query(appRef, where("customerId", "==", customerId), where("status", "==", "Draft"));
     const snapshot = await getDocs(q);
     const existingDrafts = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-    
+
     const determinedAppType = applicationType || (visaId === "schengen" ? "schengen" : "standard");
-    
+
     let matchedDraft = null;
     if (determinedAppType === "schengen") {
-      // Only reuse a draft that already has the full Schengen wizard shape. An older/legacy
-      // Draft doc (pre-dating the wizard's field set) can carry fields outside
-      // validateApplicationSchema()'s allowlist, which makes every later updateDoc() on that
-      // doc fail Firestore rules with "Missing or insufficient permissions" — even though the
-      // new payload itself is clean, because rules evaluate the merged (existing + new) doc.
       matchedDraft = existingDrafts.find(d =>
         d.customerId === customerId &&
-        d.applicationType === "schengen" &&
-        "sourcePageType" in d &&
-        "visaType" in d &&
+        isCompatibleSchengenDraft(d) &&
         (!destinationCountry || d.destinationCountry === destinationCountry)
       );
     } else {
@@ -1834,8 +1851,9 @@ export const getApplicationsForCustomer = (customerId, callback) => {
     return onSnapshot(q, (snapshot) => {
       const apps = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       apps.sort((a, b) => {
-        const dateA = a.createdAt?.seconds ? new Date(a.createdAt.seconds * 1000) : new Date(a.createdAt || 0);
-        const dateB = b.createdAt?.seconds ? new Date(b.createdAt.seconds * 1000) : new Date(b.createdAt || 0);
+        const toDate = (v) => v?.seconds ? new Date(v.seconds * 1000) : new Date(v || 0);
+        const dateA = toDate(a.updatedAt || a.createdAt);
+        const dateB = toDate(b.updatedAt || b.createdAt);
         return dateB - dateA;
       });
       callback(apps);
