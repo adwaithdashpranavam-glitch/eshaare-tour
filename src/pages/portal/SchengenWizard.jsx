@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { doc, getDoc, updateDoc, serverTimestamp } from "firebase/firestore";
 import { db, auth } from "../../lib/firebase";
@@ -104,6 +104,16 @@ export default function SchengenWizard() {
   const [errorsBySection, setErrorsBySection] = useState({});
   const [sectionEditStates, setSectionEditStates] = useState({});
   const [uploadingDocName, setUploadingDocName] = useState(null);
+  // The draft is fetched from Firestore only once per mount. The traveler profile is a
+  // live onSnapshot listener that emits a fresh object on every tick; without this guard,
+  // those ticks re-run the fetch effect and setDraft(serverData) wipes whatever the user is
+  // currently typing — looking like the form "resets/refreshes" on the first keystroke.
+  const draftLoadedRef = useRef(false);
+  // Step 4 splits questionnaire fields into read-only "verified" vs editable "required".
+  // That split is captured once per visit to the step: without freezing it, a field the user
+  // starts filling flips from missing→filled on the next render, moves to the read-only group,
+  // and its <input> unmounts mid-keystroke (losing focus after the first character).
+  const [frozenEditableFieldIds, setFrozenEditableFieldIds] = useState(null);
 
   const handleUploadDocument = async (docName) => {
     setUploadingDocName(docName);
@@ -230,7 +240,11 @@ export default function SchengenWizard() {
         setLoading(false);
       }
     };
-    if (!loadingProfile) {
+    // Only ever seed the draft once (after the profile has loaded so the initial
+    // prefill/merge is complete). Later profile-snapshot ticks must not re-fetch and
+    // overwrite the user's in-progress edits.
+    if (!loadingProfile && !draftLoadedRef.current) {
+      draftLoadedRef.current = true;
       fetchDraft();
     }
   }, [id, navigate, travelerProfile, loadingProfile]);
@@ -265,6 +279,23 @@ export default function SchengenWizard() {
     }
     return "";
   };
+
+  // Capture which fields are editable when the user enters Step 4, and keep that set stable
+  // while they type. Reset when they leave so a fresh capture happens on the next visit.
+  useEffect(() => {
+    if (currentStep !== 3 || !draft) {
+      if (frozenEditableFieldIds !== null) setFrozenEditableFieldIds(null);
+      return;
+    }
+    if (frozenEditableFieldIds !== null) return; // already captured for this visit
+    const ids = new Set();
+    SCHENGEN_FIELDS.forEach((field) => {
+      const value = getFieldValue(field);
+      const isFilled = value !== undefined && value !== null && String(value).trim() !== "";
+      if (field.questionnairePath || !isFilled) ids.add(field.fieldId);
+    });
+    setFrozenEditableFieldIds(ids);
+  }, [currentStep, draft, frozenEditableFieldIds]);
 
   const updateQuestionnaire = (path, value) => {
     const parts = path.split(".");
@@ -812,11 +843,16 @@ export default function SchengenWizard() {
           const knownFields = [];
           const missingFields = [];
 
+          // Use the partition frozen on entry so a field being typed into doesn't migrate
+          // from the editable group to the read-only group mid-keystroke.
+          const editableIds = frozenEditableFieldIds;
           activeFields.forEach(field => {
             const value = getFieldValue(field);
             const isFilled = value !== undefined && value !== null && String(value).trim() !== "";
-            
-            if (isFilled && !field.questionnairePath) {
+            const isEditable = field.questionnairePath ||
+              (editableIds ? editableIds.has(field.fieldId) : !isFilled);
+
+            if (isFilled && !isEditable) {
               knownFields.push({ field, value });
             } else {
               missingFields.push(field);
@@ -1485,6 +1521,7 @@ export default function SchengenWizard() {
         {currentStep < 4 && (
           <div className="mt-8 flex justify-between items-center border-t border-gray-200 pt-6">
             <button
+              type="button"
               onClick={handleBack}
               className={`px-6 py-3 font-bold rounded-xl text-xs uppercase tracking-wider flex items-center gap-2 transition-colors ${
                 currentStep === 0 ? 'text-gray-300 cursor-not-allowed' : 'text-[#0F3D2E] hover:bg-gray-100'
@@ -1495,6 +1532,7 @@ export default function SchengenWizard() {
             </button>
             <div className="flex gap-3">
               <button
+                type="button"
                 onClick={() => handleSave(true)}
                 disabled={saving}
                 className="px-6 py-3 border border-[#E5E7EB] text-[#1A1A1A] bg-white font-bold rounded-xl text-xs uppercase tracking-wider hover:bg-gray-50 transition-colors flex items-center gap-2 disabled:opacity-50"
@@ -1502,6 +1540,7 @@ export default function SchengenWizard() {
                 <Save className="w-4 h-4 text-[#C6A969]" /> Save Draft
               </button>
               <button
+                type="button"
                 onClick={handleNext}
                 disabled={saving || (currentStep === 3 && !declarationsAccepted)}
                 className="px-8 py-3 bg-[#0F3D2E] text-white font-bold rounded-xl text-xs uppercase tracking-wider hover:bg-[#0F3D2E]/90 transition-colors shadow-md flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
