@@ -77,16 +77,19 @@ const SCHENGEN_FIELDS = [
   { fieldId: "journeyPurpose", label: "Purpose of the journey", required: true, source: "visaType" },
   { fieldId: "destinationCountry", label: "Member State of main destination", required: true, source: "destinationCountry" },
   { fieldId: "firstEntry", label: "Member State of first entry", required: true, questionnairePath: "destinationAndEntry.firstEntry" },
-  { fieldId: "entriesRequested", label: "Number of entries requested", required: true, questionnairePath: "destinationAndEntry.entriesRequested" },
+  { fieldId: "entriesRequested", label: "Number of entries requested", required: false, questionnairePath: "destinationAndEntry.entriesRequested" },
   { fieldId: "arrivalDate", label: "Intended date of arrival", required: true, source: "appointmentPreference.startDate" },
   { fieldId: "departureDate", label: "Intended date of departure", required: true, source: "appointmentPreference.endDate" },
   { fieldId: "fingerprintsCollected", label: "Fingerprints collected previously", required: true, questionnairePath: "previousBiometrics.collected" },
   { fieldId: "fingerprintsDate", label: "Fingerprints date (if known)", required: false, questionnairePath: "previousBiometrics.date", condition: (d) => d.schengenQuestionnaire?.previousBiometrics?.collected === "yes" },
-  { fieldId: "accommodationType", label: "Accommodation Type", required: true, questionnairePath: "accommodationOrInvitation.type" },
-  { fieldId: "invitingPersonName", label: "Inviting person name / Hotel name", required: true, questionnairePath: "accommodationOrInvitation.name", condition: (d) => d.schengenQuestionnaire?.accommodationOrInvitation?.type !== "Not arranged yet" },
-  { fieldId: "invitingPersonAddress", label: "Address and email of hotel / inviting person", required: true, questionnairePath: "accommodationOrInvitation.address", condition: (d) => d.schengenQuestionnaire?.accommodationOrInvitation?.type !== "Not arranged yet" },
-  { fieldId: "invitingPersonPhone", label: "Telephone number of hotel / inviting person", required: true, questionnairePath: "accommodationOrInvitation.phone", condition: (d) => d.schengenQuestionnaire?.accommodationOrInvitation?.type !== "Not arranged yet" },
-  { fieldId: "costCoveredBy", label: "Cost of travelling and living covered by", required: true, questionnairePath: "travelCostCoverage.coveredBy" },
+  // Accommodation, inviting-party and cost-coverage details are arranged by Eshaare's visa
+  // operations team after submission. They are optional for the client and grouped into a
+  // consultant-completed section to reduce friction during application submission.
+  { fieldId: "accommodationType", label: "Accommodation Type", required: false, consultantCompleted: true, questionnairePath: "accommodationOrInvitation.type" },
+  { fieldId: "invitingPersonName", label: "Inviting person name / Hotel name", required: false, consultantCompleted: true, questionnairePath: "accommodationOrInvitation.name" },
+  { fieldId: "invitingPersonAddress", label: "Address and email of hotel / inviting person", required: false, consultantCompleted: true, questionnairePath: "accommodationOrInvitation.address" },
+  { fieldId: "invitingPersonPhone", label: "Telephone number of hotel / inviting person", required: false, consultantCompleted: true, questionnairePath: "accommodationOrInvitation.phone" },
+  { fieldId: "costCoveredBy", label: "Cost of travelling and living covered by", required: false, consultantCompleted: true, questionnairePath: "travelCostCoverage.coveredBy" },
 ];
 
 export default function SchengenWizard() {
@@ -842,11 +845,18 @@ export default function SchengenWizard() {
 
           const knownFields = [];
           const missingFields = [];
+          const consultantFields = [];
 
           // Use the partition frozen on entry so a field being typed into doesn't migrate
           // from the editable group to the read-only group mid-keystroke.
           const editableIds = frozenEditableFieldIds;
           activeFields.forEach(field => {
+            // Booking/accommodation/sponsor details are optional and arranged later by the
+            // assigned visa consultant — always grouped into their own section.
+            if (field.consultantCompleted) {
+              consultantFields.push(field);
+              return;
+            }
             const value = getFieldValue(field);
             const isFilled = value !== undefined && value !== null && String(value).trim() !== "";
             const isEditable = field.questionnairePath ||
@@ -887,6 +897,22 @@ export default function SchengenWizard() {
                   <h3 className="text-xs font-bold text-[#0F3D2E] uppercase tracking-wider border-b pb-1">Required Information</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {missingFields.map(field => renderFieldInput(field))}
+                  </div>
+                </div>
+              )}
+
+              {/* Consultant-Completed: Booking & Accommodation (optional for client) */}
+              {consultantFields.length > 0 && (
+                <div className="space-y-4 bg-[#F8F6F2] rounded-2xl border border-[#E5E7EB] p-5">
+                  <div>
+                    <h3 className="text-xs font-bold text-[#0F3D2E] uppercase tracking-wider border-b pb-1">Booking &amp; Accommodation Details (Optional)</h3>
+                    <p className="text-xs text-[#6B7280] mt-2 flex items-start gap-2">
+                      <HelpCircle className="w-4 h-4 text-[#C6A969] mt-0.5 flex-shrink-0" />
+                      This section can be completed later by your assigned visa consultant.
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {consultantFields.map(field => renderFieldInput(field))}
                   </div>
                 </div>
               )}
