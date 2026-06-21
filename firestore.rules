@@ -126,7 +126,7 @@ service cloud.firestore {
     }
 
     function validateApplicationSchema(data) {
-      let allowedFields = ['id', 'customerId', 'customerName', 'visaId', 'visaName', 'status', 'paymentStatus', 'packageType', 'amount', 'createdAt', 'updatedAt', 'submittedAt', 'formData', 'step', 'price', 'nationality', 'phone', 'fullName', 'destination', 'score', 'assignedStaff', 'applicationType', 'sourcePageType', 'destinationCountry', 'visaType', 'appointmentPreference', 'assignedConsultant', 'documents', 'schengenQuestionnaire', 'travelProfileSnapshot'];
+      let allowedFields = ['id', 'customerId', 'customerName', 'visaId', 'visaName', 'status', 'paymentStatus', 'paymentMethod', 'paymentApprovedAt', 'packageType', 'amount', 'createdAt', 'updatedAt', 'submittedAt', 'formData', 'step', 'price', 'nationality', 'phone', 'fullName', 'destination', 'score', 'assignedStaff', 'applicationType', 'sourcePageType', 'destinationCountry', 'visaType', 'appointmentPreference', 'assignedConsultant', 'documents', 'schengenQuestionnaire', 'travelProfileSnapshot'];
       return data.keys().hasOnly(allowedFields) &&
              data.customerId is string &&
              (data.visaId == null || data.visaId is string) &&

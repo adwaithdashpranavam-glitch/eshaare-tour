@@ -107,6 +107,8 @@ export default function SchengenWizard() {
   const [errorsBySection, setErrorsBySection] = useState({});
   const [sectionEditStates, setSectionEditStates] = useState({});
   const [uploadingDocName, setUploadingDocName] = useState(null);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [processingPayment, setProcessingPayment] = useState(false);
   // The draft is fetched from Firestore only once per mount. The traveler profile is a
   // live onSnapshot listener that emits a fresh object on every tick; without this guard,
   // those ticks re-run the fetch effect and setDraft(serverData) wipes whatever the user is
@@ -623,14 +625,37 @@ export default function SchengenWizard() {
     if (currentStep > 0) setCurrentStep(curr => curr - 1);
   };
 
-  const confirmPayment = async () => {
-    setDraft(prev => ({ ...prev, paymentStatus: "confirmed" }));
-    // Wait for state to update, then save and go next
-    setTimeout(async () => {
+  // --- Payment action ---------------------------------------------------------
+  // TEMPORARY: manual test-mode approval used until Stripe Checkout is wired up.
+  // This is the ONLY payment-specific logic in the wizard. When integrating Stripe,
+  // replace the body of `approveTestPayment` with the Checkout/redirect + webhook
+  // confirmation flow that writes the same payment fields below. The surrounding
+  // wizard (stepper, confirmation unlock, persistence) needs no changes.
+  const approveTestPayment = async () => {
+    if (draft.paymentStatus === "paid" || processingPayment) return; // only allow once
+    setProcessingPayment(true);
+    try {
+      const paymentUpdate = {
+        paymentStatus: "paid",
+        paymentMethod: "manual_test",
+        paymentApprovedAt: new Date().toISOString(),
+      };
       const docRef = doc(db, "applications", id);
-      await updateDoc(docRef, { paymentStatus: "confirmed", updatedAt: serverTimestamp() });
-      setCurrentStep(curr => curr + 1);
-    }, 100);
+      await updateDoc(docRef, { ...paymentUpdate, updatedAt: serverTimestamp() });
+      setDraft(prev => ({ ...prev, ...paymentUpdate }));
+      setShowPaymentModal(false);
+      toast.success("Test payment approved successfully. You may continue to the confirmation step.");
+    } catch (err) {
+      console.error("Failed to approve test payment:", err);
+      toast.error("Failed to approve payment. Please try again.");
+    } finally {
+      setProcessingPayment(false);
+    }
+  };
+
+  const goToConfirmation = () => {
+    setCurrentStep(STEPS.findIndex(s => s.id === "confirmation"));
+    window.scrollTo(0, 0);
   };
 
   const downloadNOC = () => {
@@ -675,7 +700,8 @@ export default function SchengenWizard() {
           <div className="flex justify-between items-center relative">
             <div className="absolute left-0 right-0 top-1/2 h-0.5 bg-gray-200 -z-10 transform -translate-y-1/2"></div>
             {STEPS.map((step, idx) => {
-              const isPast = idx < currentStep;
+              const paymentIdx = STEPS.findIndex(s => s.id === "payment");
+              const isPast = idx < currentStep || (idx === paymentIdx && draft.paymentStatus === "paid");
               const isCurrent = idx === currentStep;
               const Icon = step.icon;
               return (
@@ -947,28 +973,69 @@ export default function SchengenWizard() {
           );
         })()}
 
-        {/* STEP 5: PAYMENT */}
-        {currentStep === 4 && (
-          <div className="bg-white rounded-[20px] border border-[#E5E7EB] p-8 shadow-sm text-center space-y-6 animate-fadeIn">
-            <div className="w-16 h-16 bg-[#0F3D2E]/10 rounded-full flex items-center justify-center mx-auto">
-              <CreditCard className="w-8 h-8 text-[#0F3D2E]" />
+        {/* STEP 5: PAYMENT (temporary manual test-mode approval until Stripe is integrated) */}
+        {currentStep === 4 && (() => {
+          const isPaid = draft.paymentStatus === "paid";
+          const approvedAtLabel = draft.paymentApprovedAt
+            ? new Date(draft.paymentApprovedAt).toLocaleString("en-US", { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })
+            : null;
+          return (
+            <div className="bg-white rounded-[20px] border border-[#E5E7EB] p-8 shadow-sm text-center space-y-6 animate-fadeIn">
+              {/* TEST MODE badge */}
+              <div className="flex justify-center">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-700 text-[10px] font-bold uppercase tracking-wider border border-amber-200">
+                  <AlertCircle className="w-3 h-3" /> Test Mode &middot; No real payment processed
+                </span>
+              </div>
+
+              <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto ${isPaid ? "bg-green-100" : "bg-[#0F3D2E]/10"}`}>
+                {isPaid
+                  ? <CheckCircle className="w-8 h-8 text-green-600" />
+                  : <CreditCard className="w-8 h-8 text-[#0F3D2E]" />}
+              </div>
+
+              {!isPaid ? (
+                <>
+                  <div>
+                    <h2 className="text-2xl font-bold text-[#1A1A1A]">Payment Approval</h2>
+                    <p className="text-sm text-[#6B7280] mt-2 max-w-md mx-auto">
+                      Stripe integration is currently under development. For testing purposes, applications can be manually marked as paid by an authorized consultant.
+                    </p>
+                  </div>
+                  <div className="pt-2">
+                    <button
+                      onClick={() => setShowPaymentModal(true)}
+                      disabled={processingPayment}
+                      className="px-6 py-3 bg-[#0F3D2E] text-white font-bold rounded-xl text-xs uppercase tracking-wider hover:bg-[#0F3D2E]/90 transition-colors shadow-md disabled:opacity-50"
+                    >
+                      Mark Payment as Received (Test Mode)
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div>
+                    <h2 className="text-2xl font-bold text-[#1A1A1A]">Payment Approved</h2>
+                    <p className="text-sm text-[#6B7280] mt-2 max-w-md mx-auto">
+                      Test payment approved successfully. You may continue to the confirmation step.
+                    </p>
+                    {approvedAtLabel && (
+                      <p className="text-[11px] text-gray-400 mt-2">Approved {approvedAtLabel} &middot; Method: Manual (Test)</p>
+                    )}
+                  </div>
+                  <div className="pt-2">
+                    <button
+                      onClick={goToConfirmation}
+                      className="px-6 py-3 bg-[#0F3D2E] text-white font-bold rounded-xl text-xs uppercase tracking-wider hover:bg-[#0F3D2E]/90 transition-colors shadow-md inline-flex items-center gap-2"
+                    >
+                      Continue to Confirmation <ChevronRight className="w-4 h-4 text-[#C6A969]" />
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
-            <div>
-              <h2 className="text-2xl font-bold text-[#1A1A1A]">Payment</h2>
-              <p className="text-sm text-[#6B7280] mt-2 max-w-md mx-auto">
-                Secure online payment will be available here. Stripe payment integration will be connected in the next phase.
-              </p>
-            </div>
-            <div className="pt-6">
-              <button 
-                onClick={confirmPayment}
-                className="px-6 py-3 bg-[#0F3D2E] text-white font-bold rounded-xl text-xs uppercase tracking-wider hover:bg-[#0F3D2E]/90 transition-colors shadow-md"
-              >
-                Mark Payment as Confirmed
-              </button>
-            </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* STEP 6: CONFIRMATION & DOCUMENTS */}
         {currentStep === 5 && (() => {
@@ -1581,6 +1648,39 @@ export default function SchengenWizard() {
           </div>
         )}
       </div>
+
+      {/* Confirm Test Payment Modal */}
+      {showPaymentModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 space-y-4 animate-fadeIn">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+                <AlertCircle className="w-5 h-5 text-amber-600" />
+              </div>
+              <h3 className="text-lg font-bold text-[#1A1A1A]">Confirm Test Payment</h3>
+            </div>
+            <p className="text-sm text-gray-600">
+              This is a temporary payment approval used for testing before Stripe integration.
+            </p>
+            <div className="flex justify-end gap-3 pt-2">
+              <button
+                onClick={() => setShowPaymentModal(false)}
+                disabled={processingPayment}
+                className="px-5 py-2.5 border border-[#E5E7EB] text-[#1A1A1A] bg-white font-bold rounded-xl text-xs uppercase tracking-wider hover:bg-gray-50 transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={approveTestPayment}
+                disabled={processingPayment}
+                className="px-5 py-2.5 bg-[#0F3D2E] text-white font-bold rounded-xl text-xs uppercase tracking-wider hover:bg-[#0F3D2E]/90 transition-colors shadow-md disabled:opacity-50"
+              >
+                {processingPayment ? "Processing..." : "Confirm"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
