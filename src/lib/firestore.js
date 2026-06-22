@@ -1655,7 +1655,7 @@ export async function seedVisaTypes() {
 // CLIENT APPLICATIONS & NOTIFICATIONS SERVICES
 // ==========================================
 
-import { generateCaseNo } from "../utils/helpers";
+import { generateCaseNo, getApplicationDisplayName } from "../utils/helpers";
 
 // Mirrors validateApplicationSchema()'s allowedFields in firestore.rules. Used purely as a
 // client-side compatibility check — the Firestore rule itself remains the source of truth.
@@ -1691,29 +1691,43 @@ export const createApplicationDraft = async (
   amount = 299,
   sourcePageType = "general-schengen",
   destinationCountry = "",
-  applicationType = ""
+  applicationType = "",
+  visaType = ""
 ) => {
   try {
     const appRef = collection(db, "applications");
 
-    // Check for existing draft
+    // Check for existing draft. We query status == "Draft" up front, but ALSO re-assert
+    // every reuse condition in JS below — a draft must never be reused once it has been
+    // submitted/reviewed/decided or paid for. Reusing a paid/submitted application is
+    // what previously caused "Apply Now" to reopen a finished file in the wizard.
     const q = query(appRef, where("customerId", "==", customerId), where("status", "==", "Draft"));
     const snapshot = await getDocs(q);
     const existingDrafts = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
 
     const determinedAppType = applicationType || (visaId === "schengen" ? "schengen" : "standard");
 
+    // Only an editable, unpaid Draft owned by this user may ever be reused.
+    const isReusableDraft = (d) =>
+      d.customerId === customerId &&
+      d.status === "Draft" &&
+      d.paymentStatus !== "paid";
+
     let matchedDraft = null;
     if (determinedAppType === "schengen") {
       matchedDraft = existingDrafts.find(d =>
-        d.customerId === customerId &&
+        isReusableDraft(d) &&
         isCompatibleSchengenDraft(d) &&
-        (!destinationCountry || d.destinationCountry === destinationCountry)
+        (!destinationCountry || d.destinationCountry === destinationCountry) &&
+        // visaType is chosen inside the wizard, so it may be unknown at Apply-Now time.
+        // When a specific visaType is requested, only reuse a draft with the same (or a
+        // not-yet-chosen) visaType; otherwise create a fresh draft.
+        (!visaType || !d.visaType || d.visaType === visaType)
       );
     } else {
-      matchedDraft = existingDrafts.find(d => d.visaId === visaId);
+      matchedDraft = existingDrafts.find(d => isReusableDraft(d) && d.visaId === visaId);
     }
-    
+
     if (matchedDraft) {
       return matchedDraft.id;
     }
@@ -1723,15 +1737,16 @@ export const createApplicationDraft = async (
       visaId,
       visaName,
       status: "Draft",
+      step: 1,
       applicationType: determinedAppType,
       sourcePageType,
       destinationCountry,
-      visaType: "",
+      visaType: visaType || "",
       appointmentPreference: {
         startDate: "",
         endDate: ""
       },
-      paymentStatus: "pending",
+      paymentStatus: "unpaid",
       assignedConsultant: {
         name: "Mr. Adwaith Das",
         whatsapp: "+971 55 733 8429"
@@ -1906,17 +1921,145 @@ export const submitApplication = async (appId, formData, visaName) => {
       updatedAt: new Date()
     });
 
-    // Create notification
-    const notificationsRef = collection(db, "notifications");
-    await addDoc(notificationsRef, {
-      userId: auth.currentUser?.uid || "",
-      title: "Application Submitted Successfully",
-      message: `Your visa application for ${visaName} has been submitted successfully (Case No: ${caseNumber}).`,
-      read: false,
-      createdAt: new Date()
-    });
+    // Submission notifications are created server-side by the onApplicationSubmitted
+    // Cloud Function, which fires on the Draft -> Submitted transition written above.
+    // The client must NOT write to the notifications collection (Firestore rules block
+    // it, and centralizing this avoids duplicate/inconsistent notifications).
   } catch (error) {
     handleError(error, "submitApplication");
+  }
+};
+
+// Permanently delete a draft application. Only drafts may be removed by clients;
+// the caller (and Firestore rules) enforce that submitted applications are never
+// deletable from the portal. The status guard here is a defensive check so a
+// stale UI state can never delete a submitted file.
+export const deleteApplication = async (appId) => {
+  try {
+    const docRef = doc(db, "applications", appId);
+    const snap = await getDoc(docRef);
+    if (snap.exists() && snap.data().status && snap.data().status !== "Draft") {
+      throw new Error("Only draft applications can be deleted.");
+    }
+    await deleteDoc(docRef);
+  } catch (error) {
+    handleError(error, "deleteApplication");
+  }
+};
+
+// Finalizes a Schengen wizard application: flips the draft to "Submitted" and
+// spawns the corresponding CRM visa_case. This is the missing transition that
+// previously left wizard-completed files stuck in the Draft section. It is
+// idempotent — if the application is already "Submitted" it returns without
+// creating a duplicate case.
+//
+// Note: client-side notification creation is intentionally omitted because
+// Firestore rules forbid clients from writing the notifications collection
+// (notifications are created server-side). The visa_case carries the dynamic
+// destinationCountry + visaType so all downstream views name the file correctly.
+export const submitSchengenApplication = async (appId) => {
+  try {
+    const appRef = doc(db, "applications", appId);
+    const snap = await getDoc(appRef);
+    if (!snap.exists()) throw new Error("Application not found.");
+    const app = snap.data();
+
+    // Idempotency guard: never submit twice / never create a duplicate case.
+    if (app.status === "Submitted") return;
+
+    await updateDoc(appRef, {
+      status: "Submitted",
+      submittedAt: new Date(),
+      updatedAt: new Date()
+    });
+
+    const displayName = getApplicationDisplayName(app);
+    const fd = app.formData || {};
+    const caseNumber = await generateCaseNo();
+    const casesRef = collection(db, "visa_cases");
+    await addDoc(casesRef, {
+      caseNo: caseNumber,
+      applicationId: appId,
+      travellerName: fd.name || app.customerName || "",
+      travellerPhone: fd.phone || "",
+      travellerEmail: (fd.email || "").toLowerCase(),
+      nationality: fd.nationality || app.nationality || "",
+      destination: app.destinationCountry || "",
+      destinationCountry: app.destinationCountry || "",
+      visaType: app.visaType || "",
+      displayName,
+      applicationType: app.applicationType || "schengen",
+      paymentStatus: app.paymentStatus === "paid" ? "paid" : "unpaid",
+      stage: "Docs Pending",
+      assignedOfficer: "Visa Ops Officer",
+      isDeleted: false,
+      isActive: true,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
+  } catch (error) {
+    handleError(error, "submitSchengenApplication");
+  }
+};
+
+// Atomically mark a Schengen application as PAID and SUBMITTED in a single write
+// batch, and create its CRM visa_case in the same commit. This enforces the core
+// business invariant "payment === submission" for Schengen: the forbidden state
+// (paymentStatus "paid" while status "Draft") can never be observed, because both
+// fields flip together. Submission notifications are produced server-side by the
+// onApplicationSubmitted Cloud Function (which fires on status -> "Submitted").
+//
+// Idempotent: if the application is already Submitted it returns without writing,
+// so re-clicks / retries never create duplicate cases.
+export const markSchengenPaidAndSubmit = async (appId, paymentMethod = "manual_test") => {
+  try {
+    const appRef = doc(db, "applications", appId);
+    const snap = await getDoc(appRef);
+    if (!snap.exists()) throw new Error("Application not found.");
+    const app = snap.data();
+
+    if (app.status === "Submitted") return; // already finalized
+
+    const displayName = getApplicationDisplayName(app);
+    const fd = app.formData || {};
+    const caseNumber = await generateCaseNo();
+    const now = new Date();
+
+    const batch = writeBatch(db);
+    batch.update(appRef, {
+      paymentStatus: "paid",
+      paymentMethod,
+      paymentApprovedAt: now.toISOString(),
+      status: "Submitted",
+      submittedAt: now,
+      updatedAt: now
+    });
+
+    const caseRef = doc(collection(db, "visa_cases"));
+    batch.set(caseRef, {
+      caseNo: caseNumber,
+      applicationId: appId,
+      travellerName: fd.name || app.customerName || "",
+      travellerPhone: fd.phone || "",
+      travellerEmail: (fd.email || "").toLowerCase(),
+      nationality: fd.nationality || app.nationality || "",
+      destination: app.destinationCountry || "",
+      destinationCountry: app.destinationCountry || "",
+      visaType: app.visaType || "",
+      displayName,
+      applicationType: app.applicationType || "schengen",
+      paymentStatus: "paid",
+      stage: "Docs Pending",
+      assignedOfficer: "Visa Ops Officer",
+      isDeleted: false,
+      isActive: true,
+      createdAt: now,
+      updatedAt: now
+    });
+
+    await batch.commit();
+  } catch (error) {
+    handleError(error, "markSchengenPaidAndSubmit");
   }
 };
 

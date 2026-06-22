@@ -59,6 +59,27 @@ export const generatePaymentNo = () => generateRefNo("PAY", "payments", "payment
 export const generateDocNo = () => generateRefNo("DOC", "documents", "docNo");
 
 /**
+ * Builds a dynamic application/case display name from the selected destination
+ * country and visa type, e.g. "France Sports Visa" or "Germany Business Visa".
+ *
+ * Both `destinationCountry` and `visaType` must be present to compose the dynamic
+ * name (visaType already carries the word "Visa", e.g. "Sports Visa"). When they
+ * are not both available (e.g. legacy records or a fresh draft before the visa
+ * step is filled), it falls back to the stored `visaName`/`destination` so older
+ * documents keep rendering correctly.
+ *
+ * The calling UI appends the trailing noun ("Application" / "Case") itself.
+ */
+export const getApplicationDisplayName = (data = {}) => {
+  const country = (data.destinationCountry || "").trim();
+  const type = (data.visaType || "").trim();
+  if (country && type) {
+    return `${country} ${type}`.replace(/\s+/g, " ").trim();
+  }
+  return (data.visaName || data.destination || type || country || "Visa Application").trim();
+};
+
+/**
  * Formats a phone number for WhatsApp, stripping leading zeros and spaces,
  * and prepending the UAE country code +971 if no country code is present.
  */

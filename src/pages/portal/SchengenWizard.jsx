@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { doc, getDoc, updateDoc, serverTimestamp } from "firebase/firestore";
 import { db, auth } from "../../lib/firebase";
+import { submitSchengenApplication, markSchengenPaidAndSubmit } from "../../lib/firestore";
+import { getApplicationDisplayName } from "../../utils/helpers";
 import { useAuth } from "../../contexts/AuthContext";
 import { useTravelerProfile } from "../../contexts/TravelerProfileContext";
 import { 
@@ -123,6 +125,9 @@ export default function SchengenWizard() {
   // starts filling flips from missing→filled on the next render, moves to the read-only group,
   // and its <input> unmounts mid-keystroke (losing focus after the first character).
   const [frozenEditableFieldIds, setFrozenEditableFieldIds] = useState(null);
+  // A submitted application is permanently read-only: the wizard becomes the
+  // confirmation/tracking view and no step is editable.
+  const [isReadOnly, setIsReadOnly] = useState(false);
 
   const handleUploadDocument = async (docName) => {
     setUploadingDocName(docName);
@@ -238,6 +243,13 @@ export default function SchengenWizard() {
           const data = docSnap.data();
           data.travelProfileSnapshot = deepMergeProfile(data.travelProfileSnapshot || {}, travelerProfile || {});
           setDraft(data);
+          // A submitted application is no longer editable. Instead of redirecting away,
+          // the wizard renders its Confirmation step as the permanent read-only
+          // tracking view, and we lock navigation to the editable steps.
+          if (data.status && data.status !== "Draft") {
+            setIsReadOnly(true);
+            setCurrentStep(STEPS.findIndex(s => s.id === "confirmation"));
+          }
         } else {
           toast.error("Application not found");
           navigate("/portal/applications");
@@ -647,25 +659,52 @@ export default function SchengenWizard() {
     if (draft.paymentStatus === "paid" || processingPayment) return; // only allow once
     setProcessingPayment(true);
     try {
-      const paymentUpdate = {
+      // Business rule: for Schengen, payment === submission. Approving payment
+      // atomically marks the application Paid + Submitted and creates the visa_case
+      // in one batch, so a paid-but-Draft state can never exist.
+      await markSchengenPaidAndSubmit(id, "manual_test");
+      setDraft(prev => ({
+        ...prev,
         paymentStatus: "paid",
         paymentMethod: "manual_test",
         paymentApprovedAt: new Date().toISOString(),
-      };
-      const docRef = doc(db, "applications", id);
-      await updateDoc(docRef, { ...paymentUpdate, updatedAt: serverTimestamp() });
-      setDraft(prev => ({ ...prev, ...paymentUpdate }));
+        status: "Submitted",
+        submittedAt: new Date().toISOString()
+      }));
       setShowPaymentModal(false);
-      toast.success("Test payment approved successfully. You may continue to the confirmation step.");
+      toast.success("Payment approved. Application submitted successfully.");
     } catch (err) {
-      console.error("Failed to approve test payment:", err);
+      console.error("Failed to approve payment / submit application:", err);
       toast.error("Failed to approve payment. Please try again.");
     } finally {
       setProcessingPayment(false);
     }
   };
 
-  const goToConfirmation = () => {
+  const [submittingApplication, setSubmittingApplication] = useState(false);
+
+  // Finalize the application before showing the confirmation step. This is the
+  // transition that actually flips status Draft -> Submitted and creates the CRM
+  // case; without it the file stays a draft forever and keeps showing under
+  // "Draft Applications". submitSchengenApplication is idempotent, so re-entering
+  // confirmation never creates a duplicate case.
+  const goToConfirmation = async () => {
+    if (submittingApplication) return;
+    if (draft.status !== "Submitted") {
+      setSubmittingApplication(true);
+      try {
+        // Persist any last in-memory edits, then submit.
+        await handleSave(false);
+        await submitSchengenApplication(id);
+        setDraft(prev => ({ ...prev, status: "Submitted", submittedAt: new Date().toISOString() }));
+      } catch (err) {
+        console.error("Failed to submit application:", err);
+        toast.error("Failed to submit application. Please try again.");
+        setSubmittingApplication(false);
+        return;
+      }
+      setSubmittingApplication(false);
+    }
     setCurrentStep(STEPS.findIndex(s => s.id === "confirmation"));
     window.scrollTo(0, 0);
   };
@@ -697,7 +736,7 @@ export default function SchengenWizard() {
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div className="flex flex-col">
             <h1 className="text-xl font-bold text-[#0F3D2E]">Schengen Application</h1>
-            <p className="text-[10px] text-gray-500 font-medium uppercase tracking-wider">{draft.visaName}</p>
+            <p className="text-[10px] text-gray-500 font-medium uppercase tracking-wider">{getApplicationDisplayName(draft)}</p>
           </div>
           <button 
             onClick={() => navigate("/portal/applications")}
@@ -1045,9 +1084,10 @@ export default function SchengenWizard() {
                   <div className="pt-2">
                     <button
                       onClick={goToConfirmation}
-                      className="px-6 py-3 bg-[#0F3D2E] text-white font-bold rounded-xl text-xs uppercase tracking-wider hover:bg-[#0F3D2E]/90 transition-colors shadow-md inline-flex items-center gap-2"
+                      disabled={submittingApplication}
+                      className="px-6 py-3 bg-[#0F3D2E] text-white font-bold rounded-xl text-xs uppercase tracking-wider hover:bg-[#0F3D2E]/90 transition-colors shadow-md inline-flex items-center gap-2 disabled:opacity-50"
                     >
-                      Continue to Confirmation <ChevronRight className="w-4 h-4 text-[#C6A969]" />
+                      {submittingApplication ? "Submitting..." : "Continue to Confirmation"} <ChevronRight className="w-4 h-4 text-[#C6A969]" />
                     </button>
                   </div>
                 </>
