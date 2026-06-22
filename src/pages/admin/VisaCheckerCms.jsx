@@ -13,6 +13,10 @@ import {
   Briefcase, Activity, Calendar, Copy, Check, Filter, Search, X, Loader2
 } from "lucide-react";
 import toast from "react-hot-toast";
+import { useAuth } from "../../contexts/AuthContext";
+import { markSchengenPaidAndSubmit } from "../../lib/firestore";
+import { formatShortDate } from "../../utils/formatters";
+import { getApplicationDisplayName } from "../../utils/helpers";
 
 // ==========================================
 // 1. DEFAULT DATA MODELS FOR LOCAL FALLBACKS
@@ -106,6 +110,20 @@ export const VisaCheckerCms = ({ activeTab = "cms" }) => {
   // CRM Leads details state
   const [selectedLead, setSelectedLead] = useState(null);
   const [leadFilters, setLeadFilters] = useState({ stage: "All", search: "" });
+
+  // Real signed-in staff role — controls who may approve payment. Mirrors the
+  // firestore.rules isManager() gate (only super_admin/admin/manager may write the
+  // application payment fields), so the UI never offers an action the rules reject.
+  const { role: authRole } = useAuth();
+  const canApprovePayment = !!authRole && ["super_admin", "admin", "manager"].includes(authRole.toLowerCase());
+
+  // Awaiting-payment queue: Schengen wizard drafts not yet paid. Kept entirely
+  // separate from the eligibility-checker table below (which filters on a.fullName).
+  const awaitingPaymentApps = applications.filter(
+    (a) => a.applicationType === "schengen" && a.status === "Draft" && a.paymentStatus !== "paid"
+  );
+  const [pendingApproval, setPendingApproval] = useState(null); // app awaiting confirm
+  const [approvingPayment, setApprovingPayment] = useState(false);
 
   // CRM Applications details state
   const [selectedApp, setSelectedApp] = useState(null);
@@ -474,6 +492,31 @@ export const VisaCheckerCms = ({ activeTab = "cms" }) => {
     { name: "Consultation Req", value: applications.filter(a => a.score < 55).length, color: "#EF4444" }
   ];
 
+  // Approve payment for a Schengen draft — runs the SAME payment===submission logic
+  // as the client wizard (markSchengenPaidAndSubmit): atomically marks paid + Submitted,
+  // creates the visa_case, and the onApplicationSubmitted Cloud Function notifies ops.
+  // Gated to managers; the Firestore rules are the authoritative guard.
+  const handleApprovePayment = async () => {
+    if (!pendingApproval) return;
+    if (!canApprovePayment) {
+      toast.error("Only an authorized manager can approve payment.");
+      return;
+    }
+    setApprovingPayment(true);
+    const loading = toast.loading("Approving payment & submitting application...");
+    try {
+      await markSchengenPaidAndSubmit(pendingApproval.id, "manual_test");
+      toast.success("Payment approved. Application submitted.", { id: loading });
+      setPendingApproval(null);
+      // The live applications listener will drop this row from Awaiting Payment.
+    } catch (err) {
+      console.error("Approve payment failed:", err);
+      toast.error("Failed to approve payment. Please try again.", { id: loading });
+    } finally {
+      setApprovingPayment(false);
+    }
+  };
+
   // Restrict tabs editing permissions based on simulated Role
   const hasEditAccess = () => {
     if (adminRole === "Sales Agent" && activeTab === "cms") return false;
@@ -746,11 +789,97 @@ export const VisaCheckerCms = ({ activeTab = "cms" }) => {
               TAB 2: CRM APPLICATIONS & DOCUMENT REVIEWER
               ==================================================== */}
           {activeTab === "applications" && (
+            <div className="space-y-6">
+
+            {/* ====================================================
+                AWAITING PAYMENT — Schengen draft applications
+                (separate from the eligibility-checker table below)
+                ==================================================== */}
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-5 space-y-4">
+              <div className="border-b border-gray-800 pb-3 flex items-center justify-between">
+                <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                  <Briefcase className="w-4 h-4 text-[#D4AF37]" />
+                  Awaiting Payment · Schengen Drafts
+                </h3>
+                <span className="text-[10px] font-mono text-gray-400 bg-white/5 border border-white/10 px-2 py-0.5 rounded-full">
+                  {awaitingPaymentApps.length} pending
+                </span>
+              </div>
+
+              {awaitingPaymentApps.length === 0 ? (
+                <p className="text-[11px] text-gray-500 italic py-4 text-center">
+                  No Schengen draft applications are awaiting payment.
+                </p>
+              ) : (
+                <div className="overflow-x-auto border border-gray-800 rounded-xl">
+                  <table className="min-w-full text-left divide-y divide-gray-800 text-[11px]">
+                    <thead>
+                      <tr className="bg-white/2 text-gray-500 font-bold uppercase">
+                        <th className="p-3">App ID</th>
+                        <th className="p-3">Client</th>
+                        <th className="p-3">Email</th>
+                        <th className="p-3">Destination</th>
+                        <th className="p-3">Visa Type</th>
+                        <th className="p-3">Created</th>
+                        <th className="p-3">Progress</th>
+                        <th className="p-3">Payment</th>
+                        <th className="p-3 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-800">
+                      {awaitingPaymentApps.map((app) => {
+                        let progress = 20;
+                        if (app.destinationCountry) progress += 20;
+                        if (app.visaType) progress += 20;
+                        if (app.appointmentPreference?.startDate) progress += 20;
+                        if (app.paymentStatus === "paid") progress += 20;
+                        const fd = app.formData || {};
+                        return (
+                          <tr key={app.id} className="hover:bg-white/2 transition-colors">
+                            <td className="p-3 font-mono text-gray-400">{app.id.slice(0, 7)}…</td>
+                            <td className="p-3 font-semibold text-white">{fd.name || app.customerName || "—"}</td>
+                            <td className="p-3 text-gray-400">{fd.email || "—"}</td>
+                            <td className="p-3">{app.destinationCountry || "—"}</td>
+                            <td className="p-3">{app.visaType || "—"}</td>
+                            <td className="p-3 text-gray-400 font-mono">{app.createdAt ? formatShortDate(app.createdAt) : "—"}</td>
+                            <td className="p-3 text-gray-400 font-mono">{progress}%</td>
+                            <td className="p-3">
+                              <span className="text-[9px] font-bold uppercase tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded-full">
+                                {app.paymentStatus || "unpaid"}
+                              </span>
+                            </td>
+                            <td className="p-3 text-right whitespace-nowrap space-x-1.5">
+                              <a
+                                href={`/portal/applications/${app.id}/wizard`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-block px-2.5 py-1 bg-white/5 border border-white/10 hover:bg-white/10 rounded text-[10px] font-bold uppercase"
+                              >
+                                View
+                              </a>
+                              {canApprovePayment && (
+                                <button
+                                  onClick={() => setPendingApproval(app)}
+                                  className="inline-block px-2.5 py-1 bg-emerald-600/90 hover:bg-emerald-600 text-white rounded text-[10px] font-bold uppercase"
+                                >
+                                  Approve Payment
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
             <div className="bg-white/5 border border-white/10 rounded-2xl p-5 space-y-4">
               <div className="border-b border-gray-800 pb-3 flex items-center justify-between">
                 <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
                   <FileText className="w-4 h-4 text-[#D4AF37]" />
-                  Submitted Applications & File Auditing
+                  Eligibility-Checker Submissions & File Auditing
                 </h3>
               </div>
 
@@ -946,6 +1075,7 @@ export const VisaCheckerCms = ({ activeTab = "cms" }) => {
                   )}
                 </div>
               </div>
+            </div>
             )}
 
           {/* ====================================================
@@ -1386,6 +1516,42 @@ export const VisaCheckerCms = ({ activeTab = "cms" }) => {
 
         </div>
       </div>
+
+      {/* APPROVE PAYMENT CONFIRMATION MODAL */}
+      {pendingApproval && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="bg-[#0b1a2e] border border-white/10 rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4 text-gray-200">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-emerald-500/15 flex items-center justify-center flex-shrink-0">
+                <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+              </div>
+              <h3 className="text-base font-bold text-white">Approve Payment & Submit</h3>
+            </div>
+            <p className="text-xs text-gray-400 leading-relaxed">
+              This marks <span className="text-white font-semibold">{getApplicationDisplayName(pendingApproval)}</span>
+              {pendingApproval.formData?.name ? ` for ${pendingApproval.formData.name}` : ""} as
+              <span className="text-emerald-400 font-semibold"> paid</span> and submits it. The application becomes
+              Submitted, a visa case is created, and the client is moved to read-only tracking. This cannot be undone.
+            </p>
+            <div className="flex justify-end gap-3 pt-2 border-t border-white/10">
+              <button
+                onClick={() => setPendingApproval(null)}
+                disabled={approvingPayment}
+                className="px-4 py-2 border border-white/10 text-gray-300 hover:bg-white/5 font-bold rounded-xl text-[10px] uppercase tracking-wider disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleApprovePayment}
+                disabled={approvingPayment}
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-[10px] uppercase tracking-wider shadow-md disabled:opacity-50"
+              >
+                {approvingPayment ? "Approving…" : "Confirm & Approve"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

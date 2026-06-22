@@ -3,11 +3,12 @@ import { useAuth } from "../../contexts/AuthContext";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 import { Link, useNavigate } from "react-router-dom";
-import { FileText, ChevronRight, Edit3, Send, Save, AlertCircle, FilePlus, Globe, Calendar as CalendarIcon } from "lucide-react";
+import { FileText, ChevronRight, Edit3, Send, Save, AlertCircle, FilePlus, Globe, Calendar as CalendarIcon, Trash2 } from "lucide-react";
 import StatusBadge from "../../components/ui/StatusBadge";
 import { formatShortDate } from "../../utils/formatters";
+import { getApplicationDisplayName } from "../../utils/helpers";
 import Modal from "../../components/ui/Modal";
-import { getApplicationsForCustomer, updateApplication, submitApplication, isCompatibleSchengenDraft } from "../../lib/firestore";
+import { getApplicationsForCustomer, updateApplication, submitApplication, deleteApplication, isCompatibleSchengenDraft } from "../../lib/firestore";
 import LoadingSpinner from "../../components/ui/LoadingSpinner";
 import toast from "react-hot-toast";
 
@@ -32,6 +33,10 @@ export const PortalApplicationsPage = () => {
   });
   const [submitting, setSubmitting] = useState(false);
 
+  // Draft deletion state
+  const [draftToDelete, setDraftToDelete] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+
   // Fetch drafts from 'applications'
   useEffect(() => {
     if (!user?.uid) return;
@@ -45,8 +50,12 @@ export const PortalApplicationsPage = () => {
         app.applicationType === "schengen" ||
         app.visaId === "schengen" ||
         app?.visaName?.toLowerCase().includes("schengen");
+      // A draft is only a draft while it is unpaid. Per the "payment === submission"
+      // rule, a paid application is Submitted and must never surface here (defensive:
+      // also filters any legacy paid-but-Draft records).
       const activeDrafts = data.filter(app =>
         app.status === "Draft" &&
+        app.paymentStatus !== "paid" &&
         (!isSchengenDraft(app) || isCompatibleSchengenDraft(app))
       );
       setDrafts(activeDrafts);
@@ -160,6 +169,27 @@ export const PortalApplicationsPage = () => {
     }
   };
 
+  const handleConfirmDelete = async () => {
+    if (!draftToDelete) return;
+    // Defensive: only drafts are ever deletable from the client portal.
+    if (draftToDelete.status !== "Draft") {
+      toast.error("Only draft applications can be deleted.");
+      setDraftToDelete(null);
+      return;
+    }
+    setDeleting(true);
+    try {
+      await deleteApplication(draftToDelete.id);
+      toast.success("Draft deleted successfully");
+      setDraftToDelete(null);
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to delete draft");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -237,13 +267,13 @@ export const PortalApplicationsPage = () => {
               if (d.destinationCountry) progress += 20;
               if (d.visaType) progress += 20;
               if (d.appointmentPreference?.startDate) progress += 20;
-              if (d.paymentStatus === "paid" || d.paymentStatus === "confirmed") progress += 20;
+              if (d.paymentStatus === "paid") progress += 20;
               return (
               <div key={d.id} className="bg-white border border-[#E5E7EB] rounded-[20px] p-6 flex flex-col justify-between space-y-4 hover:border-[#C6A969]/40 transition-all duration-200 shadow-sm">
                 <div className="flex justify-between items-start">
                   <div>
                     <span className="text-[9px] font-bold uppercase tracking-wider bg-amber-500/10 text-amber-600 px-2 py-0.5 rounded border border-amber-500/10">Draft</span>
-                    <h3 className="text-base font-semibold text-[#1A1A1A] mt-2">{d.visaName} Application</h3>
+                    <h3 className="text-base font-semibold text-[#1A1A1A] mt-2">{getApplicationDisplayName(d)} Application</h3>
                     
                     {(d.destinationCountry || d.visaType) && (
                       <div className="flex flex-wrap items-center gap-2 mt-2 text-[10px] text-gray-500 font-medium">
@@ -256,13 +286,22 @@ export const PortalApplicationsPage = () => {
                       </div>
                     )}
                   </div>
-                  <button
-                    onClick={() => handleOpenEdit(d)}
-                    className="p-2 bg-[#F8F6F2] border border-[#E5E7EB] text-[#0F3D2E] hover:text-[#C6A969] rounded-xl flex items-center justify-center transition-colors shrink-0"
-                    title="Continue Application"
-                  >
-                    <Edit3 className="h-4.5 w-4.5" />
-                  </button>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      onClick={() => handleOpenEdit(d)}
+                      className="p-2 bg-[#F8F6F2] border border-[#E5E7EB] text-[#0F3D2E] hover:text-[#C6A969] rounded-xl flex items-center justify-center transition-colors"
+                      title="Continue Application"
+                    >
+                      <Edit3 className="h-4.5 w-4.5" />
+                    </button>
+                    <button
+                      onClick={() => setDraftToDelete(d)}
+                      className="p-2 bg-[#F8F6F2] border border-[#E5E7EB] text-gray-400 hover:text-red-600 hover:border-red-200 rounded-xl flex items-center justify-center transition-colors"
+                      title="Delete Draft"
+                    >
+                      <Trash2 className="h-4.5 w-4.5" />
+                    </button>
+                  </div>
                 </div>
                 
                 {/* Progress Bar */}
@@ -311,7 +350,7 @@ export const PortalApplicationsPage = () => {
                 <div className="flex justify-between items-start">
                   <div>
                     <span className="text-[10px] font-mono text-gray-400">{c.caseNo}</span>
-                    <h3 className="text-base font-semibold text-[#1A1A1A] mt-1">{c.visaType || c.destination} Case</h3>
+                    <h3 className="text-base font-semibold text-[#1A1A1A] mt-1">{getApplicationDisplayName(c)} Case</h3>
                   </div>
                   <StatusBadge status={c.stage} />
                 </div>
@@ -319,7 +358,9 @@ export const PortalApplicationsPage = () => {
                 <div className="flex justify-between items-center pt-4 border-t border-[#E5E7EB] text-xs text-[#6B7280]">
                   <span>Submitted: {formatShortDate(c.createdAt?.toDate ? c.createdAt.toDate() : c.createdAt)}</span>
                   <Link
-                    to={`/portal/applications/${c.id}`}
+                    to={c.applicationType === "schengen" && c.applicationId
+                      ? `/portal/applications/${c.applicationId}/wizard`
+                      : `/portal/applications/${c.id}`}
                     className="text-[#0F3D2E] hover:text-[#C6A969] font-bold uppercase tracking-wider text-[10px] flex items-center space-x-1"
                   >
                     <span>Track Details</span>
@@ -436,6 +477,46 @@ export const PortalApplicationsPage = () => {
             </button>
           </div>
         </form>
+      </Modal>
+
+      {/* DELETE DRAFT CONFIRMATION MODAL */}
+      <Modal
+        isOpen={!!draftToDelete}
+        onClose={() => !deleting && setDraftToDelete(null)}
+        title="Delete Draft Application"
+        size="sm"
+      >
+        <div className="space-y-5 font-sans text-xs">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center flex-shrink-0">
+              <AlertCircle className="w-5 h-5 text-red-600" />
+            </div>
+            <p className="text-sm text-gray-600 leading-relaxed">
+              Are you sure you want to permanently delete
+              {draftToDelete ? ` "${getApplicationDisplayName(draftToDelete)} Application"` : " this draft"}?
+              This action cannot be undone. Submitted applications are not affected.
+            </p>
+          </div>
+          <div className="flex justify-end gap-3 pt-2 border-t border-[#E5E7EB]">
+            <button
+              type="button"
+              onClick={() => setDraftToDelete(null)}
+              disabled={deleting}
+              className="px-5 py-2.5 border border-[#E5E7EB] text-[#1A1A1A] bg-white font-bold rounded-xl text-xs uppercase tracking-wider hover:bg-gray-50 transition-colors disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleConfirmDelete}
+              disabled={deleting}
+              className="px-5 py-2.5 bg-red-600 text-white font-bold rounded-xl text-xs uppercase tracking-wider hover:bg-red-700 transition-colors shadow-sm disabled:opacity-50 flex items-center gap-1.5"
+            >
+              <Trash2 className="h-4 w-4" />
+              {deleting ? "Deleting..." : "Delete Draft"}
+            </button>
+          </div>
+        </div>
       </Modal>
 
     </div>

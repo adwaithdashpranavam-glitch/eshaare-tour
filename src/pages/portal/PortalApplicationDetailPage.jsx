@@ -5,6 +5,7 @@ import { db } from "../../lib/firebase";
 import { ArrowLeft, Clock, CheckCircle2, Shield } from "lucide-react";
 import StatusBadge from "../../components/ui/StatusBadge";
 import LoadingSpinner from "../../components/ui/LoadingSpinner";
+import { getApplicationDisplayName } from "../../utils/helpers";
 
 export const PortalApplicationDetailPage = () => {
   const { id } = useParams();
@@ -110,7 +111,7 @@ export const PortalApplicationDetailPage = () => {
             {caseData.travellerName}
           </h2>
           <p className="text-xs text-[#6B7280] font-medium">
-            {caseData.visaType} — {caseData.destination}
+            {getApplicationDisplayName(caseData)}
           </p>
         </div>
         <StatusBadge status={caseData.stage} />

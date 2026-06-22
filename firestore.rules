@@ -301,10 +301,17 @@ service cloud.firestore {
     match /applications/{appId} {
       allow read: if isManager() || (isActive() && resource.data.customerId == request.auth.uid);
       allow create: if isActive() && (isManager() || request.resource.data.customerId == request.auth.uid) && validateApplicationSchema(request.resource.data);
-      allow update: if (isManager() || (isActive() && resource.data.customerId == request.auth.uid))
+      // Clients may only edit their OWN application while it is still a Draft, and may
+      // never touch payment fields. Once submitted, the application is read-only to the
+      // client (managers retain full edit rights for downstream processing). This is the
+      // authoritative guarantee behind "no editing after payment/submission".
+      allow update: if (isManager() || (isActive() && resource.data.customerId == request.auth.uid && resource.data.status == 'Draft'))
                     && validateApplicationSchema(request.resource.data)
                     && (isManager() || !request.resource.data.diff(resource.data).affectedKeys().hasAny(['paymentStatus', 'paymentMethod', 'paymentApprovedAt', 'amount']));
-      allow delete: if isSuperAdmin();
+      // Clients may permanently delete only their own DRAFT applications.
+      // Submitted applications remain undeletable from the client portal.
+      allow delete: if isSuperAdmin()
+                    || (isActive() && resource.data.customerId == request.auth.uid && resource.data.status == 'Draft');
     }
 
     // ==========================================

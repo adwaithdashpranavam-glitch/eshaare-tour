@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import StatusBadge from "../../components/ui/StatusBadge";
 import { formatCurrency, formatShortDate } from "../../utils/formatters";
+import { getApplicationDisplayName } from "../../utils/helpers";
 import toast from "react-hot-toast";
 import { auth } from "../../lib/firebase";
 import { getApplicationsForCustomer } from "../../lib/firestore";
@@ -71,7 +72,8 @@ export const PortalDashboard = () => {
     if (!auth.currentUser?.uid) return;
 
     const unsubscribeApps = getApplicationsForCustomer(auth.currentUser.uid, (data) => {
-      const activeDrafts = data.filter(app => app.status === "Draft");
+      // Only unpaid drafts count as drafts (payment === submission for Schengen).
+      const activeDrafts = data.filter(app => app.status === "Draft" && app.paymentStatus !== "paid");
       setDraftsCount(activeDrafts.length);
     });
 
@@ -212,10 +214,18 @@ export const PortalDashboard = () => {
 
   const sampleCase = activeCases[0];
 
+  // Terminal states: an approved/rejected/closed case is fully processed (100%),
+  // while an unmatched/early stage maps to the first tracker step rather than
+  // silently defaulting to the middle of the timeline (which previously made a
+  // "Rejected" case misleadingly read as 71% complete).
   const getStageIndex = (stageName) => {
     if (!stageName) return 0;
-    const idx = TRACKER_STAGES.findIndex(s => stageName.toLowerCase().includes(s.toLowerCase()) || s.toLowerCase().includes(stageName.toLowerCase()));
-    return idx !== -1 ? idx : 4; // Under Review is default
+    const s = stageName.toLowerCase();
+    if (s.includes("approved") || s.includes("rejected") || s.includes("collected") || s.includes("closed") || s.includes("completed")) {
+      return TRACKER_STAGES.length - 1;
+    }
+    const idx = TRACKER_STAGES.findIndex(st => s.includes(st.toLowerCase()) || st.toLowerCase().includes(s));
+    return idx !== -1 ? idx : 0;
   };
 
   const currentStageIdx = sampleCase ? getStageIndex(sampleCase.stage) : 0;
@@ -357,7 +367,7 @@ export const PortalDashboard = () => {
                   <div>
                     <span className="text-[10px] font-bold text-[#C6A969] uppercase tracking-wider">Active File Status</span>
                     <h3 className="text-lg font-semibold text-[#1A1A1A] mt-0.5">
-                      {sampleCase.visaType} — {sampleCase.destination}
+                      {getApplicationDisplayName(sampleCase)}
                     </h3>
                   </div>
                   <span className="text-xs font-bold text-[#0F3D2E] px-3 py-1 bg-[#0F3D2E]/10 rounded-full">
@@ -434,7 +444,7 @@ export const PortalDashboard = () => {
                       {activeCases.slice(0, 4).map((c) => (
                         <tr key={c.id} className="hover:bg-[#F8F6F2]/30 transition-colors">
                           <td className="py-3.5 pr-4 font-semibold text-[#1A1A1A]">
-                            {c.visaType}
+                            {getApplicationDisplayName(c)}
                           </td>
                           <td className="py-3.5 px-4 text-[#6B7280]">
                             {c.destination || "Worldwide"}
@@ -447,7 +457,9 @@ export const PortalDashboard = () => {
                           </td>
                           <td className="py-3.5 pl-4 text-right">
                             <Link
-                              to={`/portal/applications/${c.id}`}
+                              to={c.applicationType === "schengen" && c.applicationId
+                                ? `/portal/applications/${c.applicationId}/wizard`
+                                : `/portal/applications/${c.id}`}
                               className="inline-flex items-center text-[10px] font-bold uppercase tracking-wider text-[#0F3D2E] hover:text-[#C6A969] transition-colors"
                             >
                               <span>Track</span>

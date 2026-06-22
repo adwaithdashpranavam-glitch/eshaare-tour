@@ -446,6 +446,209 @@ exports.logAuthEvent = functions.https.onCall(async (data, context) => {
   return { success: true };
 });
 
+// 8. Notify ops/admin staff when a client submits an application.
+//
+// Triggered on every applications/{applicationId} update, but only acts on the
+// Draft -> Submitted transition. Notifications are written server-side via the
+// Admin SDK (clients are blocked from the notifications collection by rules).
+//
+// Duplicate-safety: one notification per staff recipient is written with a
+// DETERMINISTIC document id ("appsubmit_<appId>_<staffUid>") using set(). If the
+// event is redelivered or the function re-runs, the same ids are overwritten in
+// place instead of producing duplicates. The transition guard (before != Submitted
+// && after == Submitted) is the first line of defence; the deterministic id is the
+// second.
+exports.onApplicationSubmitted = functions.firestore
+  .document("applications/{applicationId}")
+  .onUpdate(async (change, context) => {
+    const before = change.before.data() || {};
+    const after = change.after.data() || {};
 
+    // Only fire on the Draft -> Submitted transition.
+    if (before.status === "Submitted" || after.status !== "Submitted") {
+      return null;
+    }
 
+    const applicationId = context.params.applicationId;
 
+    try {
+      // Build the dynamic application name: "{Destination Country} {Visa Type}".
+      const country = (after.destinationCountry || "").trim();
+      const visaType = (after.visaType || "").trim();
+      const displayName = (country && visaType)
+        ? `${country} ${visaType}`
+        : (after.visaName || visaType || country || "Visa Application");
+
+      const clientName = (after.formData && after.formData.name) || after.customerName || "A client";
+
+      // Resolve the submission timestamp to an ISO string for the message.
+      let submittedAtIso;
+      const submittedAt = after.submittedAt;
+      if (submittedAt && typeof submittedAt.toDate === "function") {
+        submittedAtIso = submittedAt.toDate().toISOString();
+      } else if (submittedAt) {
+        submittedAtIso = new Date(submittedAt).toISOString();
+      } else {
+        submittedAtIso = new Date().toISOString();
+      }
+
+      const title = "New application submitted";
+      const message =
+        `New application submitted by ${clientName} — ${displayName} ` +
+        `(${country || "N/A"} · ${visaType || "N/A"}). Application ID: ${applicationId}.`;
+
+      // Recipients: all active ops/admin staff.
+      const opsRoles = ["super_admin", "admin", "manager", "visa_ops"];
+      const staffSnap = await db
+        .collection("users")
+        .where("role", "in", opsRoles)
+        .get();
+
+      if (staffSnap.empty) {
+        console.warn("onApplicationSubmitted: no ops/admin staff to notify.");
+        return null;
+      }
+
+      const batch = db.batch();
+      staffSnap.forEach((staffDoc) => {
+        const staffUid = staffDoc.id;
+        const notifRef = db
+          .collection("notifications")
+          .doc(`appsubmit_${applicationId}_${staffUid}`);
+        batch.set(notifRef, {
+          userId: staffUid,
+          title,
+          message,
+          type: "application_submitted",
+          read: false,
+          // Structured metadata for ops tooling (Admin SDK bypasses client schema rules).
+          applicationId,
+          clientName,
+          destinationCountry: country,
+          visaType,
+          submittedAt: submittedAtIso,
+          createdAt: FieldValue.serverTimestamp()
+        });
+      });
+
+      await batch.commit();
+      console.log(`onApplicationSubmitted: notified ${staffSnap.size} staff for ${applicationId}.`);
+    } catch (err) {
+      console.error("onApplicationSubmitted error:", err);
+    }
+
+    return null;
+  });
+
+// 9. Safety net: enforce "payment === submission" for Schengen applications.
+//
+// The primary path writes paymentStatus="paid" AND status="Submitted" atomically
+// (client/staff batch, or future Stripe webhook). This trigger is a defense-in-depth
+// reconciler: if ANY writer ever sets paymentStatus="paid" on a Schengen application
+// without also flipping it to Submitted, this function finalizes it — flips status,
+// stamps submittedAt, and creates the visa_case if one does not already exist. The
+// subsequent status -> "Submitted" change is what fires onApplicationSubmitted (the
+// notification), so notifications are not duplicated here.
+//
+// Idempotent: it no-ops when already Submitted, and it skips visa_case creation when
+// a case already references this applicationId.
+exports.onApplicationPaid = functions.firestore
+  .document("applications/{applicationId}")
+  .onUpdate(async (change, context) => {
+    const before = change.before.data() || {};
+    const after = change.after.data() || {};
+
+    // Only act on the unpaid -> paid transition for Schengen applications that are
+    // not already Submitted.
+    const becamePaid = before.paymentStatus !== "paid" && after.paymentStatus === "paid";
+    const isSchengen = (after.applicationType || "") === "schengen";
+    if (!becamePaid || !isSchengen || after.status === "Submitted") {
+      return null;
+    }
+
+    const applicationId = context.params.applicationId;
+
+    try {
+      const now = new Date();
+
+      // Flip the application to Submitted (this is what makes the invariant hold and
+      // what triggers the submission notification via onApplicationSubmitted).
+      await change.after.ref.update({
+        status: "Submitted",
+        submittedAt: after.submittedAt || now,
+        updatedAt: FieldValue.serverTimestamp()
+      });
+
+      // Create the visa_case only if one does not already exist for this application.
+      const existing = await db
+        .collection("visa_cases")
+        .where("applicationId", "==", applicationId)
+        .limit(1)
+        .get();
+
+      if (!existing.empty) {
+        console.log(`onApplicationPaid: visa_case already exists for ${applicationId}; skipped creation.`);
+        return null;
+      }
+
+      const country = (after.destinationCountry || "").trim();
+      const visaType = (after.visaType || "").trim();
+      const displayName = (country && visaType)
+        ? `${country} ${visaType}`
+        : (after.visaName || visaType || country || "Visa Application");
+      const fd = after.formData || {};
+
+      // Reuse the same daily counter scheme as the client (VC-YYYYMMDD-###). A small
+      // race is acceptable here since this path is only a fallback; the caseNo is not a
+      // uniqueness key.
+      const yyyy = now.getFullYear();
+      const mm = String(now.getMonth() + 1).padStart(2, "0");
+      const dd = String(now.getDate()).padStart(2, "0");
+      const todayStr = `${yyyy}${mm}${dd}`;
+      let nextCounter = 1;
+      try {
+        const latest = await db
+          .collection("visa_cases")
+          .where("caseNo", ">=", `VC-${todayStr}-000`)
+          .where("caseNo", "<=", `VC-${todayStr}-999`)
+          .orderBy("caseNo", "desc")
+          .limit(1)
+          .get();
+        if (!latest.empty) {
+          const parts = (latest.docs[0].data().caseNo || "").split("-");
+          const seq = parseInt(parts[2], 10);
+          if (!isNaN(seq)) nextCounter = seq + 1;
+        }
+      } catch (e) {
+        nextCounter = Math.floor(100 + Math.random() * 900);
+      }
+      const caseNo = `VC-${todayStr}-${String(nextCounter).padStart(3, "0")}`;
+
+      await db.collection("visa_cases").add({
+        caseNo,
+        applicationId,
+        travellerName: fd.name || after.customerName || "",
+        travellerPhone: fd.phone || "",
+        travellerEmail: (fd.email || "").toLowerCase(),
+        nationality: fd.nationality || after.nationality || "",
+        destination: country,
+        destinationCountry: country,
+        visaType,
+        displayName,
+        applicationType: "schengen",
+        paymentStatus: "paid",
+        stage: "Docs Pending",
+        assignedOfficer: "Visa Ops Officer",
+        isDeleted: false,
+        isActive: true,
+        createdAt: FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp()
+      });
+
+      console.log(`onApplicationPaid: reconciled ${applicationId} to Submitted + created visa_case ${caseNo}.`);
+    } catch (err) {
+      console.error("onApplicationPaid error:", err);
+    }
+
+    return null;
+  });
