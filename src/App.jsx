@@ -8,6 +8,7 @@ import { AuthProvider, ProtectedRoute, ClientRoute, RequireVerifiedEmail } from 
 import { TravelerProfileProvider, ProfileCompleteGuard } from "./contexts/TravelerProfileContext";
 import { AppProvider } from "./contexts/AppContext";
 import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 
 // Layouts
 import PublicLayout from "./layouts/PublicLayout";
@@ -226,6 +227,7 @@ function App() {
             }}
           />
           <Analytics />
+          <SpeedInsights />
         </AuthProvider>
       </AppProvider>
     </QueryClientProvider>
