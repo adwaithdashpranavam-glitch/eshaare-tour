@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { createLead } from "../../lib/firestore";
-import { generateLeadNo, formatWhatsAppPhone } from "../../utils/helpers";
+import { Helmet } from "react-helmet-async";
 import toast from "react-hot-toast";
 
 export const ContactPage = () => {
@@ -14,10 +13,6 @@ export const ContactPage = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    document.title = "Contact Visa Agency & Travel Consultant Dubai | ESHAARE";
-  }, []);
-
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -27,6 +22,9 @@ export const ContactPage = () => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
+      const { createLead } = await import("../../lib/firestore");
+      const { generateLeadNo, formatWhatsAppPhone } = await import("../../utils/helpers");
+      
       const generatedNo = await generateLeadNo();
       const submission = {
         leadNo: generatedNo,
@@ -67,7 +65,12 @@ export const ContactPage = () => {
   ];
 
   return (
-    <div className="bg-surface text-on-surface min-h-screen py-16 px-margin-mobile md:px-margin-desktop">
+    <>
+      <Helmet>
+        <title>Contact Visa Agency & Travel Consultant Dubai | ESHAARE</title>
+        <meta name="description" content="Contact Eshaare Tours Dubai for Schengen visa appointments, custom tour packages, and corporate travel solutions." />
+      </Helmet>
+      <div className="bg-surface text-on-surface min-h-screen py-16 px-margin-mobile md:px-margin-desktop">
       <div className="max-w-container-max mx-auto space-y-12">
         {/* Header */}
         <div className="text-center space-y-4 max-w-xl mx-auto">
@@ -224,7 +227,8 @@ export const ContactPage = () => {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 

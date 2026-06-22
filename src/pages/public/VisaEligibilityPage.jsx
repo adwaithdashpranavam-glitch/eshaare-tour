@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Helmet } from "react-helmet-async";
 import { doc, onSnapshot, collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 import { motion, AnimatePresence } from "framer-motion";
@@ -219,56 +220,7 @@ export const VisaEligibilityPage = () => {
     };
   }, []);
 
-  // Update SEO Head tags and schema dynamically
-  useEffect(() => {
-    document.title = seo.pageTitle;
-    let metaDesc = document.querySelector('meta[name="description"]');
-    if (!metaDesc) {
-      metaDesc = document.createElement("meta");
-      metaDesc.setAttribute("name", "description");
-      document.head.appendChild(metaDesc);
-    }
-    metaDesc.setAttribute("content", seo.metaDescription);
 
-    let metaKeys = document.querySelector('meta[name="keywords"]');
-    if (!metaKeys) {
-      metaKeys = document.createElement("meta");
-      metaKeys.setAttribute("name", "keywords");
-      document.head.appendChild(metaKeys);
-    }
-    metaKeys.setAttribute("content", seo.keywords);
-
-    // Ingest FAQ schema
-    const schemaScriptId = "eshaare-faq-schema";
-    let script = document.getElementById(schemaScriptId);
-    if (script) script.remove();
-
-    const faqQuestions = faqs.map(faq => ({
-      "@type": "Question",
-      "name": faq.question,
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": faq.answer
-      }
-    }));
-
-    const structuredData = {
-      "@context": "https://schema.org",
-      "@type": "FAQPage",
-      "mainEntity": faqQuestions
-    };
-
-    script = document.createElement("script");
-    script.id = schemaScriptId;
-    script.type = "application/ld+json";
-    script.innerText = JSON.stringify(structuredData);
-    document.head.appendChild(script);
-
-    return () => {
-      const cleanupScript = document.getElementById(schemaScriptId);
-      if (cleanupScript) cleanupScript.remove();
-    };
-  }, [seo, faqs]);
 
   // Handle Input Changes
   const handleFieldChange = (fieldId, value) => {
@@ -602,6 +554,26 @@ export const VisaEligibilityPage = () => {
   };
 
   return (
+    <>
+      <Helmet>
+        <title>{seo.pageTitle}</title>
+        <meta name="description" content={seo.metaDescription} />
+        <meta name="keywords" content={seo.keywords} />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            "mainEntity": faqs.map(faq => ({
+              "@type": "Question",
+              "name": faq.question,
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": faq.answer
+              }
+            }))
+          })}
+        </script>
+      </Helmet>
     <div
       className="min-h-screen relative text-gray-900 py-16 px-4 md:px-8 font-sans overflow-x-hidden"
       style={{ backgroundColor: theme.primaryBg }}
@@ -1030,6 +1002,7 @@ export const VisaEligibilityPage = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

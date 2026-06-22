@@ -6,6 +6,8 @@ import { serverTimestamp } from "../../lib/firebase";
 import Modal from "../../components/ui/Modal";
 import { Clock, TrendingUp, FileText, Calendar, AlertCircle, Phone, ArrowRight, ShieldCheck, ClipboardCheck, ChevronRight } from "lucide-react";
 import toast from "react-hot-toast";
+import { Helmet } from "react-helmet-async";
+
 
 const PRESET_VISAS = [
   {
@@ -252,9 +254,6 @@ const StatIcon = ({ name, className }) => {
 export const VisaServicesPage = () => {
   const navigate = useNavigate();
   
-  useEffect(() => {
-    document.title = "Schengen Visa UAE & Visa Services Dubai | ESHAARE";
-  }, []);
 
   const [visaTypes, setVisaTypes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -554,6 +553,10 @@ export const VisaServicesPage = () => {
       }}
       className="min-h-screen text-on-surface font-body-md pb-24"
     >
+      <Helmet>
+        <title>Schengen Visa UAE & Visa Services Dubai | ESHAARE</title>
+        <meta name="description" content="Expert visa services in Dubai. Secure tourist, business, or visitor visa slots for Schengen Europe, United Kingdom, USA, Canada, Japan, and UAE residency." />
+      </Helmet>
       {/* Page Hero Banner */}
       <section className="relative min-h-[540px] py-12 md:py-20 overflow-hidden bg-[#1D503A] flex items-center justify-center">
         {/* Background Image with elegant overlay */}

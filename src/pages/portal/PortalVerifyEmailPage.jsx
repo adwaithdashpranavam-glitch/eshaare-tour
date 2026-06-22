@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { MailCheck, RefreshCw, LogOut, Loader2, Send } from "lucide-react";
-import foxLogo from "../../assets/fox-logo.png";
+import foxLogo from "../../assets/fox-logo.webp";
 import toast from "react-hot-toast";
 
 const RESEND_COOLDOWN = 45; // seconds

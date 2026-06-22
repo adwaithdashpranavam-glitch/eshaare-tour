@@ -2,14 +2,33 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="/src/assets/fox-logo.png" />
+    <link rel="icon" type="image/webp" href="/src/assets/fox-logo.webp" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ESHAARE Tours & Visas</title>
-    
-    <!-- SEO Primary Canonical & Site Verification -->
-    <link rel="canonical" href="https://www.eshaareuae.com/" />
+    <!-- Hero Image Preload for LCP -->
+    <link rel="preload" as="image" href="https://images.unsplash.com/photo-1531366936337-7c912a4589a7?auto=format&fit=crop&w=1600&q=80" fetchpriority="high" />
+
+    <!-- SEO Primary Site Verification & Meta Description Fallback -->
+    <meta name="description" content="Eshaare Tours & Visas — Premium visa processing and curated travel packages from Dubai, UAE." />
     <meta property="og:site_name" content="Eshaare Tours" />
     <meta property="og:url" content="https://www.eshaareuae.com/" />
+    
+    <!-- LocalBusiness Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      "name": "Eshaare Tours & Visas",
+      "url": "https://www.eshaareuae.com",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Dubai",
+        "addressCountry": "AE"
+      },
+      "telephone": "+971557338429",
+      "description": "Premium visa processing and curated travel packages in Dubai, UAE."
+    }
+    </script>
     
     <!-- Google site name structured data schema -->
     <script type="application/ld+json">

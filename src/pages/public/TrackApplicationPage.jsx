@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Helmet } from "react-helmet-async";
 import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 import { formatDate } from "../../utils/formatters";
@@ -148,7 +149,12 @@ export const TrackApplicationPage = () => {
   const estimatedCompletion = caseData ? (caseData.decisionExpected || caseData.expectedDecisionAt) : null;
 
   return (
-    <div className="bg-surface text-on-surface min-h-screen py-16 px-margin-mobile md:px-margin-desktop flex flex-col justify-center items-center">
+    <>
+      <Helmet>
+        <title>Track Visa Application | Eshaare Tours Dubai</title>
+        <meta name="description" content="Track your visa application status in real-time. Enter your application reference number and contact details to get the latest updates." />
+      </Helmet>
+      <div className="bg-surface text-on-surface min-h-screen py-16 px-margin-mobile md:px-margin-desktop flex flex-col justify-center items-center">
       
       <div className="max-w-xl w-full space-y-10">
         
@@ -360,7 +366,8 @@ export const TrackApplicationPage = () => {
         )}
 
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 

@@ -1,8 +1,7 @@
-import React, { useState, useReducer, useEffect } from "react";
+import React, { useState, useReducer, useEffect, useMemo } from "react";
+import { Helmet } from "react-helmet-async";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
-import { createLead } from "../../lib/firestore";
-import { generateLeadNo } from "../../utils/helpers";
 
 const initialState = {
   destinationCountry: "",
@@ -112,12 +111,14 @@ export const AppointmentBookingPage = () => {
   ];
 
   // Filtering live slots based on search widget options
-  const filteredSlots = allSlots.filter((slot) => {
-    const matchDest = !selectedDest || selectedDest === "All" || slot.country.toLowerCase() === selectedDest.toLowerCase();
-    const matchCat = !selectedCat || selectedCat === "All" || slot.visaType.toLowerCase().includes(selectedCat.toLowerCase());
-    const matchCenter = !selectedCenter || selectedCenter === "All" || slot.center.toLowerCase().includes(selectedCenter.toLowerCase());
-    return matchDest && matchCat && matchCenter;
-  });
+  const filteredSlots = useMemo(() => {
+    return allSlots.filter((slot) => {
+      const matchDest = !selectedDest || selectedDest === "All" || slot.country.toLowerCase() === selectedDest.toLowerCase();
+      const matchCat = !selectedCat || selectedCat === "All" || slot.visaType.toLowerCase().includes(selectedCat.toLowerCase());
+      const matchCenter = !selectedCenter || selectedCenter === "All" || slot.center.toLowerCase().includes(selectedCenter.toLowerCase());
+      return matchDest && matchCat && matchCenter;
+    });
+  }, [selectedDest, selectedCat, selectedCenter]);
 
   const handleBookSlot = (slot) => {
     let mappedCenter = "VFS Global Dubai (Wafi Mall)";
@@ -162,6 +163,9 @@ export const AppointmentBookingPage = () => {
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
+      const { generateLeadNo } = await import("../../utils/helpers");
+      const { createLead } = await import("../../lib/firestore");
+      
       const generatedNo = await generateLeadNo();
       const newLead = {
         leadNo: generatedNo,
@@ -204,7 +208,12 @@ export const AppointmentBookingPage = () => {
 
   if (isSuccess) {
     return (
-      <div className="bg-surface py-20 px-margin-mobile md:px-margin-desktop min-h-[60vh] flex items-center justify-center">
+      <>
+        <Helmet>
+          <title>Appointment Request Submitted | Eshaare Tours</title>
+          <meta name="description" content="Your visa appointment request has been submitted successfully." />
+        </Helmet>
+        <div className="bg-surface py-20 px-margin-mobile md:px-margin-desktop min-h-[60vh] flex items-center justify-center">
         <div className="max-w-md w-full bg-surface-container-lowest p-8 rounded-xl premium-shadow border border-outline-variant/10 text-center space-y-6">
           <span className="material-symbols-outlined text-success-green text-6xl block">check_circle</span>
           <h2 className="font-headline-lg text-headline-lg text-primary font-bold">Request Submitted!</h2>
@@ -238,13 +247,19 @@ export const AppointmentBookingPage = () => {
           </button>
         </div>
       </div>
+      </>
     );
   }
 
   // Step 0: Landing Page View
   if (step === 0) {
     return (
-      <div className="bg-surface text-on-surface font-body-md overflow-x-hidden">
+      <>
+        <Helmet>
+          <title>Book VFS & Embassy Visa Appointment | Eshaare Tours</title>
+          <meta name="description" content="Secure your VFS and Embassy visa appointments for Schengen, UK, and USA. Real-time slot monitoring and expert assistance." />
+        </Helmet>
+        <div className="bg-surface text-on-surface font-body-md overflow-x-hidden">
         
         {/* Hero Section */}
         <section className="relative min-h-[70vh] flex items-center justify-center py-section-gap overflow-hidden bg-primary-container">
@@ -467,7 +482,8 @@ export const AppointmentBookingPage = () => {
             </div>
           </div>
         </section>
-      </div>
+        </div>
+      </>
     );
   }
 
@@ -548,7 +564,12 @@ export const AppointmentBookingPage = () => {
     : "Schengen Tourist Visa";
 
   return (
-    <div className="bg-surface py-12 px-margin-mobile md:px-margin-desktop min-h-screen">
+    <>
+      <Helmet>
+        <title>Appointment Booking | Eshaare Tours Dubai</title>
+        <meta name="description" content="Book your visa appointment and submit your documents for expert review." />
+      </Helmet>
+      <div className="bg-surface py-12 px-margin-mobile md:px-margin-desktop min-h-screen">
       <div className="max-w-container-max mx-auto space-y-8">
         
         {/* Breadcrumb */}
@@ -1117,7 +1138,8 @@ export const AppointmentBookingPage = () => {
 
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 

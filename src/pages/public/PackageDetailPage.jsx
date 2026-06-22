@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Helmet } from "react-helmet-async";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { doc, getDoc, serverTimestamp } from "firebase/firestore";
 import { db, createLead } from "../../lib/firestore";
@@ -81,7 +82,12 @@ export const PackageDetailPage = () => {
   }
 
   return (
-    <div className="bg-surface min-h-screen py-12 px-margin-mobile md:px-margin-desktop">
+    <>
+      <Helmet>
+        <title>{currentPkg.title ? `${currentPkg.title} | Eshaare Tours Dubai` : "Package Details | Eshaare Tours Dubai"}</title>
+        <meta name="description" content={currentPkg.description ? currentPkg.description.substring(0, 155) : "Enjoy a hassle-free, premium travel experience with our curated tour packages."} />
+      </Helmet>
+      <div className="bg-surface min-h-screen py-12 px-margin-mobile md:px-margin-desktop">
       <div className="max-w-5xl mx-auto space-y-8">
         
         {/* Back Link */}
@@ -98,7 +104,7 @@ export const PackageDetailPage = () => {
           <div className="lg:col-span-8 space-y-6">
             <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant/10 overflow-hidden premium-shadow">
               <div className="relative h-80">
-                <img
+                <img loading="lazy"
                   src={currentPkg.imageUrl || currentPkg.image || "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=800&q=80"}
                   alt={currentPkg.title}
                   className="w-full h-full object-cover"
@@ -216,7 +222,8 @@ export const PackageDetailPage = () => {
         </div>
 
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 

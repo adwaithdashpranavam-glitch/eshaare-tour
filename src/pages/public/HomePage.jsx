@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { createLead, getPackages } from "../../lib/firestore";
 import { generateLeadNo, formatWhatsAppPhone } from "../../utils/helpers";
 import { db, serverTimestamp } from "../../lib/firebase";
@@ -63,7 +64,6 @@ export const HomePage = () => {
   ];
 
   useEffect(() => {
-    document.title = "ESHAARE | Visa Consultant & Travel Agency in Dubai";
     const timer = setInterval(() => {
       setActiveSlide((prev) => (prev + 1) % slides.length);
     }, 5000);
@@ -548,6 +548,10 @@ export const HomePage = () => {
 
   return (
     <div className="relative min-h-screen">
+      <Helmet>
+        <title>ESHAARE | Visa Consultant & Travel Agency in Dubai</title>
+        <meta name="description" content="Book custom holiday packages from Dubai with Eshaare Tours UAE. Premium travel agency in Dubai providing Schengen Visa UAE, UK, US, and Canada visa consultancy." />
+      </Helmet>
       <InteractiveCanvas />
 
       {/* HERO SLIDER SECTION */}
@@ -560,17 +564,32 @@ export const HomePage = () => {
             <img
               src={slide.image}
               alt={slide.headline}
+              fetchpriority={index === 0 ? "high" : "auto"}
+              loading={index === 0 ? "eager" : "lazy"}
+              width="1920"
+              height="1080"
               className={`w-full h-full object-cover ${slide.animated ? "animate-aurora-pan" : ""}`}
             />
             <div className="absolute inset-0 bg-black/40"></div>
             <div className="absolute inset-0 flex flex-col justify-center max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop text-white">
-              <h1
-                className={`font-display-lg text-display-lg-mobile md:text-display-lg text-white mb-4 max-w-2xl leading-tight
-                  transition-all duration-700 delay-300
-                  ${activeSlide === index ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
-              >
-                {slide.headline}
-              </h1>
+              {index === (activeSlide ?? 0) ? (
+                <h1
+                  className={`font-display-lg text-display-lg-mobile md:text-display-lg text-white mb-4 max-w-2xl leading-tight
+                    transition-all duration-700 delay-300
+                    ${activeSlide === index ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
+                >
+                  {slide.headline}
+                </h1>
+              ) : (
+                <div
+                  aria-hidden="true"
+                  className={`font-display-lg text-display-lg-mobile md:text-display-lg text-white mb-4 max-w-2xl leading-tight
+                    transition-all duration-700 delay-300
+                    ${activeSlide === index ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
+                >
+                  {slide.headline}
+                </div>
+              )}
               <p
                 className={`font-body-lg text-body-lg text-white/90 max-w-lg mb-8 leading-relaxed
                   transition-all duration-700 delay-500

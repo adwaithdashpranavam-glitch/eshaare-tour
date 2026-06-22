@@ -2,15 +2,14 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { getPackages } from "../../lib/firestore";
 import LoadingSpinner from "../../components/ui/LoadingSpinner";
+import { Helmet } from "react-helmet-async";
+
 
 export const PackagesPage = () => {
   const [searchVal, setSearchVal] = useState("");
   const [packages, setPackages] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    document.title = "Holiday Packages from Dubai & Tour Packages UAE | ESHAARE";
-  }, []);
 
   useEffect(() => {
     const unsubscribe = getPackages(
@@ -33,11 +32,16 @@ export const PackagesPage = () => {
 
   return (
     <div className="bg-surface min-h-screen pb-24">
+      <Helmet>
+        <title>Holiday Packages from Dubai & Tour Packages UAE | ESHAARE</title>
+        <meta name="description" content="Discover premium international tour and holiday packages from Dubai with Eshaare Tours. Tailor-made vacations, family holiday planning, and visa slot coordination." />
+      </Helmet>
+
       {/* Page Hero Banner */}
       <section className="relative min-h-[570px] py-12 md:py-16 overflow-hidden bg-[#1D503A] flex items-center justify-center">
         {/* Background Image with elegant overlay */}
         <div className="absolute inset-0 z-0">
-          <img
+          <img loading="lazy"
             src="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=2560&q=80"
             alt="Tour Packages Background"
             className="w-full h-full object-cover opacity-100"
@@ -88,7 +92,7 @@ export const PackagesPage = () => {
                 className="bg-surface-container-lowest overflow-hidden rounded-2xl border border-outline-variant/10 premium-shadow group flex flex-col cursor-pointer transition-all hover:scale-[1.01]"
               >
                 <div className="relative h-56 overflow-hidden">
-                  <img
+                  <img loading="lazy"
                     src={pkg.imageUrl || pkg.image || "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=800&q=80"}
                     alt={pkg.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"

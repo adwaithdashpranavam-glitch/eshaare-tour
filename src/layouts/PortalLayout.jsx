@@ -7,7 +7,7 @@ import {
   UserCircle, Users, Home
 } from "lucide-react";
 import toast from "react-hot-toast";
-import foxLogo from "../assets/fox-logo.png";
+import foxLogo from "../assets/fox-logo.webp";
 
 export const PortalLayout = () => {
   const { userProfile, logout } = useAuth();

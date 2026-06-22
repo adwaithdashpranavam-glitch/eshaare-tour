@@ -16,7 +16,7 @@ import {
   ShieldCheck, ChevronLeft, ChevronRight, Check, Loader2,
   CloudUpload, Pencil, BadgeCheck, LogOut
 } from "lucide-react";
-import foxLogo from "../../assets/fox-logo.png";
+import foxLogo from "../../assets/fox-logo.webp";
 import toast from "react-hot-toast";
 import { COUNTRIES, DEFAULT_DIAL_CODE } from "../../utils/countries";
 

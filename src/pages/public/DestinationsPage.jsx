@@ -1,4 +1,5 @@
 import React from "react";
+import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 
 export const DestinationsPage = () => {
@@ -12,7 +13,12 @@ export const DestinationsPage = () => {
   ];
 
   return (
-    <div className="bg-surface min-h-screen py-16 px-margin-mobile md:px-margin-desktop">
+    <>
+      <Helmet>
+        <title>Visa Destinations | Eshaare Tours Dubai</title>
+        <meta name="description" content="Explore popular visa destinations including Schengen, UK, USA, Japan, and more. Let Eshaare Tours simplify your global travel requirements." />
+      </Helmet>
+      <div className="bg-surface min-h-screen py-16 px-margin-mobile md:px-margin-desktop">
       <div className="max-w-container-max mx-auto space-y-12">
         <div className="text-center space-y-4 max-w-xl mx-auto">
           <h1 className="font-display-lg text-display-lg-mobile md:text-display-lg text-primary">Explore Destinations</h1>
@@ -24,7 +30,7 @@ export const DestinationsPage = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {destinations.map((dest, idx) => (
             <div key={idx} className="bg-surface-container-lowest overflow-hidden rounded-2xl premium-shadow border border-outline-variant/10 group relative h-72 flex flex-col justify-end">
-              <img
+              <img loading="lazy"
                 src={dest.image}
                 alt={dest.name}
                 className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
@@ -59,7 +65,8 @@ export const DestinationsPage = () => {
           ))}
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 

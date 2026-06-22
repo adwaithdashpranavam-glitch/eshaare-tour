@@ -1,4 +1,5 @@
 import React from "react";
+import { Helmet } from "react-helmet-async";
 import toast from "react-hot-toast";
 
 export const ResourcesPage = () => {
@@ -14,7 +15,12 @@ export const ResourcesPage = () => {
   };
 
   return (
-    <div className="bg-surface text-on-surface min-h-screen py-16 px-margin-mobile md:px-margin-desktop">
+    <>
+      <Helmet>
+        <title>Visa Templates & Resources | Eshaare Tours</title>
+        <meta name="description" content="Download visa document templates, NOC samples, and application guides for Schengen, UK, and USA visas." />
+      </Helmet>
+      <div className="bg-surface text-on-surface min-h-screen py-16 px-margin-mobile md:px-margin-desktop">
       <div className="max-w-container-max mx-auto space-y-12">
         <div className="text-center space-y-4 max-w-xl mx-auto">
           <h1 className="font-display-lg text-display-lg-mobile md:text-display-lg text-primary">Documentation Resource Center</h1>
@@ -53,7 +59,8 @@ export const ResourcesPage = () => {
           ))}
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 

@@ -11,6 +11,8 @@ import {
   X, Sparkles, Users, Briefcase, BookOpen, Stethoscope, Home, ArrowRight
 } from "lucide-react";
 import toast from "react-hot-toast";
+import { Helmet } from "react-helmet-async";
+
 
 // Icon mapping helper
 const StatIcon = ({ name, className }) => {
@@ -172,15 +174,6 @@ export const VisaDetailPage = () => {
   });
   const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
-    if (visaData) {
-      document.title = visaData.metaTitle || `${visaData.name} from Dubai - Visa Consultant | ESHAARE`;
-      const metaDesc = document.querySelector('meta[name="description"]');
-      if (metaDesc && visaData.metaDescription) {
-        metaDesc.setAttribute("content", visaData.metaDescription);
-      }
-    }
-  }, [visaData]);
 
   // Minimum loading state duration (500ms)
   useEffect(() => {
@@ -429,6 +422,10 @@ export const VisaDetailPage = () => {
 
   return (
     <div className="bg-[#FAF8F5] min-h-screen text-slate-700 font-sans pb-24 relative">  
+      <Helmet>
+        <title>{visaData?.metaTitle || `${visaData?.name || "Visa"} from Dubai - Visa Consultant | ESHAARE`}</title>
+        <meta name="description" content={visaData?.metaDescription || `Get dynamic visa processing support for ${visaData?.name || "global destinations"} from Dubai. Complete checklist auditing and rapid slot booking support.`} />
+      </Helmet>
 
       {/* Draft Mode Banner (Visible to Admin only) */}
       {isDraft && isAdmin && (
@@ -450,7 +447,7 @@ export const VisaDetailPage = () => {
       <section className="relative py-20 overflow-hidden border-b border-[#1D503A]/20 bg-[#1D503A]">
         {visaData.imageUrl ? (
           <div className="absolute inset-0 z-0">
-            <img
+            <img loading="lazy"
               src={visaData.imageUrl}
               alt={visaData.name}
               className="w-full h-full object-cover"
@@ -631,7 +628,7 @@ export const VisaDetailPage = () => {
                     {/* Card Cover Image */}
                     <div className="h-44 w-full overflow-hidden bg-slate-50 relative flex-shrink-0">
                       {visa.imageUrl ? (
-                        <img
+                        <img loading="lazy"
                           src={visa.imageUrl}
                           alt={visa.name}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
@@ -714,7 +711,7 @@ export const VisaDetailPage = () => {
                     to={`/visa/${dest.slug}`}
                     className="relative h-40 rounded-2xl overflow-hidden group shadow-sm hover:shadow-md transition-all duration-300 block"
                   >
-                    <img
+                    <img loading="lazy"
                       src={dest.imageUrl}
                       alt={dest.name}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
@@ -1154,7 +1151,7 @@ export const VisaDetailPage = () => {
                   className="snap-center shrink-0 w-72 space-y-3 bg-white p-3 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-all duration-300 group"
                 >
                   <div className="h-48 rounded-2xl overflow-hidden bg-slate-50 relative">
-                    <img
+                    <img loading="lazy"
                       src={loc.imageUrl}
                       alt={loc.name}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"

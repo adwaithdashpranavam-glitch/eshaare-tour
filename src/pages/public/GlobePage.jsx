@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { Helmet } from "react-helmet-async";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import * as THREE from "three";
@@ -285,7 +286,7 @@ function DestCard({ dest }) {
     <div className="group relative overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.03] transition-all duration-300 hover:border-[#7A8F6B]/25 hover:bg-white/[0.06]">
       {/* Image */}
       <div className="relative h-40 overflow-hidden rounded-t-2xl">
-        <img
+        <img loading="lazy"
           src={dest.image}
           alt={dest.name}
           className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
@@ -539,10 +540,15 @@ export default function GlobePage() {
     "absolute right-0 top-[50px] z-40 flex h-[calc(100%-40px)] w-full flex-col border-l border-white/[0.06] bg-black/60 text-white backdrop-blur-2xl lg:w-[420px] xl:w-[460px] rounded-tl-2xl rounded-bl-2xl overflow-hidden";
 
   return (
-    <section
-      className="relative h-screen w-full overflow-hidden bg-[#1D503A]"
-      aria-label="Interactive world travel map"
-    >
+    <>
+      <Helmet>
+        <title>Interactive Travel Globe | Eshaare Tours Dubai</title>
+        <meta name="description" content="Explore top travel destinations across the globe interactively. Discover visa requirements, top attractions, and live weather conditions." />
+      </Helmet>
+      <section
+        className="relative h-screen w-full overflow-hidden bg-[#1D503A]"
+        aria-label="Interactive world travel map"
+      >
       {/* Globe Loading Overlay */}
       <AnimatePresence>
         {globeLoading && (
@@ -762,7 +768,7 @@ export default function GlobePage() {
             <div className="flex-1 overflow-y-auto overscroll-contain">
               {/* Hero image */}
               <div className="relative h-44 w-full shrink-0 sm:h-52">
-                <img
+                <img loading="lazy"
                   src={selectedPOI.image}
                   alt={selectedPOI.name}
                   className="h-full w-full object-cover"
@@ -857,6 +863,7 @@ export default function GlobePage() {
           boxShadow: "inset 0 0 200px rgba(0,0,0,0.92)",
         }}
       />
-    </section>
+      </section>
+    </>
   );
 }

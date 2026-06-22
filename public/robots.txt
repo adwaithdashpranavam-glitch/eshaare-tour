@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /portal/
+Disallow: /login
+Disallow: /portal/login
+
+Sitemap: https://www.eshaareuae.com/sitemap.xml

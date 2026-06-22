@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import foxLogo from "../assets/fox-logo.png";
+import foxLogo from "../assets/fox-logo.webp";
 import { useAuth } from "../contexts/AuthContext";
+import CanonicalTag from "../components/CanonicalTag";
 import {
   MapPin,
   Phone,
@@ -305,6 +306,7 @@ export const PublicLayout = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-surface font-body-md text-on-surface">
+      <CanonicalTag />
       {/* Siri Orb Keyframe Animations */}
       <style>{`
         @keyframes orb-morph-1 {
@@ -411,14 +413,15 @@ export const PublicLayout = () => {
 
               {/* Brand Text */}
               <div className="leading-none -ml-2.5 md:-ml-4">
-                <h1
+                <div
                   className="text-xl sm:text-xl md:text-3xl lg:text-4xl text-[#1D503A]"
                   style={{
                     fontFamily: "'Great Vibes', cursive",
                   }}
+                  aria-label="Eshaare Tours & Visas"
                 >
                   Eshaare Tour
-                </h1>
+                </div>
 
                 <p className="text-[5px] sm:text-[6px] md:text-[7px] lg:text-[8px] tracking-[0.25em] uppercase text-gray-600 mt-0">
                   Connecting Dreams Into Destinations
