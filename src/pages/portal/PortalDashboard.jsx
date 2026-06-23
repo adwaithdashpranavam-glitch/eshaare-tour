@@ -134,7 +134,12 @@ export const PortalDashboard = () => {
           checklist: b.checklist || [],
           createdAt: b.createdAt
         }));
-      const allCases = [...casesDocs, ...uniqueBookings];
+      // Latest active case first, so "Active File Status" reflects the most recent
+      // real case rather than an arbitrary query order.
+      const toDate = (v) => (v?.seconds ? new Date(v.seconds * 1000) : new Date(v || 0));
+      const allCases = [...casesDocs, ...uniqueBookings].sort(
+        (a, b) => toDate(b.updatedAt || b.createdAt) - toDate(a.updatedAt || a.createdAt)
+      );
       setActiveCases(allCases);
 
       const totalPending = allCases.reduce((acc, curr) => {
@@ -213,6 +218,11 @@ export const PortalDashboard = () => {
   ];
 
   const sampleCase = activeCases[0];
+
+  // Human-friendly stage label. The underlying visa_cases.stage value is unchanged
+  // (e.g. "Docs Pending"); only the displayed text is clarified.
+  const formatStageLabel = (stage) =>
+    stage === "Docs Pending" ? "Documents Pending" : (stage || "Documents Pending");
 
   // Terminal states: an approved/rejected/closed case is fully processed (100%),
   // while an unmatched/early stage maps to the first tracker step rather than
@@ -371,9 +381,15 @@ export const PortalDashboard = () => {
                     </h3>
                   </div>
                   <span className="text-xs font-bold text-[#0F3D2E] px-3 py-1 bg-[#0F3D2E]/10 rounded-full">
-                    {sampleCase.stage}
+                    {formatStageLabel(sampleCase.stage)}
                   </span>
                 </div>
+
+                {/* The timeline reflects the current case stage set by our team; later
+                    stages are upcoming steps, not automatically completed progress. */}
+                <p className="text-[10px] text-[#6B7280] -mt-2">
+                  Your file is at the highlighted stage. Remaining steps are updated by our visa team as your application progresses.
+                </p>
 
                 {/* Stage Timeline representation */}
                 <div className="relative pl-6 border-l-2 border-[#E5E7EB]/80 space-y-6">
@@ -453,7 +469,7 @@ export const PortalDashboard = () => {
                             {formatShortDate(c.createdAt)}
                           </td>
                           <td className="py-3.5 px-4">
-                            <StatusBadge status={c.stage} />
+                            <StatusBadge status={formatStageLabel(c.stage)} />
                           </td>
                           <td className="py-3.5 pl-4 text-right">
                             <Link

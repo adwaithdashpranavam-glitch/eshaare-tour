@@ -108,7 +108,8 @@ service cloud.firestore {
       let allowedFields = [
         'id', 'clientUid', 'clientEmail', 'amount', 'currency', 'status', 
         'createdAt', 'updatedAt', 'purpose', 'transactionId', 'paymentMethod',
-        'orderId', 'invoiceNo', 'clientName', 'service', 'method', 'ref', 'date', 'dueDate'
+        'orderId', 'invoiceNo', 'clientName', 'service', 'method', 'ref', 'date', 'dueDate',
+        'applicationId', 'caseId', 'paymentApprovedAt'
       ];
       return data.keys().hasOnly(allowedFields) &&
              data.clientEmail is string &&

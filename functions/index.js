@@ -497,6 +497,37 @@ exports.onApplicationSubmitted = functions.firestore
         `New application submitted by ${clientName} — ${displayName} ` +
         `(${country || "N/A"} · ${visaType || "N/A"}). Application ID: ${applicationId}.`;
 
+      const batch = db.batch();
+
+      // Client-facing notification: the client portal dashboard reads
+      // `notifications where userId == auth.currentUser.uid`, so the notification
+      // must be addressed to the application owner's uid (customerId). This is a
+      // separate doc from the staff notifications and never replaces them.
+      // Firestore rules forbid client SDK writes to notifications; the Admin SDK
+      // here bypasses those rules so this is the only place a client notification
+      // can be produced.
+      const clientUid = after.customerId;
+      if (clientUid) {
+        const clientNotifRef = db
+          .collection("notifications")
+          .doc(`appsubmit_${applicationId}_client`);
+        batch.set(clientNotifRef, {
+          userId: clientUid,
+          title: "Payment confirmed — application submitted",
+          message:
+            `Your payment has been confirmed and your ${displayName} visa application ` +
+            `has been submitted. Our team will now begin processing your file.`,
+          type: "application_submitted",
+          read: false,
+          applicationId,
+          clientName,
+          destinationCountry: country,
+          visaType,
+          submittedAt: submittedAtIso,
+          createdAt: FieldValue.serverTimestamp()
+        });
+      }
+
       // Recipients: all active ops/admin staff.
       const opsRoles = ["super_admin", "admin", "manager", "visa_ops"];
       const staffSnap = await db
@@ -506,10 +537,8 @@ exports.onApplicationSubmitted = functions.firestore
 
       if (staffSnap.empty) {
         console.warn("onApplicationSubmitted: no ops/admin staff to notify.");
-        return null;
       }
 
-      const batch = db.batch();
       staffSnap.forEach((staffDoc) => {
         const staffUid = staffDoc.id;
         const notifRef = db
@@ -532,7 +561,7 @@ exports.onApplicationSubmitted = functions.firestore
       });
 
       await batch.commit();
-      console.log(`onApplicationSubmitted: notified ${staffSnap.size} staff for ${applicationId}.`);
+      console.log(`onApplicationSubmitted: notified ${staffSnap.size} staff + client for ${applicationId}.`);
     } catch (err) {
       console.error("onApplicationSubmitted error:", err);
     }
