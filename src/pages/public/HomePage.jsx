@@ -93,39 +93,39 @@ export const HomePage = () => {
   const [activeContinent, setActiveContinent] = useState("Europe");
   const continentCountries = {
     Europe: [
-      { name: "France", flag: "🇫🇷", type: "Schengen Visa" },
-      { name: "Germany", flag: "🇩🇪", type: "Schengen Visa" },
-      { name: "Switzerland", flag: "🇨🇭", type: "Schengen Visa" },
-      { name: "United Kingdom", flag: "🇬🇧", type: "Standard Visitor" }
+      { name: "France", flag: "🇫🇷", type: "Schengen Visa", image: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=600&q=80" },
+      { name: "Germany", flag: "🇩🇪", type: "Schengen Visa", image: "https://images.unsplash.com/photo-1599946347371-68eb71b16afc?auto=format&fit=crop&w=600&q=80" },
+      { name: "Switzerland", flag: "🇨🇭", type: "Schengen Visa", image: "https://images.unsplash.com/photo-1530122037265-a5f1f91d3b99?auto=format&fit=crop&w=600&q=80" },
+      { name: "United Kingdom", flag: "🇬🇧", type: "Standard Visitor", image: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=600&q=80" }
     ],
     Asia: [
-      { name: "Japan", flag: "🇯🇵", type: "Tourist Visa" },
-      { name: "Saudi Arabia", flag: "🇸🇦", type: "eVisa / Tourist" },
-      { name: "Singapore", flag: "🇸🇬", type: "Tourist Visa" },
-      { name: "Thailand", flag: "🇹🇭", type: "Visa on Arrival / Tourist" }
+      { name: "Japan", flag: "🇯🇵", type: "Tourist Visa", image: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=600&q=80" },
+      { name: "Saudi Arabia", flag: "🇸🇦", type: "eVisa / Tourist", image: "https://images.unsplash.com/photo-1586724237569-f3d0c1dee8c6?auto=format&fit=crop&w=600&q=80" },
+      { name: "Singapore", flag: "🇸🇬", type: "Tourist Visa", image: "https://images.unsplash.com/photo-1525625293386-3f8f99389edd?auto=format&fit=crop&w=600&q=80" },
+      { name: "Thailand", flag: "🇹🇭", type: "Visa on Arrival / Tourist", image: "https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?auto=format&fit=crop&w=600&q=80" }
     ],
     Africa: [
-      { name: "South Africa", flag: "🇿🇦", type: "Tourist Visa" },
-      { name: "Egypt", flag: "🇪🇬", type: "Tourist Visa / eVisa" },
-      { name: "Kenya", flag: "🇰🇪", type: "ETA / eVisa" },
-      { name: "Morocco", flag: "🇲🇦", type: "Tourist Visa" }
+      { name: "South Africa", flag: "🇿🇦", type: "Tourist Visa", image: "https://images.unsplash.com/photo-1580060839134-75a5edca2e99?auto=format&fit=crop&w=600&q=80" },
+      { name: "Egypt", flag: "🇪🇬", type: "Tourist Visa / eVisa", image: "https://images.unsplash.com/photo-1503177119275-0aa32b3a9368?auto=format&fit=crop&w=600&q=80" },
+      { name: "Kenya", flag: "🇰🇪", type: "ETA / eVisa", image: "https://images.unsplash.com/photo-1516426122078-c23e76319801?auto=format&fit=crop&w=600&q=80" },
+      { name: "Morocco", flag: "🇲🇦", type: "Tourist Visa", image: "https://images.unsplash.com/photo-1539020140153-e479b8c22e70?auto=format&fit=crop&w=600&q=80" }
     ],
     "North America": [
-      { name: "United States", flag: "🇺🇸", type: "B1/B2 Tourist" },
-      { name: "Canada", flag: "🇨🇦", type: "Visitor Visa" },
-      { name: "Mexico", flag: "🇲🇽", type: "Tourist Visa" }
+      { name: "United States", flag: "🇺🇸", type: "B1/B2 Tourist", image: "https://images.unsplash.com/photo-1501594907352-04cda38ebc29?auto=format&fit=crop&w=600&q=80" },
+      { name: "Canada", flag: "🇨🇦", type: "Visitor Visa", image: "https://images.unsplash.com/photo-1503614472-8c93d56e92ce?auto=format&fit=crop&w=600&q=80" },
+      { name: "Mexico", flag: "🇲🇽", type: "Tourist Visa", image: "https://images.unsplash.com/photo-1518105779142-d975f22f1b0a?auto=format&fit=crop&w=600&q=80" }
     ],
     "South America": [
-      { name: "Brazil", flag: "🇧🇷", type: "Tourist Visa" },
-      { name: "Argentina", flag: "🇦🇷", type: "Tourist Visa" },
-      { name: "Peru", flag: "🇵🇪", type: "Visa Free / Tourist" }
+      { name: "Brazil", flag: "🇧🇷", type: "Tourist Visa", image: "https://images.unsplash.com/photo-1483729558449-99ef09a8c325?auto=format&fit=crop&w=600&q=80" },
+      { name: "Argentina", flag: "🇦🇷", type: "Tourist Visa", image: "https://images.unsplash.com/photo-1589909202802-8f4aadce1849?auto=format&fit=crop&w=600&q=80" },
+      { name: "Peru", flag: "🇵🇪", type: "Visa Free / Tourist", image: "https://images.unsplash.com/photo-1526392060635-9d6019884377?auto=format&fit=crop&w=600&q=80" }
     ],
     Oceania: [
-      { name: "Australia", flag: "🇦🇺", type: "Visitor Visa (Subclass 600)" },
-      { name: "New Zealand", flag: "🇳🇿", type: "Visitor Visa" }
+      { name: "Australia", flag: "🇦🇺", type: "Visitor Visa (Subclass 600)", image: "https://images.unsplash.com/photo-1523482580672-f109ba8cb9be?auto=format&fit=crop&w=600&q=80" },
+      { name: "New Zealand", flag: "🇳🇿", type: "Visitor Visa", image: "https://images.unsplash.com/photo-1469521669194-babb45599def?auto=format&fit=crop&w=600&q=80" }
     ],
     Antarctica: [
-      { name: "Expedition Permit", flag: "❄️", type: "Special Permit Support" }
+      { name: "Expedition Permit", flag: "❄️", type: "Special Permit Support", image: "https://images.unsplash.com/photo-1517783999520-f068d7431a60?auto=format&fit=crop&w=600&q=80" }
     ]
   };
 
@@ -1137,18 +1137,22 @@ export const HomePage = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
             {continentCountries[activeContinent].map((country, idx) => (
-              <div key={idx} className="relative group bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/10 premium-shadow flex flex-col justify-between gap-4">
-                <div className="flex items-center gap-3 relative z-10">
-                  <span className="text-3xl">{country.flag}</span>
-                  <div>
-                    <h4 className="font-bold text-body-md text-primary">{country.name}</h4>
-                    <span className="text-body-sm text-on-surface-variant">{country.type}</span>
+              <div key={idx} className="relative group overflow-hidden rounded-xl premium-shadow border border-outline-variant/10 h-48 flex flex-col justify-end p-6">
+                <img loading="lazy" src={country.image} alt={country.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10 group-hover:from-black/80 transition-colors duration-300"></div>
+
+                <div className="relative z-10 flex flex-col justify-end h-full">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-2xl drop-shadow-md">{country.flag}</span>
+                    <h4 className="font-bold text-headline-md text-white drop-shadow-md">{country.name}</h4>
                   </div>
+                  <span className="text-body-sm text-white/90 drop-shadow-sm mb-3">{country.type}</span>
+
+                  <Link to="/visa-services" className="text-secondary-fixed font-bold text-body-sm flex items-center gap-1 hover:text-white transition-colors w-fit">
+                    <span>View Requirements</span>
+                    <span className="material-symbols-outlined text-lg">arrow_forward</span>
+                  </Link>
                 </div>
-                <Link to="/visa-services" className="text-secondary font-bold text-body-sm flex items-center gap-1 hover:underline w-fit mt-2 relative z-10">
-                  <span>View Visa Requirements</span>
-                  <span className="material-symbols-outlined text-lg">arrow_forward</span>
-                </Link>
               </div>
             ))}
           </div>
@@ -1637,8 +1641,8 @@ export const HomePage = () => {
                   >
                     <span
                       className={`size-2 rotate-45 transition-all ${isActive
-                          ? "bg-[#D4AF37] scale-125"
-                          : "bg-[#1D503A]/20 group-hover:bg-[#1D503A]/40"
+                        ? "bg-[#D4AF37] scale-125"
+                        : "bg-[#1D503A]/20 group-hover:bg-[#1D503A]/40"
                         }`}
                     />
                     <span
