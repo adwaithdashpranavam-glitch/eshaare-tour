@@ -442,8 +442,11 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-// Protect admin routes (requires staff auth)
-export const ProtectedRoute = ({ children }) => {
+// Protect admin routes (requires staff auth). Optionally restrict to specific roles:
+// pass `roles` (array of role strings) to gate a route. If the signed-in staff member's
+// role is not included, they are redirected to the admin dashboard. This makes direct-URL
+// access match the sidebar visibility in AdminLayout (defense-in-depth on top of Firestore rules).
+export const ProtectedRoute = ({ children, roles }) => {
   const { user, isAdmin, loading, role } = useAuth();
   const location = useLocation();
 
@@ -460,6 +463,11 @@ export const ProtectedRoute = ({ children }) => {
     });
     // Redirect to staff login
     return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  // Role-restricted route: authenticated staff but role not permitted for this page.
+  if (roles && !roles.includes(role)) {
+    return <Navigate to="/admin/dashboard" replace />;
   }
 
   return children;

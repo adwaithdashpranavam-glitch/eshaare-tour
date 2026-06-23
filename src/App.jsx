@@ -97,6 +97,20 @@ const PageLoader = () => (
   </div>
 );
 
+// Route-level RBAC role groups — kept in sync with the sidebar definitions in
+// src/layouts/AdminLayout.jsx (navSections[].roles) so that direct-URL access matches
+// sidebar visibility. These gate the page client-side; Firestore rules remain the
+// authoritative backstop for data.
+const RBAC = {
+  SALES: ["super_admin", "admin", "manager", "sales"],
+  OPERATIONS: ["super_admin", "admin", "manager", "visa_ops"],
+  APPOINTMENTS: ["super_admin", "admin", "manager", "sales", "visa_ops"],
+  FINANCE: ["super_admin", "admin", "manager", "finance"],
+  REPORTS: ["super_admin", "admin", "manager"],
+  CONTENT: ["super_admin", "admin", "manager"],
+  ADMIN_ONLY: ["super_admin", "admin"]
+};
+
 function App() {
   return (
     <HelmetProvider>
@@ -193,36 +207,37 @@ function App() {
                     }
                   >
                     <Route index element={<Navigate to="/admin/dashboard" replace />} />
+                    {/* Dashboard: all staff roles (no restriction) */}
                     <Route path="dashboard" element={<Dashboard />} />
-                    <Route path="leads" element={<LeadsListPage />} />
-                    <Route path="leads/:id" element={<LeadDetailPage />} />
-                    <Route path="cases" element={<VisaCasesListPage />} />
-                    <Route path="cases/:id" element={<CaseDetailPage />} />
-                    <Route path="documents" element={<AdminDocumentsPage />} />
-                    <Route path="appointments" element={<AppointmentsPage />} />
-                    <Route path="quotations" element={<QuotationsListPage />} />
-                    <Route path="quotations/new" element={<QuotationBuilderPage />} />
-                    <Route path="payments" element={<PaymentsPage />} />
-                    <Route path="staff" element={<StaffManagementPage />} />
-                    <Route path="reports" element={<ReportsPage />} />
-                    <Route path="settings" element={<SettingsPage />} />
-                    <Route path="visa-types" element={<VisaTypesListPage />} />
-                    <Route path="visa-types/new" element={<VisaTypeEditorPage />} />
-                    <Route path="visa-types/:id/edit" element={<VisaTypeEditorPage />} />
-                    
+                    <Route path="leads" element={<ProtectedRoute roles={RBAC.SALES}><LeadsListPage /></ProtectedRoute>} />
+                    <Route path="leads/:id" element={<ProtectedRoute roles={RBAC.SALES}><LeadDetailPage /></ProtectedRoute>} />
+                    <Route path="cases" element={<ProtectedRoute roles={RBAC.OPERATIONS}><VisaCasesListPage /></ProtectedRoute>} />
+                    <Route path="cases/:id" element={<ProtectedRoute roles={RBAC.OPERATIONS}><CaseDetailPage /></ProtectedRoute>} />
+                    <Route path="documents" element={<ProtectedRoute roles={RBAC.OPERATIONS}><AdminDocumentsPage /></ProtectedRoute>} />
+                    <Route path="appointments" element={<ProtectedRoute roles={RBAC.APPOINTMENTS}><AppointmentsPage /></ProtectedRoute>} />
+                    <Route path="quotations" element={<ProtectedRoute roles={RBAC.FINANCE}><QuotationsListPage /></ProtectedRoute>} />
+                    <Route path="quotations/new" element={<ProtectedRoute roles={RBAC.FINANCE}><QuotationBuilderPage /></ProtectedRoute>} />
+                    <Route path="payments" element={<ProtectedRoute roles={RBAC.FINANCE}><PaymentsPage /></ProtectedRoute>} />
+                    <Route path="staff" element={<ProtectedRoute roles={RBAC.ADMIN_ONLY}><StaffManagementPage /></ProtectedRoute>} />
+                    <Route path="reports" element={<ProtectedRoute roles={RBAC.REPORTS}><ReportsPage /></ProtectedRoute>} />
+                    <Route path="settings" element={<ProtectedRoute roles={RBAC.ADMIN_ONLY}><SettingsPage /></ProtectedRoute>} />
+                    <Route path="visa-types" element={<ProtectedRoute roles={RBAC.CONTENT}><VisaTypesListPage /></ProtectedRoute>} />
+                    <Route path="visa-types/new" element={<ProtectedRoute roles={RBAC.CONTENT}><VisaTypeEditorPage /></ProtectedRoute>} />
+                    <Route path="visa-types/:id/edit" element={<ProtectedRoute roles={RBAC.CONTENT}><VisaTypeEditorPage /></ProtectedRoute>} />
+
                     {/* App Content Section Routes */}
-                    <Route path="app/packages" element={<AppPackagesListPage />} />
-                    <Route path="app/packages/new" element={<AppPackageEditorPage />} />
-                    <Route path="app/packages/:id/edit" element={<AppPackageEditorPage />} />
-                    <Route path="app/visa" element={<AppVisasListPage />} />
-                    <Route path="app/visa/new" element={<AppVisaEditorPage />} />
-                    <Route path="app/visa/:id/edit" element={<AppVisaEditorPage />} />
-                    
+                    <Route path="app/packages" element={<ProtectedRoute roles={RBAC.CONTENT}><AppPackagesListPage /></ProtectedRoute>} />
+                    <Route path="app/packages/new" element={<ProtectedRoute roles={RBAC.CONTENT}><AppPackageEditorPage /></ProtectedRoute>} />
+                    <Route path="app/packages/:id/edit" element={<ProtectedRoute roles={RBAC.CONTENT}><AppPackageEditorPage /></ProtectedRoute>} />
+                    <Route path="app/visa" element={<ProtectedRoute roles={RBAC.CONTENT}><AppVisasListPage /></ProtectedRoute>} />
+                    <Route path="app/visa/new" element={<ProtectedRoute roles={RBAC.CONTENT}><AppVisaEditorPage /></ProtectedRoute>} />
+                    <Route path="app/visa/:id/edit" element={<ProtectedRoute roles={RBAC.CONTENT}><AppVisaEditorPage /></ProtectedRoute>} />
+
                     {/* DYNAMIC CMS / CRM PORTAL TABS */}
-                    <Route path="cms/visa-checker" element={<VisaCheckerCms activeTab="cms" />} />
-                    <Route path="crm/applications" element={<VisaCheckerCms activeTab="applications" />} />
-                    <Route path="crm/leads" element={<VisaCheckerCms activeTab="leads" />} />
-                    <Route path="settings/theme" element={<VisaCheckerCms activeTab="theme" />} />
+                    <Route path="cms/visa-checker" element={<ProtectedRoute roles={RBAC.CONTENT}><VisaCheckerCms activeTab="cms" /></ProtectedRoute>} />
+                    <Route path="crm/applications" element={<ProtectedRoute roles={RBAC.OPERATIONS}><VisaCheckerCms activeTab="applications" /></ProtectedRoute>} />
+                    <Route path="crm/leads" element={<ProtectedRoute roles={RBAC.SALES}><VisaCheckerCms activeTab="leads" /></ProtectedRoute>} />
+                    <Route path="settings/theme" element={<ProtectedRoute roles={RBAC.ADMIN_ONLY}><VisaCheckerCms activeTab="theme" /></ProtectedRoute>} />
                   </Route>
 
                   {/* CATCH-ALL REDIRECT */}

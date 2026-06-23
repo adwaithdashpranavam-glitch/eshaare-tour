@@ -11,7 +11,14 @@ async function verifySuperAdmin(context) {
     throw new functions.https.HttpsError("unauthenticated", "Authentication required.");
   }
   const callerUid = context.auth.uid;
-  const callerDoc = await db.collection("users").doc(callerUid).get();
+  // Resolve the caller's profile the same way the client (AuthContext) and Firestore
+  // rules (getUserData) do: try the UID-keyed doc first, then fall back to the legacy
+  // email-keyed doc. Without this fallback a super_admin whose profile is still keyed
+  // by email (pre-migration / console-created) would be wrongly denied.
+  let callerDoc = await db.collection("users").doc(callerUid).get();
+  if (!callerDoc.exists && context.auth.token && context.auth.token.email) {
+    callerDoc = await db.collection("users").doc(context.auth.token.email.toLowerCase()).get();
+  }
   if (!callerDoc.exists || callerDoc.data().role !== "super_admin") {
     throw new functions.https.HttpsError("permission-denied", "Access restricted to super_admin only.");
   }
@@ -269,6 +276,11 @@ exports.deleteStaff = functions.https.onCall(async (data, context) => {
   const userData = userDoc.exists ? userDoc.data() : null;
   const email = (userData && userData.email) ? userData.email : (uid.includes("@") ? uid : null);
 
+  // Outcome flags so the caller can distinguish a full delete from a partial one.
+  let authDeleted = false;       // an Auth user existed and was deleted
+  let authUserNotFound = false;  // a real Auth account could not be located to delete
+  let authSkipped = false;       // no Auth deletion attempted (no resolvable Auth uid)
+
   // Resolve the real Auth UID. The doc id might be an email (legacy) or a real UID.
   let authUid = null;
   if (!uid.includes("@")) {
@@ -280,6 +292,7 @@ exports.deleteStaff = functions.https.onCall(async (data, context) => {
       authUid = userRecord.uid;
     } catch (err) {
       console.warn("No Auth account for email", email, err.code || err.message);
+      authUserNotFound = true;
     }
   }
 
@@ -287,18 +300,26 @@ exports.deleteStaff = functions.https.onCall(async (data, context) => {
   if (authUid) {
     try {
       await admin.auth().deleteUser(authUid);
+      authDeleted = true;
     } catch (err) {
       console.warn("Auth user delete warning:", err.code || err.message);
+      if (err.code === "auth/user-not-found") {
+        authUserNotFound = true;
+      }
     }
+  } else {
+    authSkipped = true;
   }
 
   // Delete Firestore docs — both the doc id passed in and the resolved Auth UID
-  // (these differ for legacy email-keyed records). Best-effort on each.
+  // (these differ for legacy email-keyed records). Best-effort on each; track whether
+  // at least one document was actually removed.
+  let firestoreDeleted = false;
   const idsToClean = [...new Set([uid, authUid].filter(Boolean))];
   await Promise.all(
     idsToClean.flatMap((id) => [
-      db.collection("users").doc(id).delete().catch(() => {}),
-      db.collection("customers").doc(id).delete().catch(() => {})
+      db.collection("users").doc(id).delete().then(() => { firestoreDeleted = true; }).catch(() => {}),
+      db.collection("customers").doc(id).delete().then(() => { firestoreDeleted = true; }).catch(() => {})
     ])
   );
 
@@ -309,10 +330,25 @@ exports.deleteStaff = functions.https.onCall(async (data, context) => {
     performedByRole: "super_admin",
     targetId: uid,
     timestamp: FieldValue.serverTimestamp(),
-    details: { email: email || "unknown", name: (userData && userData.name) || "unknown" }
+    details: {
+      email: email || "unknown",
+      name: (userData && userData.name) || "unknown",
+      authDeleted,
+      firestoreDeleted,
+      authUserNotFound,
+      authSkipped
+    }
   });
 
-  return { success: true };
+  // `success` stays true if any cleanup happened, preserving the existing frontend
+  // success toast. The extra flags let callers surface partial-failure warnings later.
+  return {
+    success: authDeleted || firestoreDeleted,
+    authDeleted,
+    firestoreDeleted,
+    authUserNotFound,
+    authSkipped
+  };
 });
 
 // 5. Submit Lead (Public Form) with rate limiting, duplicate protection, and spam checking

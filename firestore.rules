@@ -200,8 +200,22 @@ service cloud.firestore {
                     ) &&
                     validateUserSchema(request.resource.data);
       
-      // Managers can update any user (for role/status changes via admin panel)
-      allow update: if isManager();
+      // Managers/admins may edit editable staff PROFILE fields (name, designation, intro,
+      // imageUrl, visasFiled, experienceYears, successRate, lastLoginAt) on any user doc,
+      // but may NOT alter protected fields via the client SDK. role and status change ONLY
+      // through the Admin SDK (createStaff/updateStaffRole/updateStaffStatus Cloud Functions),
+      // which bypass these rules. This closes the privilege-escalation hole where a manager
+      // could self-promote to super_admin with a direct Firestore write.
+      allow update: if isManager()
+                    && request.resource.data.role == resource.data.role
+                    && (!('status' in resource.data)
+                          ? !('status' in request.resource.data)
+                          : request.resource.data.status == resource.data.status)
+                    && request.resource.data.email == resource.data.email
+                    && (!('uid' in resource.data) || request.resource.data.uid == resource.data.uid)
+                    && (!('createdAt' in resource.data) || request.resource.data.createdAt == resource.data.createdAt)
+                    && (!('createdBy' in resource.data) || request.resource.data.createdBy == resource.data.createdBy)
+                    && (!('assignedCases' in resource.data) || request.resource.data.assignedCases == resource.data.assignedCases);
 
       // Users can update their own profile — role/status/email/uid must be immutable, lastLoginAt allowed
       allow update: if isSignedIn() && request.auth.uid == userId && 
@@ -479,40 +493,6 @@ service cloud.firestore {
     match /auditLogs/{logId} {
       allow read: if isStaff();
       allow create: if isStaff();
-    }
-
-    // ==========================================
-    // Temporary debug rules for scanning
-    // ==========================================
-    match /app_packages/{id} {
-      allow read: if true;
-    }
-    match /holiday_packages/{id} {
-      allow read: if true;
-    }
-    match /tour_packages/{id} {
-      allow read: if true;
-    }
-    match /tours/{id} {
-      allow read: if true;
-    }
-
-    // ==========================================
-    // 14. App Packages Collection
-    // ==========================================
-    match /packages/{packageId} {
-      // Public read access; write only by staff
-      allow read: if true;
-      allow write: if isStaff();
-    }
-
-    // ==========================================
-    // 15. App Visas Collection
-    // ==========================================
-    match /visas/{visaId} {
-      // Public read access; write only by staff
-      allow read: if true;
-      allow write: if isStaff();
     }
 
     // ==========================================
