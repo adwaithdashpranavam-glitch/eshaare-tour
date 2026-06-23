@@ -32,8 +32,20 @@ export default function AdminDocumentsPage() {
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      if (file.type !== "application/pdf") {
-        toast.error("Please upload a PDF document only.");
+      const allowedMimeTypes = [
+        "application/pdf",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      ];
+      const allowedExtensions = [".pdf", ".doc", ".docx"];
+      const fileName = (file.name || "").toLowerCase();
+      const hasValidExtension = allowedExtensions.some((ext) => fileName.endsWith(ext));
+      if (!allowedMimeTypes.includes(file.type) && !hasValidExtension) {
+        toast.error("Please upload a PDF, DOC, or DOCX document only.");
+        return;
+      }
+      if (file.size > 15 * 1024 * 1024) {
+        toast.error("File is too large. Max size is 15MB.");
         return;
       }
       setSelectedFile(file);
@@ -43,14 +55,19 @@ export default function AdminDocumentsPage() {
   const handleUpload = async (e) => {
     e.preventDefault();
     if (!selectedFile) {
-      toast.error("Please select a PDF file first.");
+      toast.error("Please select a file first.");
       return;
     }
 
     setUploading(true);
     try {
-      // 1. Upload file to Firebase Storage
-      const storageRef = ref(storage, "system-documents/noc/Eshaare_NOC_Template.pdf");
+      // 1. Upload file to Firebase Storage (preserve original extension)
+      const nameParts = (selectedFile.name || "").split(".");
+      const fileExtension = nameParts.length > 1 ? nameParts.pop().toLowerCase() : "pdf";
+      const storageRef = ref(
+        storage,
+        `system-documents/noc/Eshaare_NOC_Template.${fileExtension}`
+      );
       const uploadResult = await uploadBytes(storageRef, selectedFile);
       
       // 2. Retrieve Download URL
@@ -103,16 +120,16 @@ export default function AdminDocumentsPage() {
               <FileText className="w-8 h-8 text-gray-500" />
               <div className="text-xs">
                 <label className="cursor-pointer font-bold text-[#D4AF37] hover:underline">
-                  <span>Select NOC Template PDF</span>
+                  <span>Select NOC Template</span>
                   <input
                     type="file"
-                    accept=".pdf"
+                    accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                     className="hidden"
                     onChange={handleFileChange}
                   />
                 </label>
               </div>
-              <p className="text-[10px] text-gray-400">PDF documents only. Max size 15MB.</p>
+              <p className="text-[10px] text-gray-400">PDF, DOC, or DOCX only. Max size 15MB.</p>
             </div>
 
             {selectedFile && (
