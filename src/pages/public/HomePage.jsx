@@ -1167,7 +1167,7 @@ export const HomePage = () => {
             className={`space-y-6 transition-opacity duration-1000 ${visibleSections["about-eshaare"] ? "opacity-100" : "opacity-0"}`}
           >
             <h2 className={`font-headline-lg text-[20px] sm:text-2xl md:text-headline-lg text-primary ${typewriterClass("about-eshaare")}`}>
-              About Eshaare Travel Agency & Visa Consultant
+              About Eshaare
             </h2>
             <p className="text-on-surface-variant text-body-md leading-relaxed">
               Eshaare Tours UAE is a Dubai-based travel agency and visa consultancy offering complete travel solutions for UAE residents, families, couples, tourists, students, and corporate travelers. </p>
