@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { createLead, getPackages } from "../../lib/firestore";
+import { createLead, getPackages, getActiveExperts } from "../../lib/firestore";
 import { generateLeadNo, formatWhatsAppPhone } from "../../utils/helpers";
 import { db, serverTimestamp } from "../../lib/firebase";
 import { collection, onSnapshot } from "firebase/firestore";
@@ -333,10 +333,24 @@ export const HomePage = () => {
     }
   ];
 
-  // Specialists are sourced from the curated static list. The public site no longer
-  // queries the `users` collection (it holds staff/client PII and is now owner/manager-read only).
-  const [specialists] = useState(fallbackSpecialists);
+  // Specialists are sourced from the Firestore experts collection (active status).
+  // Safe fallback to curated static list is kept if the collection is empty.
+  const [specialists, setSpecialists] = useState(fallbackSpecialists);
   const [activeSpecIndex, setActiveSpecIndex] = useState(0);
+
+  useEffect(() => {
+    const unsubscribe = getActiveExperts((experts) => {
+      if (experts && experts.length > 0) {
+        setSpecialists(experts);
+      } else {
+        setSpecialists(fallbackSpecialists);
+      }
+    }, (error) => {
+      console.warn("Firestore active experts load failed, using fallback:", error);
+      setSpecialists(fallbackSpecialists);
+    });
+    return () => unsubscribe();
+  }, []);
 
 
   // Auto-skip rotation timer for specialists (every 5 seconds)
@@ -355,8 +369,14 @@ export const HomePage = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const getSpecialistTags = (designation) => {
-    const des = (designation || "").toLowerCase();
+  const getSpecialistTags = (member) => {
+    if (member && member.tags && Array.isArray(member.tags) && member.tags.length > 0) {
+      return {
+        highlighted: member.department || member.tags[0],
+        secondary: member.tags.slice(1).length > 0 ? member.tags.slice(1) : [member.tags[0]]
+      };
+    }
+    const des = (member?.designation || "").toLowerCase();
     if (des.includes("managing") || des.includes("director") || des.includes("rakhi")) {
       return {
         highlighted: "Leadership",
@@ -1258,7 +1278,7 @@ export const HomePage = () => {
                 zIndexStyle = 0;
               }
 
-              const tags = getSpecialistTags(member.designation);
+              const tags = getSpecialistTags(member);
 
               return (
                 <div

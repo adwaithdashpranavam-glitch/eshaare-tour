@@ -69,6 +69,14 @@ service firebase.storage {
              userData.role in ['super_admin', 'admin', 'manager'];
     }
 
+    // Check if user is super admin
+    function isSuperAdmin() {
+      let userData = getUserData();
+      return isSignedIn() && userData != null && 
+             (!('status' in userData) || userData.status == 'Active') &&
+             userData.role == 'super_admin';
+    }
+
     // 1. Documents Collection uploads
     match /documents/{documentId}/{allPaths=**} {
       allow read: if (isSignedIn() && request.auth.uid == documentId) || canAccessTravelDocs();
@@ -97,6 +105,12 @@ service firebase.storage {
     match /staff_pics/{allPaths=**} {
       allow read: if true;
       allow write: if isManager();
+    }
+
+    // 8. Expert Profile Pictures
+    match /expert_pics/{allPaths=**} {
+      allow read: if true;
+      allow write: if isSuperAdmin();
     }
 
     // 6. System Documents (e.g., universal templates)

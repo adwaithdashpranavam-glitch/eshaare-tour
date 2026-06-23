@@ -411,6 +411,12 @@ service cloud.firestore {
       allow write: if isManager();
     }
 
+    match /experts/{expertId} {
+      allow get, list: if isSuperAdmin() || resource.data.status == 'active';
+      allow create, update, delete: if isSuperAdmin();
+    }
+
+
     // ==========================================
     // 15. App Visas Collection
     // ==========================================

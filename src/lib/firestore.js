@@ -2394,4 +2394,68 @@ export async function deleteFamilyMember(userId, memberId) {
   }
 }
 
+// ==========================================
+// EXPERTS COLLECTION SERVICES
+// ==========================================
+
+export function getExperts(callback, errorCallback = null) {
+  try {
+    const collRef = collection(db, "experts");
+    const q = query(collRef, orderBy("displayOrder", "asc"));
+    return onSnapshot(q, (snapshot) => {
+      const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      callback(items);
+    }, (error) => {
+      console.error("Experts listener error:", error);
+      if (errorCallback) errorCallback(error);
+    });
+  } catch (error) {
+    handleError(error, "getExperts");
+  }
+}
+
+export function getActiveExperts(callback, errorCallback = null) {
+  try {
+    const collRef = collection(db, "experts");
+    const q = query(collRef, where("status", "==", "active"), orderBy("displayOrder", "asc"));
+    return onSnapshot(q, (snapshot) => {
+      const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      callback(items);
+    }, (error) => {
+      console.error("Active experts listener error:", error);
+      if (errorCallback) errorCallback(error);
+    });
+  } catch (error) {
+    handleError(error, "getActiveExperts");
+  }
+}
+
+export async function saveExpert(id, data) {
+  try {
+    const collRef = collection(db, "experts");
+    const docRef = id ? doc(collRef, id) : doc(collRef);
+    const expertData = {
+      ...data,
+      updatedAt: serverTimestamp()
+    };
+    if (!id) {
+      expertData.createdAt = serverTimestamp();
+    }
+    await setDoc(docRef, expertData, { merge: true });
+    return docRef.id;
+  } catch (error) {
+    handleError(error, "saveExpert");
+  }
+}
+
+export async function deleteExpert(id) {
+  try {
+    const docRef = doc(db, "experts", id);
+    await deleteDoc(docRef);
+  } catch (error) {
+    handleError(error, "deleteExpert");
+  }
+}
+
+
 
