@@ -5,6 +5,20 @@ import { db, storage, auth } from "../../lib/firebase";
 import { FileText, Upload, Download, ExternalLink, Calendar, User, FileCheck, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 
+const formatFileSize = (bytes) => {
+  if (typeof bytes !== "number" || isNaN(bytes) || bytes <= 0) return null;
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+};
+
+const getFileExtension = (template) => {
+  if (template?.fileType) return String(template.fileType).toUpperCase();
+  const name = template?.fileName || "";
+  const parts = name.split(".");
+  return parts.length > 1 ? parts.pop().toUpperCase() : "—";
+};
+
 export default function AdminDocumentsPage() {
   const [nocTemplate, setNocTemplate] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -80,7 +94,10 @@ export default function AdminDocumentsPage() {
         title: "NOC Template",
         fileUrl: downloadUrl,
         fileName: selectedFile.name,
+        fileType: fileExtension,
+        fileSize: selectedFile.size,
         uploadedBy: auth.currentUser?.uid || "admin",
+        uploadedByName: auth.currentUser?.displayName || auth.currentUser?.email || null,
         uploadedAt: serverTimestamp(),
         active: true
       });
@@ -201,8 +218,19 @@ export default function AdminDocumentsPage() {
                   <span className="font-bold text-white">{nocTemplate.title}</span>
                 </div>
                 <div className="flex justify-between items-center pb-2 border-b border-gray-800/50">
-                  <span className="text-gray-400">Deployed File:</span>
+                  <span className="text-gray-400">File Name:</span>
                   <span className="font-bold text-white truncate max-w-[200px]" title={nocTemplate.fileName}>{nocTemplate.fileName}</span>
+                </div>
+                <div className="flex justify-between items-center pb-2 border-b border-gray-800/50">
+                  <span className="text-gray-400">File Type:</span>
+                  <span className="font-bold text-white inline-flex items-center gap-1.5">
+                    <FileText className="w-3.5 h-3.5 text-[#D4AF37]" />
+                    {getFileExtension(nocTemplate)}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center pb-2 border-b border-gray-800/50">
+                  <span className="text-gray-400">File Size:</span>
+                  <span className="font-bold text-white">{formatFileSize(nocTemplate.fileSize) || "N/A"}</span>
                 </div>
                 <div className="flex justify-between items-center pb-2 border-b border-gray-800/50">
                   <span className="text-gray-400 font-sans">Uploaded At:</span>
@@ -213,17 +241,37 @@ export default function AdminDocumentsPage() {
                     ) : "N/A"}
                   </span>
                 </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-400 font-sans">Uploaded By:</span>
+                  <span className="font-semibold text-gray-300 flex items-center gap-1 truncate max-w-[200px]" title={nocTemplate.uploadedByName || nocTemplate.uploadedBy}>
+                    <User className="w-3.5 h-3.5 text-gray-400" />
+                    {nocTemplate.uploadedByName || nocTemplate.uploadedBy || "N/A"}
+                  </span>
+                </div>
               </div>
+
+              <p className="text-[10px] text-gray-400 italic">
+                This is the active NOC template currently visible in the client portal.
+              </p>
 
               <div className="flex gap-2">
                 <a
                   href={nocTemplate.fileUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-4 py-2 border border-gray-700 hover:border-gray-500 rounded-xl font-bold uppercase flex items-center gap-1.5 text-[10px]"
+                  className="flex-1 px-4 py-2.5 bg-[#D4AF37] hover:opacity-95 text-black rounded-xl font-bold uppercase flex items-center justify-center gap-1.5 text-[10px] tracking-wider"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  Download / View Template
+                </a>
+                <a
+                  href={nocTemplate.fileUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-2.5 border border-gray-700 hover:border-gray-500 rounded-xl font-bold uppercase flex items-center gap-1.5 text-[10px]"
                 >
                   <ExternalLink className="w-3.5 h-3.5 text-[#D4AF37]" />
-                  Verify File Link
+                  Open Uploaded Template
                 </a>
               </div>
             </div>
