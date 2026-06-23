@@ -51,6 +51,7 @@ const QuotationsListPage = lazy(() => import("./pages/admin/QuotationsListPage")
 const QuotationBuilderPage = lazy(() => import("./pages/admin/QuotationBuilderPage"));
 const PaymentsPage = lazy(() => import("./pages/admin/PaymentsPage"));
 const StaffManagementPage = lazy(() => import("./pages/admin/StaffManagementPage"));
+const ExpertsManagementPage = lazy(() => import("./pages/admin/ExpertsManagementPage"));
 const ReportsPage = lazy(() => import("./pages/admin/ReportsPage"));
 const SettingsPage = lazy(() => import("./pages/admin/SettingsPage"));
 const VisaTypesListPage = lazy(() => import("./pages/admin/VisaTypesListPage"));
@@ -219,6 +220,7 @@ function App() {
                     <Route path="quotations/new" element={<ProtectedRoute roles={RBAC.FINANCE}><QuotationBuilderPage /></ProtectedRoute>} />
                     <Route path="payments" element={<ProtectedRoute roles={RBAC.FINANCE}><PaymentsPage /></ProtectedRoute>} />
                     <Route path="staff" element={<ProtectedRoute roles={RBAC.ADMIN_ONLY}><StaffManagementPage /></ProtectedRoute>} />
+                    <Route path="experts" element={<ProtectedRoute roles={["super_admin"]}><ExpertsManagementPage /></ProtectedRoute>} />
                     <Route path="reports" element={<ProtectedRoute roles={RBAC.REPORTS}><ReportsPage /></ProtectedRoute>} />
                     <Route path="settings" element={<ProtectedRoute roles={RBAC.ADMIN_ONLY}><SettingsPage /></ProtectedRoute>} />
                     <Route path="visa-types" element={<ProtectedRoute roles={RBAC.CONTENT}><VisaTypesListPage /></ProtectedRoute>} />
