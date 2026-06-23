@@ -2,6 +2,7 @@ import React, { useState, useReducer, useEffect, useMemo } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
+import { getMinStartDate, getMinEndDate, validateAppointmentDates } from "../../utils/appointmentDateRules";
 
 const initialState = {
   destinationCountry: "",
@@ -143,6 +144,14 @@ export const AppointmentBookingPage = () => {
     if (step === 1) {
       if (!formData.destinationCountry || !formData.visaType || !formData.nearestVfsCenter || !formData.earliestDate || !formData.latestDate) {
         toast.error("Please fill in all travel details.");
+        return;
+      }
+      const { valid, error } = validateAppointmentDates(
+        { startDate: formData.earliestDate, endDate: formData.latestDate },
+        "default"
+      );
+      if (!valid) {
+        toast.error(error);
         return;
       }
     }
@@ -668,6 +677,7 @@ export const AppointmentBookingPage = () => {
                     <label className="text-label-md font-label-md font-semibold text-primary">Earliest Preferred Date *</label>
                     <input
                       type="date"
+                      min={getMinStartDate("default")}
                       value={formData.earliestDate}
                       onChange={(e) => handleFieldChange("earliestDate", e.target.value)}
                       className="bg-surface-container-low border-transparent border-b-outline-variant/30 rounded-lg p-4 font-body-md text-body-md form-focus transition-all focus:ring-2 focus:ring-secondary"
@@ -678,6 +688,7 @@ export const AppointmentBookingPage = () => {
                     <label className="text-label-md font-label-md font-semibold text-primary">Latest Preferred Date *</label>
                     <input
                       type="date"
+                      min={getMinEndDate(formData.earliestDate, "default")}
                       value={formData.latestDate}
                       onChange={(e) => handleFieldChange("latestDate", e.target.value)}
                       className="bg-surface-container-low border-transparent border-b-outline-variant/30 rounded-lg p-4 font-body-md text-body-md form-focus transition-all focus:ring-2 focus:ring-secondary"
