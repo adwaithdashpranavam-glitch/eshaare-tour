@@ -17,6 +17,7 @@ import {
   STEP_META
 } from "../../components/portal/ProfileSteps";
 import { STEP_VALIDATORS } from "../../utils/profileValidation";
+import { getMinStartDate, getMinEndDate, validateAppointmentDates } from "../../utils/appointmentDateRules";
 import toast from "react-hot-toast";
 import LoadingSpinner from "../../components/ui/LoadingSpinner";
 import { ChevronLeft, ChevronRight, ChevronDown, Save, CheckCircle, FileText, Globe, Calendar, User, List, CreditCard, Check, Download, AlertCircle, Lock, Clock, ArrowRight, MessageSquare, Phone, Mail, FileCheck, FileClock, Upload, ExternalLink, Copy, HelpCircle, Send } from "lucide-react";
@@ -603,16 +604,8 @@ export default function SchengenWizard() {
       if (!draft.visaType) return toast.error("Please select a visa type.");
     }
     if (currentStep === 1) {
-      if (!draft.appointmentPreference?.startDate) return toast.error("Please select a start date.");
-      if (!draft.appointmentPreference?.endDate) return toast.error("Please select an end date.");
-      const start = new Date(draft.appointmentPreference.startDate);
-      const end = new Date(draft.appointmentPreference.endDate);
-      if (end <= start) return toast.error("End date must be after start date.");
-      const diffTime = Math.abs(end - start);
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      if (diffDays < 10) {
-        return toast.error("Please choose at least a 10-day appointment preference interval so our team has enough flexibility to secure a suitable slot.");
-      }
+      const { valid, error } = validateAppointmentDates(draft.appointmentPreference, "schengen");
+      if (!valid) return toast.error(error);
     }
     if (currentStep === 2) {
       const allErrors = {};
@@ -828,18 +821,20 @@ export default function SchengenWizard() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex flex-col space-y-1.5">
-                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Preferred Start Date *</label>
+                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Earliest Date You Can Attend *</label>
                 <input
                   type="date"
+                  min={getMinStartDate("schengen")}
                   value={draft.appointmentPreference?.startDate || ""}
                   onChange={(e) => setDraft({...draft, appointmentPreference: {...draft.appointmentPreference, startDate: e.target.value}})}
                   className="px-4 py-3 bg-[#F8F6F2] border border-[#E5E7EB] text-[#1A1A1A] rounded-xl focus:outline-none focus:border-[#C6A969] text-sm"
                 />
               </div>
               <div className="flex flex-col space-y-1.5">
-                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Preferred End Date *</label>
+                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Latest Date You Can Attend *</label>
                 <input
                   type="date"
+                  min={getMinEndDate(draft.appointmentPreference?.startDate, "schengen")}
                   value={draft.appointmentPreference?.endDate || ""}
                   onChange={(e) => setDraft({...draft, appointmentPreference: {...draft.appointmentPreference, endDate: e.target.value}})}
                   className="px-4 py-3 bg-[#F8F6F2] border border-[#E5E7EB] text-[#1A1A1A] rounded-xl focus:outline-none focus:border-[#C6A969] text-sm"
@@ -1274,7 +1269,7 @@ export default function SchengenWizard() {
                     </span>
                   </div>
                   <div className="space-y-1">
-                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Preferred Appointment Dates</span>
+                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Dates You Can Attend</span>
                     <span className="text-sm font-bold text-gray-800 flex items-center gap-1.5">
                       <Calendar className="w-4 h-4 text-[#C6A969]" />
                       {appointmentPreferredDates}

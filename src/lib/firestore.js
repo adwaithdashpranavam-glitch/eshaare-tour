@@ -18,6 +18,7 @@ import {
 import { db, auth, functions, httpsCallable } from "./firebase";
 export { db, auth };
 import toast from "react-hot-toast";
+import { validateAppointmentDates } from "../utils/appointmentDateRules";
 
 // Helper for error logging
 const handleError = (error, context) => {
@@ -1967,6 +1968,15 @@ export const submitSchengenApplication = async (appId) => {
     // Idempotency guard: never submit twice / never create a duplicate case.
     if (app.status === "Submitted") return;
 
+    // Authoritative appointment-date validation. The wizard UI also enforces this,
+    // but we re-check here so a bypassed/stale UI can never persist a past
+    // preferred start date (or an invalid range) into a submitted application.
+    const visaFlow = app.applicationType || "schengen";
+    const { valid, error } = validateAppointmentDates(app.appointmentPreference, visaFlow);
+    if (!valid) {
+      throw new Error(error || "Invalid appointment preference dates.");
+    }
+
     await updateDoc(appRef, {
       status: "Submitted",
       submittedAt: new Date(),
@@ -2019,6 +2029,14 @@ export const markSchengenPaidAndSubmit = async (appId, paymentMethod = "manual_t
     const app = snap.data();
 
     if (app.status === "Submitted") return; // already finalized
+
+    // Authoritative appointment-date validation (UI is also enforced, but re-check
+    // here so a bypassed/stale UI can never finalize a past preferred start date).
+    const visaFlow = app.applicationType || "schengen";
+    const dateCheck = validateAppointmentDates(app.appointmentPreference, visaFlow);
+    if (!dateCheck.valid) {
+      throw new Error(dateCheck.error || "Invalid appointment preference dates.");
+    }
 
     const displayName = getApplicationDisplayName(app);
     const fd = app.formData || {};
