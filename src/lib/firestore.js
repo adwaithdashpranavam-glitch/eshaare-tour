@@ -2057,6 +2057,30 @@ export const markSchengenPaidAndSubmit = async (appId, paymentMethod = "manual_t
       updatedAt: now
     });
 
+    // Create the client-facing payment receipt in the SAME batch so the portal
+    // Payments page (queries `payments` where clientEmail == user email) shows the
+    // confirmed payment immediately after approval. clientUid is included so the
+    // payments read rule (clientUid == auth.uid) also matches. Field set is kept
+    // within validatePaymentSchema()'s allowlist in firestore.rules.
+    const paymentRef = doc(collection(db, "payments"));
+    batch.set(paymentRef, {
+      clientUid: app.customerId || null,
+      clientEmail: (fd.email || "").toLowerCase(),
+      clientName: fd.name || app.customerName || "",
+      service: displayName,
+      amount: Number(app.amount) || 0,
+      currency: "AED",
+      method: paymentMethod,
+      paymentMethod,
+      status: "Paid",
+      invoiceNo: `INV-${caseNumber}`,
+      applicationId: appId,
+      caseId: caseRef.id,
+      date: now.toISOString(),
+      paymentApprovedAt: now.toISOString(),
+      createdAt: now
+    });
+
     await batch.commit();
   } catch (error) {
     handleError(error, "markSchengenPaidAndSubmit");

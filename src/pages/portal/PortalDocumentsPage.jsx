@@ -37,11 +37,7 @@ export const PortalDocumentsPage = () => {
   const categories = [
     { name: "Passport", type: "Mandatory" },
     { name: "Photographs", type: "Mandatory" },
-    { name: "Bank Statements", type: "Mandatory" },
-    { name: "Employment Documents", type: "Mandatory" },
-    { name: "Travel Insurance", type: "Supporting" },
-    { name: "Flight Reservation", type: "Supporting" },
-    { name: "Hotel Reservation", type: "Supporting" }
+    { name: "Bank Statements", type: "Mandatory" }
   ];
 
   const getCategoryStatus = (categoryName) => {

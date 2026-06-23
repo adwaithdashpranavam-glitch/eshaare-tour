@@ -16,6 +16,7 @@ export const StatusBadge = ({ status, variant }) => {
       
       // Cases
       "Docs Pending": "bg-warning/10 text-warning border border-warning/20",
+      "Documents Pending": "bg-warning/10 text-warning border border-warning/20",
       "Verification": "bg-info/10 text-info border border-info/20",
       "Submitted": "bg-secondary-container/10 text-secondary-fixed-dim border border-secondary/20",
       "Awaiting Decision": "bg-purple-500/10 text-purple-400 border border-purple-500/20",
