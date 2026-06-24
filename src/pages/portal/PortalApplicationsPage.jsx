@@ -9,15 +9,20 @@ import { formatShortDate } from "../../utils/formatters";
 import { getApplicationDisplayName } from "../../utils/helpers";
 import Modal from "../../components/ui/Modal";
 import { getApplicationsForCustomer, updateApplication, submitApplication, deleteApplication, isCompatibleSchengenDraft } from "../../lib/firestore";
+import { deriveApplicationPipelineStatus, getPipelineStatusLabel } from "../../utils/caseWorkspace";
 import LoadingSpinner from "../../components/ui/LoadingSpinner";
 import toast from "react-hot-toast";
 
 export const PortalApplicationsPage = () => {
   const { user, userProfile } = useAuth();
   const navigate = useNavigate();
-  const [drafts, setDrafts] = useState([]);
+  // applications is the PRIMARY source of truth for both Draft and Submitted
+  // sections (queried by customerId == uid, identical to the Dashboard). cases is
+  // the visa_cases + bookings list, used ONLY as a fallback for booking-only
+  // records that have no matching application document.
+  const [applications, setApplications] = useState([]);
   const [cases, setCases] = useState([]);
-  const [loadingDrafts, setLoadingDrafts] = useState(true);
+  const [loadingApps, setLoadingApps] = useState(true);
   const [loadingCases, setLoadingCases] = useState(true);
 
   // Form / Modal state for draft editing
@@ -37,29 +42,15 @@ export const PortalApplicationsPage = () => {
   const [draftToDelete, setDraftToDelete] = useState(null);
   const [deleting, setDeleting] = useState(false);
 
-  // Fetch drafts from 'applications'
+  // Fetch ALL applications for this user (primary source of truth). Draft vs
+  // Submitted classification is derived in render so it stays consistent with the
+  // Dashboard, which reads the same collection by the same key (customerId == uid).
   useEffect(() => {
     if (!user?.uid) return;
 
     const unsubscribe = getApplicationsForCustomer(user.uid, (data) => {
-      // Show only drafts in the draft section. Hide stale/legacy Schengen drafts that
-      // pre-date the wizard's schema: reopening them routes into the wizard, where every
-      // save fails Firestore rules ("Missing or insufficient permissions"). They can't be
-      // continued from the client, so don't surface them — a fresh draft is created on Apply.
-      const isSchengenDraft = (app) =>
-        app.applicationType === "schengen" ||
-        app.visaId === "schengen" ||
-        app?.visaName?.toLowerCase().includes("schengen");
-      // A draft is only a draft while it is unpaid. Per the "payment === submission"
-      // rule, a paid application is Submitted and must never surface here (defensive:
-      // also filters any legacy paid-but-Draft records).
-      const activeDrafts = data.filter(app =>
-        app.status === "Draft" &&
-        app.paymentStatus !== "paid" &&
-        (!isSchengenDraft(app) || isCompatibleSchengenDraft(app))
-      );
-      setDrafts(activeDrafts);
-      setLoadingDrafts(false);
+      setApplications(data);
+      setLoadingApps(false);
     });
 
     return () => unsubscribe();
@@ -235,6 +226,69 @@ export const PortalApplicationsPage = () => {
     }
   };
 
+  // ---------------------------------------------------------------------------
+  // Derive Draft / Submitted lists from the applications collection (source of
+  // truth). Status labels come from deriveApplicationPipelineStatus — never from
+  // visa_cases.stage when an application document exists.
+  // ---------------------------------------------------------------------------
+  const isSubmittedApp = (a) =>
+    a.status === "Submitted" || a.paymentStatus === "paid" || a.paymentStatus === "confirmed";
+  const isSchengenApp = (a) =>
+    a.applicationType === "schengen" ||
+    a.visaId === "schengen" ||
+    a?.visaName?.toLowerCase().includes("schengen");
+  const toMillis = (v) =>
+    v?.seconds ? v.seconds * 1000 : v?.toDate ? v.toDate().getTime() : v ? new Date(v).getTime() : 0;
+  const byRecencyDesc = (keyer) => (a, b) => toMillis(keyer(b)) - toMillis(keyer(a));
+
+  // Drafts: any unsubmitted/unpaid application. Incompatible legacy Schengen drafts
+  // are still hidden (they cannot be continued from the wizard without permission
+  // errors). Non-Schengen legacy/blank-status unpaid records are kept and shown as
+  // Draft so they never disappear.
+  const draftApps = applications
+    .filter((a) => !isSubmittedApp(a) && (!isSchengenApp(a) || isCompatibleSchengenDraft(a)))
+    .sort(byRecencyDesc((a) => a.updatedAt || a.createdAt));
+
+  const submittedApps = applications
+    .filter(isSubmittedApp)
+    .sort(byRecencyDesc((a) => a.submittedAt || a.updatedAt || a.createdAt));
+
+  // Booking-only fallback: visa_cases / bookings not linked to any application doc.
+  const appIdSet = new Set(applications.map((a) => a.id));
+  const caseOnlyRows = cases.filter(
+    (c) => !(c.applicationId && appIdSet.has(c.applicationId)) && !appIdSet.has(c.id)
+  );
+
+  const submittedItems = [
+    ...submittedApps.map((a) => {
+      const matchCase = cases.find((c) => c.applicationId === a.id) || null;
+      const statusKey = deriveApplicationPipelineStatus(a);
+      return {
+        id: a.id,
+        ref: a.applicationRef || matchCase?.caseNo || `ES-${a.id.substring(0, 8).toUpperCase()}`,
+        name: getApplicationDisplayName(a),
+        country: a.destinationCountry || a.destination || "Worldwide",
+        submitted: a.submittedAt || a.createdAt,
+        statusLabel: statusKey ? getPipelineStatusLabel(statusKey) : "Submitted",
+        to: isSchengenApp(a) ? `/portal/applications/${a.id}/wizard` : `/portal/applications/${a.id}`,
+      };
+    }),
+    ...caseOnlyRows.map((c) => ({
+      id: c.id,
+      ref: c.caseNo,
+      name: getApplicationDisplayName(c),
+      country: c.destination || "Worldwide",
+      submitted: c.createdAt,
+      // Fallback-only: booking-only records carry no application, so the legacy
+      // visa_case/booking stage is the only status available.
+      statusLabel: c.stage,
+      to:
+        c.applicationType === "schengen" && c.applicationId
+          ? `/portal/applications/${c.applicationId}/wizard`
+          : `/portal/applications/${c.id}`,
+    })),
+  ];
+
   return (
     <div className="space-y-10 font-sans pb-16">
 
@@ -251,9 +305,9 @@ export const PortalApplicationsPage = () => {
           <h2 className="text-xs font-bold uppercase tracking-wider text-[#1A1A1A]">Draft Applications</h2>
         </div>
 
-        {loadingDrafts ? (
+        {loadingApps ? (
           <LoadingSpinner message="Loading draft files..." />
-        ) : drafts.length === 0 ? (
+        ) : draftApps.length === 0 ? (
           <div className="bg-white border border-[#E5E7EB] p-8 rounded-[20px] text-center text-xs text-[#6B7280] italic">
             No active drafts. Start an application on any visa type page.
           </div>
@@ -261,7 +315,7 @@ export const PortalApplicationsPage = () => {
           <div className="space-y-4">
             <p className="text-xs text-[#6B7280]">Already started an application? Continue your latest draft below.</p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {drafts.map((d) => {
+            {draftApps.map((d) => {
               // Calculate rough progress
               let progress = 20;
               if (d.destinationCountry) progress += 20;
@@ -337,33 +391,34 @@ export const PortalApplicationsPage = () => {
           <h2 className="text-xs font-bold uppercase tracking-wider text-[#1A1A1A]">Submitted Applications</h2>
         </div>
 
-        {loadingCases ? (
+        {loadingApps || loadingCases ? (
           <LoadingSpinner message="Loading submitted files..." />
-        ) : cases.length === 0 ? (
+        ) : submittedItems.length === 0 ? (
           <div className="bg-white border border-[#E5E7EB] p-8 rounded-[20px] text-center text-xs text-[#6B7280] italic">
-            You do not have any visa application cases registered under your email yet.
+            You do not have any submitted visa applications yet.
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {cases.map((c) => (
-              <div key={c.id} className="bg-white border border-[#E5E7EB] rounded-[20px] p-6 flex flex-col justify-between space-y-4 hover:border-[#C6A969]/40 transition-all duration-200 shadow-sm">
+            {submittedItems.map((item) => (
+              <div key={item.id} className="bg-white border border-[#E5E7EB] rounded-[20px] p-6 flex flex-col justify-between space-y-4 hover:border-[#C6A969]/40 transition-all duration-200 shadow-sm">
                 <div className="flex justify-between items-start">
                   <div>
-                    <span className="text-[10px] font-mono text-gray-400">{c.caseNo}</span>
-                    <h3 className="text-base font-semibold text-[#1A1A1A] mt-1">{getApplicationDisplayName(c)} Case</h3>
+                    <span className="text-[10px] font-mono text-gray-400">{item.ref}</span>
+                    <h3 className="text-base font-semibold text-[#1A1A1A] mt-1">{item.name}</h3>
+                    <span className="text-[10px] text-[#6B7280] flex items-center gap-1 mt-1">
+                      <Globe className="h-3 w-3" /> {item.country}
+                    </span>
                   </div>
-                  <StatusBadge status={c.stage} />
+                  <StatusBadge status={item.statusLabel} />
                 </div>
 
                 <div className="flex justify-between items-center pt-4 border-t border-[#E5E7EB] text-xs text-[#6B7280]">
-                  <span>Submitted: {formatShortDate(c.createdAt?.toDate ? c.createdAt.toDate() : c.createdAt)}</span>
+                  <span>Submitted: {formatShortDate(item.submitted?.toDate ? item.submitted.toDate() : item.submitted)}</span>
                   <Link
-                    to={c.applicationType === "schengen" && c.applicationId
-                      ? `/portal/applications/${c.applicationId}/wizard`
-                      : `/portal/applications/${c.id}`}
+                    to={item.to}
                     className="text-[#0F3D2E] hover:text-[#C6A969] font-bold uppercase tracking-wider text-[10px] flex items-center space-x-1"
                   >
-                    <span>Track Details</span>
+                    <span>View Details</span>
                     <ChevronRight className="h-3.5 w-3.5" />
                   </Link>
                 </div>

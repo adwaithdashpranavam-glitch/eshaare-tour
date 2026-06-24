@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { doc, getDoc, updateDoc, serverTimestamp } from "firebase/firestore";
 import { db, auth } from "../../lib/firebase";
-import { submitSchengenApplication, markSchengenPaidAndSubmit } from "../../lib/firestore";
+import { submitSchengenApplication, markSchengenPaidAndSubmit, markClientDeliverableDownloaded } from "../../lib/firestore";
+import { buildClientTimeline, isDeliverableReady } from "../../utils/caseWorkspace";
 import { getApplicationDisplayName } from "../../utils/helpers";
 import { useAuth } from "../../contexts/AuthContext";
 import { useTravelerProfile } from "../../contexts/TravelerProfileContext";
@@ -113,7 +114,6 @@ export default function SchengenWizard() {
   const [openSection, setOpenSection] = useState("personalInformation");
   const [errorsBySection, setErrorsBySection] = useState({});
   const [sectionEditStates, setSectionEditStates] = useState({});
-  const [uploadingDocName, setUploadingDocName] = useState(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [processingPayment, setProcessingPayment] = useState(false);
   // The draft is fetched from Firestore only once per mount. The traveler profile is a
@@ -130,48 +130,12 @@ export default function SchengenWizard() {
   // confirmation/tracking view and no step is editable.
   const [isReadOnly, setIsReadOnly] = useState(false);
 
-  const handleUploadDocument = async (docName) => {
-    setUploadingDocName(docName);
-    // Simulate upload delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    setDraft(prev => {
-      const currentDocs = prev.documents && prev.documents.length > 0 
-        ? [...prev.documents] 
-        : DEFAULT_CLIENT_SPECIFIC_DOCUMENTS.map(d => ({ ...d }));
-      
-      const updatedDocs = currentDocs.map(d => {
-        if (d.name === docName) {
-          return { ...d, status: "uploaded" };
-        }
-        return d;
-      });
-      
-      const newDraft = { ...prev, documents: updatedDocs };
-      
-      // Auto-save to Firestore
-      setTimeout(async () => {
-        try {
-          const docRef = doc(db, "applications", id);
-          const cleanDraft = sanitizePayload(newDraft);
-          if (cleanDraft) {
-            delete cleanDraft.id;
-          }
-          await updateDoc(docRef, {
-            ...cleanDraft,
-            updatedAt: serverTimestamp()
-          });
-        } catch (err) {
-          console.error("Auto-save document upload failed:", err);
-        }
-      }, 50);
-      
-      return newDraft;
-    });
-    
-    setUploadingDocName(null);
-    toast.success(`${docName} uploaded successfully!`);
-  };
+  // NOTE: Consultant deliverables (Visa Application Form, Appointment Letter,
+  // Hotel/Flight reservations, etc.) are NOT uploaded by the client. They are
+  // produced and uploaded by staff via the admin Case Workspace, which writes a
+  // real fileUrl + status: "ready_to_download" into applications/{id}.documents[].
+  // The client view below is strictly read-only/download — there is intentionally
+  // no client-side upload handler for these documents.
 
   const deepMergeProfile = (savedSnapshot, currentProfile) => {
     const base = createEmptyProfile();
@@ -1139,7 +1103,7 @@ export default function SchengenWizard() {
             ...clientDocsFiltered
           ];
 
-          const completedCount = documentsToRender.filter(d => d.fileUrl).length;
+          const completedCount = documentsToRender.filter(d => d.fileUrl && d.status === "ready_to_download").length;
 
           const refNumber = `ES-SCH-${id.substring(0, 8).toUpperCase()}`;
           const submissionDate = draft.submittedAt 
@@ -1150,50 +1114,14 @@ export default function SchengenWizard() {
             ? `${new Date(draft.appointmentPreference.startDate).toLocaleDateString("en-US", { year: 'numeric', month: 'short', day: 'numeric' })} - ${new Date(draft.appointmentPreference.endDate).toLocaleDateString("en-US", { year: 'numeric', month: 'short', day: 'numeric' })}`
             : "Not Selected";
 
-          const timelineSteps = [
-            {
-              step: 1,
-              title: "Application Received",
-              status: "completed",
-              desc: "Application forms and profile securely logged.",
-              est: "Completed"
-            },
-            {
-              step: 2,
-              title: "Profile Verification",
-              status: "in_progress",
-              desc: "Reviewing document rules & checklist.",
-              est: "Within 24 Hours"
-            },
-            {
-              step: 3,
-              title: "Document Preparation",
-              status: "pending",
-              desc: "Drafting Cover Letter, Flight & Hotel bookings.",
-              est: "3-5 Days Before Appointment"
-            },
-            {
-              step: 4,
-              title: "Appointment Booked",
-              status: "pending",
-              desc: "Securing slot at VFS Centre.",
-              est: "Subject to Slot Release"
-            },
-            {
-              step: 5,
-              title: "Visa Submission",
-              status: "pending",
-              desc: "Physical biometrics at embassy.",
-              est: "Requires Attendance"
-            },
-            {
-              step: 6,
-              title: "Decision Received",
-              status: "pending",
-              desc: "Passport returned with visa decision.",
-              est: "Est: 15 Calendar Days"
-            }
-          ];
+          // Derived, business-logic-driven 5-step tracker (no "Profile Verification").
+          // Steps + their completed/in-progress/pending state come from the shared
+          // helper so the client view always matches the admin case status.
+          const clientTimeline = buildClientTimeline(draft);
+          const timelineSteps = clientTimeline.steps;
+          const timelineProgressPct = Math.round(
+            (clientTimeline.completedCount / timelineSteps.length) * 100
+          );
 
           return (
             <div className="space-y-8 animate-fadeIn max-w-[1400px] mx-auto pb-12 font-sans">
@@ -1287,16 +1215,21 @@ export default function SchengenWizard() {
                   {/* SECTION 2 — WHAT HAPPENS NEXT (TIMELINE) */}
                   {/* Horizontal Timeline (Desktop) */}
                   <div className="hidden md:block bg-white border border-[#E5E7EB] rounded-[24px] p-8 shadow-sm">
-                    <h3 className="text-sm font-bold text-[#0F3D2E] uppercase tracking-wider mb-8 flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-[#C6A969]" /> Application Track & Estimated Timeline
+                    <h3 className="text-sm font-bold text-[#0F3D2E] uppercase tracking-wider mb-8 flex items-center justify-between gap-2">
+                      <span className="flex items-center gap-2">
+                        <Clock className="w-4 h-4 text-[#C6A969]" /> Application Track & Estimated Timeline
+                      </span>
+                      <span className="px-3 py-1 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200 normal-case tracking-normal">
+                        {clientTimeline.statusLabel}
+                      </span>
                     </h3>
                     <div className="relative">
                       {/* Line connector */}
-                      <div className="absolute left-[8%] right-[8%] top-[20px] h-[3px] bg-gray-100 -z-10">
-                        <div className="h-full bg-emerald-500 w-[20%] transition-all duration-500"></div>
+                      <div className="absolute left-[10%] right-[10%] top-[20px] h-[3px] bg-gray-100 -z-10">
+                        <div className="h-full bg-emerald-500 transition-all duration-500" style={{ width: `${timelineProgressPct}%` }}></div>
                       </div>
-                      
-                      <div className="grid grid-cols-6 gap-2">
+
+                      <div className="grid grid-cols-5 gap-2">
                         {timelineSteps.map((s) => {
                           const isCompleted = s.status === "completed";
                           const isInProgress = s.status === "in_progress";
@@ -1405,7 +1338,10 @@ export default function SchengenWizard() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-2 gap-4">
                       {documentsToRender.map((doc, idx) => {
                         const isNoc = doc.key === "noc";
-                        const hasFile = !!doc.fileUrl;
+                        // Download is enabled ONLY when the document is both flagged
+                        // ready by a consultant AND carries a real file URL. This
+                        // prevents any stale/partial record from appearing downloadable.
+                        const hasFile = !!doc.fileUrl && doc.status === "ready_to_download";
                         
                         let badgeBg = "";
                         let badgeLabel = "";
@@ -1451,6 +1387,18 @@ export default function SchengenWizard() {
                                 href={doc.fileUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
+                                onClick={() => {
+                                  // Owning client opening/downloading a ready consultant
+                                  // deliverable records ONLY an access marker
+                                  // (clientDeliverablesDownloadedAt). It does NOT change the
+                                  // case status — that advances to Decision Pending only when
+                                  // staff mark the visa submitted. Fire-and-forget; never
+                                  // blocks the download; staff/admin viewers don't trigger it.
+                                  const isClientUser = role === "client" || role === "customer";
+                                  if (isClientUser && isDeliverableReady(doc)) {
+                                    markClientDeliverableDownloaded(id);
+                                  }
+                                }}
                                 className="flex items-center justify-center gap-1.5 px-3 py-2 bg-[#0F3D2E] hover:bg-[#0F3D2E]/90 text-white font-bold rounded-xl text-[10px] uppercase tracking-wider transition-all shadow-sm focus:outline-none font-sans"
                               >
                                 <Download className="w-3.5 h-3.5" /> Download File

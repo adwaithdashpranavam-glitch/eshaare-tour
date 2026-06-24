@@ -6,11 +6,13 @@ import {
   ArrowLeft, Calendar, FileText, CheckCircle2, 
   AlertTriangle, MessageCircle, DollarSign, RefreshCw 
 } from "lucide-react";
-import { CASE_STAGES, VISA_REQUIREMENTS } from "../../utils/constants";
+import { VISA_REQUIREMENTS } from "../../utils/constants";
 import { formatCurrency, formatDate } from "../../utils/formatters";
 import StatusBadge from "../../components/ui/StatusBadge";
-import DocumentChecklist from "../../components/ui/DocumentChecklist";
 import Modal from "../../components/ui/Modal";
+import ConsultantDeliverables from "../../components/admin/ConsultantDeliverables";
+import CaseStatusControl from "../../components/admin/CaseStatusControl";
+import CaseSummaryCard from "../../components/admin/CaseSummaryCard";
 import toast from "react-hot-toast";
 
 export const CaseDetailPage = () => {
@@ -88,43 +90,6 @@ export const CaseDetailPage = () => {
       unsubscribeNotes();
     };
   }, [id, navigate]);
-
-  const handleStageAdvance = async (nextStage) => {
-    try {
-      const docRef = doc(db, "visa_cases", id);
-      await updateDoc(docRef, { stage: nextStage, updatedAt: new Date() });
-      await logInternalNote(`Visa stage advanced to ${nextStage}`);
-
-      // Map CRM stage → booking status so Android app and client portal stay in sync
-      const stageToBookingStatus = {
-        "Verification": "Awaiting Payment Confirmation",
-        "Documents Pending": "Awaiting Payment Confirmation",
-        "Payment Confirmed": "Payment Confirmed",
-        "Processing": "Documents Prepared",
-        "Appointment Booked": "Appointment Scheduled",
-        "Submitted": "Visa Processing",
-        "Approved": "Completed",
-        "Rejected": "Rejected",
-        "Withdrawn": "Cancelled"
-      };
-      const bookingStatus = stageToBookingStatus[nextStage] || nextStage;
-
-      // Sync the same ID in bookings (Android app uses same ID for visa bookings)
-      try {
-        const bookingRef = doc(db, "bookings", id);
-        await updateDoc(bookingRef, { bookingStatus, status: bookingStatus, updatedAt: new Date() });
-      } catch (syncErr) {
-        // Booking may not exist if case was created from CRM directly — non-fatal
-        console.warn("Booking sync skipped (may not exist):", syncErr.message);
-      }
-
-      toast.success(`Advanced to stage: ${nextStage}`);
-    } catch (err) {
-      console.error(err);
-      toast.error("Error advancing stage");
-    }
-  };
-
 
   const handleDateChange = async (fieldName, val) => {
     try {
@@ -290,6 +255,7 @@ export const CaseDetailPage = () => {
       {/* Case Header */}
       <div className="glass-card p-6 border border-on-primary-fixed-variant/60 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="space-y-1">
+          <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-secondary/70">Case Workspace</span>
           <div className="flex items-center space-x-2">
             <h2 className="text-xl font-display font-bold text-white leading-tight">{caseData.travellerName}</h2>
             <span className="text-[10px] font-mono text-secondary">{caseData.caseNo}</span>
@@ -311,32 +277,11 @@ export const CaseDetailPage = () => {
         {/* Main Side (2/3) */}
         <div className="lg:col-span-8 space-y-6">
           
-          {/* Stepper Progress */}
-          <div className="glass-card p-4 border border-on-primary-fixed-variant/60 space-y-4">
-            <h3 className="text-xs font-semibold text-on-primary-container/50 uppercase tracking-wider border-b border-on-primary-fixed-variant pb-2">
-              Advance Pipeline
-            </h3>
-            <div className="flex flex-wrap gap-2">
-              {Object.values(CASE_STAGES).map((stg) => {
-                const isActive = caseData.stage === stg;
-                return (
-                  <button
-                    key={stg}
-                    onClick={() => handleStageAdvance(stg)}
-                    className={`px-3 py-1.5 rounded text-[10px] font-bold uppercase tracking-wider border transition-colors ${
-                      isActive 
-                        ? "bg-secondary-container border-secondary text-on-primary-fixed" 
-                        : "bg-primary-container border-on-primary-fixed-variant text-on-primary-container/60 hover:text-white"
-                    }`}
-                  >
-                    {stg}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+          {/* Case Status (manual stepper; later automated) */}
+          <CaseStatusControl applicationId={caseData.applicationId} caseId={id} />
 
-
+          {/* Consultant Deliverables — completed documents delivered to the client */}
+          <ConsultantDeliverables applicationId={caseData.applicationId} caseId={id} />
 
           {/* Internal Notes thread */}
           <div className="glass-card p-6 border border-on-primary-fixed-variant/60 space-y-4">
@@ -378,134 +323,10 @@ export const CaseDetailPage = () => {
 
         {/* Sidebar Panel (1/3) */}
         <div className="lg:col-span-4 space-y-6">
-          
-          {/* Key Dates Panel */}
-          <div className="glass-card p-6 border border-on-primary-fixed-variant/60 space-y-4 font-sans text-xs">
-            <h3 className="text-sm font-semibold text-white border-b border-on-primary-fixed-variant pb-2">Timeline Benchmarks</h3>
-            
-            <div className="space-y-3">
-              <div className="flex flex-col space-y-1">
-                <span className="text-[10px] text-on-primary-container/50 uppercase">Submission Date</span>
-                <input
-                  type="date"
-                  className="bg-primary-container border border-on-primary-fixed-variant text-on-primary-container p-2 rounded text-xs focus:outline-none"
-                  value={dates.submissionDate}
-                  onChange={(e) => handleDateChange("submissionDate", e.target.value)}
-                />
-              </div>
-              <div className="flex flex-col space-y-1">
-                <span className="text-[10px] text-on-primary-container/50 uppercase">VFS / Embassy Appointment</span>
-                <input
-                  type="date"
-                  className="bg-primary-container border border-on-primary-fixed-variant text-on-primary-container p-2 rounded text-xs focus:outline-none"
-                  value={dates.vfsAppointment}
-                  onChange={(e) => handleDateChange("vfsAppointment", e.target.value)}
-                />
-              </div>
-              <div className="flex flex-col space-y-1">
-                <span className="text-[10px] text-on-primary-container/50 uppercase">Decision Expected</span>
-                <input
-                  type="date"
-                  className={`bg-primary-container border text-on-primary-container p-2 rounded text-xs focus:outline-none ${
-                    isOverdue ? "border-danger text-danger" : "border-on-primary-fixed-variant"
-                  }`}
-                  value={dates.decisionExpected}
-                  onChange={(e) => handleDateChange("decisionExpected", e.target.value)}
-                />
-              </div>
-              <div className="flex flex-col space-y-1">
-                <span className="text-[10px] text-on-primary-container/50 uppercase">Actual Decision</span>
-                <input
-                  type="date"
-                  className="bg-primary-container border border-on-primary-fixed-variant text-on-primary-container p-2 rounded text-xs focus:outline-none"
-                  value={dates.actualDecision}
-                  onChange={(e) => handleDateChange("actualDecision", e.target.value)}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Payment Status Panel */}
-          <div className="glass-card p-6 border border-on-primary-fixed-variant/60 space-y-4">
-            <h3 className="text-sm font-semibold text-white border-b border-on-primary-fixed-variant pb-2 flex justify-between items-center">
-              <span>Financial Ledger</span>
-              <span className="text-xs text-secondary font-mono font-bold">{paymentTotal.paid} / {paymentTotal.total} AED</span>
-            </h3>
-            <div className="flex space-x-3 text-xs font-sans justify-between items-center py-2">
-              <span className="text-on-primary-container/60">Outstanding Balance:</span>
-              <span className="text-white font-bold font-mono">{paymentTotal.total - paymentTotal.paid} AED</span>
-            </div>
-            <button
-              onClick={() => setIsRecordPaymentOpen(true)}
-              className="w-full py-2 bg-secondary-container hover:bg-secondary-container text-on-primary-fixed font-bold text-xs rounded uppercase tracking-wider shadow-sm"
-            >
-              Record Payment
-            </button>
-          </div>
-
+          {/* Case Summary (replaces Timeline Benchmarks + Financial Ledger) */}
+          <CaseSummaryCard caseData={caseData} applicationId={caseData.applicationId} />
         </div>
       </div>
-
-      {/* Record Payment Modal */}
-      <Modal
-        isOpen={isRecordPaymentOpen}
-        onClose={() => setIsRecordPaymentOpen(false)}
-        title="Record Payment"
-        size="sm"
-      >
-        <form onSubmit={handleRecordPayment} className="space-y-4 font-sans text-xs">
-          <div className="flex flex-col space-y-1.5">
-            <label className="text-[10px] font-bold text-on-primary-container/50 uppercase">Amount Received (AED)</label>
-            <input
-              type="number"
-              required
-              placeholder="e.g. 200"
-              className="px-3 py-2 bg-primary-container border border-on-primary-fixed-variant text-on-primary-container rounded focus:outline-none"
-              value={paymentData.amount}
-              onChange={(e) => setPaymentData({ ...paymentData, amount: e.target.value })}
-            />
-          </div>
-          <div className="flex flex-col space-y-1.5">
-            <label className="text-[10px] font-bold text-on-primary-container/50 uppercase">Payment Method</label>
-            <select
-              className="px-3 py-2 bg-primary-container border border-on-primary-fixed-variant text-on-primary-container rounded focus:outline-none"
-              value={paymentData.method}
-              onChange={(e) => setPaymentData({ ...paymentData, method: e.target.value })}
-            >
-              <option value="Card">Card</option>
-              <option value="Cash">Cash</option>
-              <option value="Bank Transfer">Bank Transfer</option>
-              <option value="Online Link">Online Link</option>
-            </select>
-          </div>
-          <div className="flex flex-col space-y-1.5">
-            <label className="text-[10px] font-bold text-on-primary-container/50 uppercase">Transaction / Receipt Reference</label>
-            <input
-              type="text"
-              placeholder="e.g. TXN-100239123"
-              className="px-3 py-2 bg-primary-container border border-on-primary-fixed-variant text-on-primary-container rounded focus:outline-none"
-              value={paymentData.ref}
-              onChange={(e) => setPaymentData({ ...paymentData, ref: e.target.value })}
-            />
-          </div>
-
-          <div className="flex space-x-3 pt-4 border-t border-on-primary-fixed-variant">
-            <button
-              type="button"
-              onClick={() => setIsRecordPaymentOpen(false)}
-              className="flex-1 py-2.5 bg-on-primary-fixed-variant border border-on-primary-fixed-variant text-on-primary-container font-semibold rounded text-xs"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="flex-1 py-2.5 bg-gradient-to-r from-secondary-container to-secondary-container text-on-primary-fixed font-bold rounded text-xs shadow-sm"
-            >
-              Log Payment
-            </button>
-          </div>
-        </form>
-      </Modal>
 
     </div>
   );
