@@ -37,7 +37,8 @@ export const HomePage = () => {
   const [activeSlide, setActiveSlide] = useState(0);
   const slides = [
     {
-      image: "https://images.unsplash.com/photo-1531366936337-7c912a4589a7?auto=format&fit=crop&w=1600&q=80",
+      image: "/hero-1-1600.webp",
+      imageSrcSet: "/hero-1-800.webp 800w, /hero-1-1600.webp 1600w",
       headline: "Holiday Packages from Dubai | Eshaare Tours",
       subtext: "Book the best custom holiday packages from Dubai with Eshaare Tours UAE. Enjoy tailor-made vacations, family holidays, honeymoon trips, and premium international tours.",
       animated: true,
@@ -45,7 +46,8 @@ export const HomePage = () => {
       ctaLink: "/packages"
     },
     {
-      image: "/visa-hero.jpg",
+      image: "/hero-2-1600.webp",
+      imageSrcSet: "/hero-2-800.webp 800w, /hero-2-1600.webp 1600w",
       headline: "Visa Services & Visa Consultant in Dubai",
       subtext: "Get expert visa assistance from Dubai for Schengen Visa UAE, UK, USA, Canada, and Australia. Fast VFS appointment booking support and complete document compliance audits.",
       animated: false,
@@ -54,7 +56,8 @@ export const HomePage = () => {
     },
 
     {
-      image: "https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=1600&q=80",
+      image: "/hero-3-1600.webp",
+      imageSrcSet: "/hero-3-800.webp 800w, /hero-3-1600.webp 1600w",
       headline: "Best Travel Agency in Dubai | Eshaare UAE",
       subtext: "Premium travel agency in Dubai providing custom travel and visa services. We manage flights, luxury hotels, express VFS slot bookings, and custom holiday planning worldwide.",
       animated: false,
@@ -583,8 +586,10 @@ export const HomePage = () => {
           >
             <img
               src={slide.image}
+              srcSet={slide.imageSrcSet}
+              sizes="100vw"
               alt={slide.headline}
-              fetchpriority={index === 0 ? "high" : "auto"}
+              fetchPriority={index === 0 ? "high" : "auto"}
               loading={index === 0 ? "eager" : "lazy"}
               width="1920"
               height="1080"
