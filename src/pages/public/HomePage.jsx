@@ -45,7 +45,7 @@ export const HomePage = () => {
       ctaLink: "/packages"
     },
     {
-      image: "https://plus.unsplash.com/premium_photo-1684407617181-275e50374e95?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      image: "/visa-hero.jpg",
       headline: "Visa Services & Visa Consultant in Dubai",
       subtext: "Get expert visa assistance from Dubai for Schengen Visa UAE, UK, USA, Canada, and Australia. Fast VFS appointment booking support and complete document compliance audits.",
       animated: false,
