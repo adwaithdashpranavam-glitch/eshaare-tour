@@ -1667,7 +1667,8 @@ const APPLICATION_SCHEMA_ALLOWED_FIELDS = [
   "price", "nationality", "phone", "fullName", "destination", "score", "assignedStaff",
   "applicationType", "sourcePageType", "destinationCountry", "visaType",
   "appointmentPreference", "assignedConsultant", "documents", "schengenQuestionnaire",
-  "travelProfileSnapshot"
+  "travelProfileSnapshot", "pipelineStatus", "caseStatus", "clientDeliverablesDownloadedAt",
+  "visaSubmittedAt"
 ];
 
 // A Schengen draft is safe to reuse/continue only if every field it already carries fits
@@ -1891,6 +1892,51 @@ export const updateApplication = async (appId, data) => {
     });
   } catch (error) {
     handleError(error, "updateApplication");
+  }
+};
+
+// Records that the owning CLIENT downloaded/opened a consultant deliverable.
+// This ONLY writes the access marker (clientDeliverablesDownloadedAt) — it does
+// NOT change pipelineStatus. Status only advances to "decision_pending" through
+// a staff action (Mark Visa Submitted / submission date). Idempotent and
+// non-fatal — a blocked/failed marker write must never break the file download.
+export const markClientDeliverableDownloaded = async (appId) => {
+  try {
+    const appRef = doc(db, "applications", appId);
+    const snap = await getDoc(appRef);
+    if (!snap.exists()) return;
+    if (snap.data().clientDeliverablesDownloadedAt) return; // already recorded
+    await updateDoc(appRef, {
+      clientDeliverablesDownloadedAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    });
+  } catch (error) {
+    console.warn("markClientDeliverableDownloaded skipped:", error?.message);
+  }
+};
+
+// Authoritative setter for an application's pipeline status. Writes
+// applications.pipelineStatus (+ any extra marker fields) and mirrors the human
+// status label into visa_cases.stage so the Visa Cases list and the Case
+// Workspace always show the same status. The mirror is best-effort (a visa_ops
+// user not assigned to the case may be blocked by rules) and never fatal.
+export const setApplicationPipelineStatus = async (appId, statusKey, opts = {}) => {
+  const { caseId = null, stageLabel = null, extra = {} } = opts;
+  const appRef = doc(db, "applications", appId);
+  await updateDoc(appRef, {
+    pipelineStatus: statusKey,
+    ...extra,
+    updatedAt: serverTimestamp()
+  });
+  if (caseId) {
+    try {
+      await updateDoc(doc(db, "visa_cases", caseId), {
+        stage: stageLabel || statusKey,
+        updatedAt: serverTimestamp()
+      });
+    } catch (error) {
+      console.warn("visa_cases stage mirror skipped:", error?.message);
+    }
   }
 };
 

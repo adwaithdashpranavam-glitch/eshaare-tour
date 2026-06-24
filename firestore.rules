@@ -74,6 +74,17 @@ service cloud.firestore {
              userData.role in ['super_admin', 'admin', 'manager'];
     }
 
+    // Staff roles permitted to manage consultant deliverables on an application
+    // (upload/replace documents, set pipelineStatus). Managers + visa operations.
+    // These roles may edit deliverable/consultant fields but are still blocked
+    // from payment fields below (only isManager() may touch payment).
+    function isDeliverableEditor() {
+      let userData = getUserData();
+      return isSignedIn() && userData != null &&
+             (!('status' in userData) || userData.status == 'Active') &&
+             userData.role in ['super_admin', 'admin', 'manager', 'visa_ops'];
+    }
+
     // General staff (requires Active status)
     function isStaff() {
       let userData = getUserData();
@@ -127,7 +138,7 @@ service cloud.firestore {
     }
 
     function validateApplicationSchema(data) {
-      let allowedFields = ['id', 'customerId', 'customerName', 'visaId', 'visaName', 'status', 'paymentStatus', 'paymentMethod', 'paymentApprovedAt', 'packageType', 'amount', 'createdAt', 'updatedAt', 'submittedAt', 'formData', 'step', 'price', 'nationality', 'phone', 'fullName', 'destination', 'score', 'assignedStaff', 'applicationType', 'sourcePageType', 'destinationCountry', 'visaType', 'appointmentPreference', 'assignedConsultant', 'documents', 'schengenQuestionnaire', 'travelProfileSnapshot'];
+      let allowedFields = ['id', 'customerId', 'customerName', 'visaId', 'visaName', 'status', 'paymentStatus', 'paymentMethod', 'paymentApprovedAt', 'packageType', 'amount', 'createdAt', 'updatedAt', 'submittedAt', 'formData', 'step', 'price', 'nationality', 'phone', 'fullName', 'destination', 'score', 'assignedStaff', 'applicationType', 'sourcePageType', 'destinationCountry', 'visaType', 'appointmentPreference', 'assignedConsultant', 'documents', 'schengenQuestionnaire', 'travelProfileSnapshot', 'pipelineStatus', 'caseStatus', 'clientDeliverablesDownloadedAt', 'visaSubmittedAt'];
       return data.keys().hasOnly(allowedFields) &&
              data.customerId is string &&
              (data.visaId == null || data.visaId is string) &&
@@ -316,13 +327,46 @@ service cloud.firestore {
     match /applications/{appId} {
       allow read: if isManager() || (isActive() && resource.data.customerId == request.auth.uid);
       allow create: if isActive() && (isManager() || request.resource.data.customerId == request.auth.uid) && validateApplicationSchema(request.resource.data);
-      // Clients may only edit their OWN application while it is still a Draft, and may
-      // never touch payment fields. Once submitted, the application is read-only to the
-      // client (managers retain full edit rights for downstream processing). This is the
-      // authoritative guarantee behind "no editing after payment/submission".
-      allow update: if (isManager() || (isActive() && resource.data.customerId == request.auth.uid && resource.data.status == 'Draft'))
-                    && validateApplicationSchema(request.resource.data)
-                    && (isManager() || !request.resource.data.diff(resource.data).affectedKeys().hasAny(['paymentStatus', 'paymentMethod', 'paymentApprovedAt', 'amount']));
+      // Update permissions are field-granular and role-aware:
+      //   * Managers (super_admin/admin/manager): full edit rights.
+      //   * Deliverable editors (visa_ops): may edit consultant deliverables and
+      //     case status, but NEVER payment fields.
+      //   * Owning client: may edit only their OWN Draft, and may NEVER touch
+      //     consultant/operational/payment fields. This is the authoritative guard
+      //     preventing a client from fabricating fileUrl/status inside documents[],
+      //     reassigning their consultant, or self-approving payment, and enforces
+      //     "no editing after submission" (only Draft is client-editable).
+      allow update: if validateApplicationSchema(request.resource.data) && (
+                      isManager()
+                      || (
+                        isDeliverableEditor()
+                        && !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+                             'paymentStatus', 'paymentMethod', 'paymentApprovedAt', 'amount'
+                           ])
+                      )
+                      || (
+                        isActive()
+                        && resource.data.customerId == request.auth.uid
+                        && resource.data.status == 'Draft'
+                        && !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+                             'documents', 'assignedConsultant', 'paymentStatus', 'paymentMethod',
+                             'paymentApprovedAt', 'amount', 'pipelineStatus', 'caseStatus',
+                             'clientDeliverablesDownloadedAt'
+                           ])
+                      )
+                      || (
+                        // Owning client recording that they downloaded/opened a consultant
+                        // deliverable. This writes ONLY the access marker — it does NOT change
+                        // pipelineStatus (status only advances via staff "Mark Visa Submitted"
+                        // / submission date). documents[], payment, consultant, refs, status,
+                        // pipelineStatus, etc. all stay frozen via the hasOnly() allowlist.
+                        isActive()
+                        && resource.data.customerId == request.auth.uid
+                        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+                             'clientDeliverablesDownloadedAt', 'updatedAt'
+                           ])
+                      )
+                    );
       // Clients may permanently delete only their own DRAFT applications.
       // Submitted applications remain undeletable from the client portal.
       allow delete: if isSuperAdmin()

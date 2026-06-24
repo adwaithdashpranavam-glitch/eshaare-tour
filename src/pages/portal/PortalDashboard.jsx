@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
@@ -14,6 +14,11 @@ import { getApplicationDisplayName } from "../../utils/helpers";
 import toast from "react-hot-toast";
 import { auth } from "../../lib/firebase";
 import { getApplicationsForCustomer } from "../../lib/firestore";
+import {
+  buildDashboardStages,
+  deriveApplicationPipelineStatus,
+  getPipelineStatusLabel,
+} from "../../utils/caseWorkspace";
 
 const PUBLIC_CONSULTANTS = {
   "Sarah Johnson": {
@@ -66,12 +71,18 @@ export const PortalDashboard = () => {
   const [paymentsCount, setPaymentsCount] = useState(0);
   const [recentNotifications, setRecentNotifications] = useState([]);
   const [consultant, setConsultant] = useState(null);
+  const [applications, setApplications] = useState([]);
+  // Client-only UI selection of which application drives the Active File Status
+  // card. Never persisted to Firestore — falls back to automatic selection.
+  const [selectedActiveApplicationId, setSelectedActiveApplicationId] = useState(null);
+  const activeFileRef = useRef(null);
 
   // Fetch drafts, notifications, appointments, and payments
   useEffect(() => {
     if (!auth.currentUser?.uid) return;
 
     const unsubscribeApps = getApplicationsForCustomer(auth.currentUser.uid, (data) => {
+      setApplications(data);
       // Only unpaid drafts count as drafts (payment === submission for Schengen).
       const activeDrafts = data.filter(app => app.status === "Draft" && app.paymentStatus !== "paid");
       setDraftsCount(activeDrafts.length);
@@ -243,6 +254,119 @@ export const PortalDashboard = () => {
     ? Math.round(((currentStageIdx + 1) / TRACKER_STAGES.length) * 100)
     : 100;
 
+  // ---------------------------------------------------------------------------
+  // Active application selection (source of truth = applications collection)
+  // ---------------------------------------------------------------------------
+  // The Active File Status card is driven by the most relevant APPLICATION, not by
+  // the most recent visa_case. visa_cases.stage is only mirrored for the admin list
+  // and must NOT drive client status. We pick submitted/paid applications first,
+  // sorted by recency, so the application the consultant just acted on (e.g. France
+  // after a deliverable upload bumped its updatedAt) is the one shown.
+  const toMillis = (v) => (v?.seconds ? v.seconds * 1000 : v ? new Date(v).getTime() : 0);
+
+  // Status of an application row comes from applications.pipelineStatus via
+  // deriveApplicationPipelineStatus() — NEVER from visa_cases.stage. Drafts (and
+  // anything with no derivable status) render as "Draft".
+  const rowStatusKey = (app) => {
+    if (!app) return null;
+    if (app.status === "Draft" && app.paymentStatus !== "paid" && app.paymentStatus !== "confirmed") {
+      return "draft";
+    }
+    return deriveApplicationPipelineStatus(app);
+  };
+  const rowStatusLabel = (app) => {
+    const k = rowStatusKey(app);
+    if (!k || k === "draft") return "Draft";
+    return getPipelineStatusLabel(k);
+  };
+  // Default selection ranks by pipeline progress, then recency. closed/draft are
+  // lowest so an active file is preferred over a finished or unsubmitted one.
+  const rankOf = (app) => {
+    switch (rowStatusKey(app)) {
+      case "appointment_awaiting": return 1;
+      case "appointment_confirmed": return 2;
+      case "decision_pending": return 3;
+      case "approved": return 4;
+      default: return 0; // draft, closed, null
+    }
+  };
+  const rankThenRecency = (a, b) =>
+    rankOf(b) - rankOf(a) ||
+    toMillis(b.updatedAt) - toMillis(a.updatedAt) ||
+    toMillis(b.submittedAt) - toMillis(a.submittedAt) ||
+    toMillis(b.createdAt) - toMillis(a.createdAt);
+
+  const autoApplication = [...applications].sort(rankThenRecency)[0] || null;
+
+  // Manual selection (UI only) wins over automatic selection.
+  const selectedApplication = selectedActiveApplicationId
+    ? applications.find((a) => a.id === selectedActiveApplicationId) || null
+    : null;
+  const selectedCaseOnly = selectedActiveApplicationId && !selectedApplication
+    ? activeCases.find((c) => c.id === selectedActiveApplicationId) || null
+    : null;
+  const activeApplication = selectedApplication || autoApplication;
+
+  // visa_cases is used ONLY to supplement display-only fields (assigned officer,
+  // case number) for the selected application — never for status.
+  const supplementCase = activeApplication
+    ? activeCases.find((c) => c.applicationId === activeApplication.id) || null
+    : selectedCaseOnly || sampleCase || null;
+
+  // Fallback for booking-only users (Android bookings with no application doc):
+  // synthesize a minimal application from the legacy visa_cases.stage purely so the
+  // timeline still renders. Never used when a real application exists.
+  const synthFromCase = (c) => {
+    if (!c) return null;
+    const s = (c.stage || "").toLowerCase();
+    let pipelineStatus = "appointment_awaiting";
+    if (s.includes("approved")) pipelineStatus = "approved";
+    else if (s.includes("rejected") || s.includes("closed") || s.includes("collected") || s.includes("completed")) pipelineStatus = "closed";
+    else if (s.includes("appointment")) pipelineStatus = "appointment_confirmed";
+    else if (s.includes("submit") || s.includes("review") || s.includes("processing") || s.includes("decision")) pipelineStatus = "decision_pending";
+    return { status: "Submitted", paymentStatus: "paid", pipelineStatus };
+  };
+
+  const dashboardModel = buildDashboardStages(
+    activeApplication || synthFromCase(selectedCaseOnly || sampleCase)
+  );
+  const activeFileDisplaySource = activeApplication || selectedCaseOnly || supplementCase || sampleCase;
+  const hasActiveFile = !!(activeApplication || sampleCase || selectedCaseOnly);
+
+  // Recent Applications rows: applications first (status from pipelineStatus),
+  // then booking-only cases (visa_case fallback for Android bookings with no app).
+  const appRows = [...applications].sort(rankThenRecency).map((a) => ({
+    id: a.id,
+    displayName: getApplicationDisplayName(a),
+    destination: a.destinationCountry || a.destination || "Worldwide",
+    submitted: a.submittedAt || a.createdAt,
+    statusLabel: rowStatusLabel(a),
+    trackTo: a.applicationType === "schengen"
+      ? `/portal/applications/${a.id}/wizard`
+      : `/portal/applications/${a.id}`,
+  }));
+  const appIdSet = new Set(applications.map((a) => a.id));
+  const caseOnlyRows = activeCases
+    .filter((c) => !(c.applicationId && appIdSet.has(c.applicationId)) && !appIdSet.has(c.id))
+    .map((c) => ({
+      id: c.id,
+      displayName: getApplicationDisplayName(c),
+      destination: c.destination || "Worldwide",
+      submitted: c.createdAt,
+      statusLabel: formatStageLabel(c.stage),
+      trackTo: c.applicationType === "schengen" && c.applicationId
+        ? `/portal/applications/${c.applicationId}/wizard`
+        : `/portal/applications/${c.id}`,
+    }));
+  const recentRows = [...appRows, ...caseOnlyRows].slice(0, 6);
+  const selectedRowId = selectedActiveApplicationId || activeApplication?.id || null;
+
+  const handleSelectRow = (rowId) => {
+    setSelectedActiveApplicationId(rowId);
+    // Optional: bring the Active File Status card into view after selection.
+    setTimeout(() => activeFileRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
+  };
+
   return (
     <div className="space-y-8 font-sans">
       
@@ -369,67 +493,70 @@ export const PortalDashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Left Column (70%) */}
         <div className="lg:col-span-8 space-y-8">
-          {activeCases.length > 0 ? (
+          {hasActiveFile ? (
             <>
               {/* Visa Progress Card */}
-              <div className="bg-white border border-[#E5E7EB] rounded-[24px] p-6 shadow-sm space-y-6">
+              <div ref={activeFileRef} className="bg-white border border-[#E5E7EB] rounded-[24px] p-6 shadow-sm space-y-6 scroll-mt-6">
                 <div className="flex justify-between items-start border-b border-[#E5E7EB] pb-4">
                   <div>
                     <span className="text-[10px] font-bold text-[#C6A969] uppercase tracking-wider">Active File Status</span>
                     <h3 className="text-lg font-semibold text-[#1A1A1A] mt-0.5">
-                      {getApplicationDisplayName(sampleCase)}
+                      {getApplicationDisplayName(activeFileDisplaySource)}
                     </h3>
                   </div>
-                  <span className="text-xs font-bold text-[#0F3D2E] px-3 py-1 bg-[#0F3D2E]/10 rounded-full">
-                    {formatStageLabel(sampleCase.stage)}
+                  <span className="text-xs font-bold text-[#0F3D2E] px-3 py-1 bg-[#C6A969]/15 border border-[#C6A969]/30 rounded-full">
+                    {dashboardModel.statusLabel}
                   </span>
                 </div>
 
-                {/* The timeline reflects the current case stage set by our team; later
-                    stages are upcoming steps, not automatically completed progress. */}
-                <p className="text-[10px] text-[#6B7280] -mt-2">
-                  Your file is at the highlighted stage. Remaining steps are updated by our visa team as your application progresses.
-                </p>
-
-                {/* Stage Timeline representation */}
-                <div className="relative pl-6 border-l-2 border-[#E5E7EB]/80 space-y-6">
-                  {TRACKER_STAGES.map((stage, idx) => {
-                    const isCompleted = idx < currentStageIdx;
-                    const isActive = idx === currentStageIdx;
+                {/* Modern vertical progress timeline driven by application + deliverables.
+                    Completed = green tick, current = amber, pending = grey. */}
+                <div className="relative pl-7 space-y-5">
+                  <div className="absolute left-[10px] top-2 bottom-2 w-[2px] bg-[#E5E7EB]/80"></div>
+                  {dashboardModel.stages.map((stage) => {
+                    const isCompleted = stage.state === "completed";
+                    const isCurrent = stage.state === "current";
                     return (
-                      <div key={stage} className="relative flex items-center justify-between">
-                        {/* Circle bullet */}
+                      <div key={stage.key} className="relative">
+                        {/* Bullet */}
                         <div
-                          className={`absolute -left-[31px] w-4.5 h-4.5 rounded-full border-2 flex items-center justify-center bg-white transition-colors duration-300 ${
+                          className={`absolute -left-7 top-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center bg-white transition-colors duration-300 ${
                             isCompleted
-                              ? "border-[#0F3D2E] bg-[#0F3D2E]"
-                              : isActive
-                              ? "border-[#C6A969] bg-white shadow-sm"
+                              ? "border-emerald-500 bg-emerald-500"
+                              : isCurrent
+                              ? "border-[#C6A969] bg-[#C6A969]/10 shadow-[0_0_0_4px_rgba(198,169,105,0.15)]"
                               : "border-gray-300"
                           }`}
                         >
-                          {isCompleted && (
-                            <CheckCircle2 className="w-2.5 h-2.5 text-white" />
-                          )}
+                          {isCompleted ? (
+                            <CheckCircle2 className="w-3 h-3 text-white" />
+                          ) : isCurrent ? (
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#C6A969]"></span>
+                          ) : null}
                         </div>
 
-                        <span
-                          className={`text-xs font-semibold transition-all ${
-                            isCompleted
-                              ? "text-gray-400"
-                              : isActive
-                              ? "text-[#0F3D2E] font-bold text-sm"
-                              : "text-[#6B7280]"
-                          }`}
-                        >
-                          {stage}
-                        </span>
-
-                        {isActive && (
-                          <span className="text-[9px] bg-[#C6A969]/10 text-[#C6A969] border border-[#C6A969]/20 px-2 py-0.5 rounded font-bold uppercase tracking-wider">
-                            Current Stage
+                        <div className="flex items-center justify-between gap-2">
+                          <span
+                            className={`text-sm font-semibold transition-all ${
+                              isCompleted ? "text-gray-500" : isCurrent ? "text-[#0F3D2E] font-bold" : "text-[#9CA3AF]"
+                            }`}
+                          >
+                            {stage.label}
                           </span>
-                        )}
+                          {isCurrent && (
+                            <span className="text-[9px] bg-[#C6A969]/10 text-[#C6A969] border border-[#C6A969]/20 px-2 py-0.5 rounded font-bold uppercase tracking-wider shrink-0">
+                              Current Stage
+                            </span>
+                          )}
+                          {isCompleted && (
+                            <span className="text-[9px] text-emerald-600 font-bold uppercase tracking-wider shrink-0">
+                              Done
+                            </span>
+                          )}
+                        </div>
+                        <p className={`text-[11px] leading-relaxed mt-0.5 ${isCurrent ? "text-[#6B7280]" : "text-[#9CA3AF]"}`}>
+                          {stage.helper}
+                        </p>
                       </div>
                     );
                   })}
@@ -457,33 +584,44 @@ export const PortalDashboard = () => {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[#E5E7EB]/50">
-                      {activeCases.slice(0, 4).map((c) => (
-                        <tr key={c.id} className="hover:bg-[#F8F6F2]/30 transition-colors">
-                          <td className="py-3.5 pr-4 font-semibold text-[#1A1A1A]">
-                            {getApplicationDisplayName(c)}
-                          </td>
-                          <td className="py-3.5 px-4 text-[#6B7280]">
-                            {c.destination || "Worldwide"}
-                          </td>
-                          <td className="py-3.5 px-4 text-gray-500 font-mono">
-                            {formatShortDate(c.createdAt)}
-                          </td>
-                          <td className="py-3.5 px-4">
-                            <StatusBadge status={formatStageLabel(c.stage)} />
-                          </td>
-                          <td className="py-3.5 pl-4 text-right">
-                            <Link
-                              to={c.applicationType === "schengen" && c.applicationId
-                                ? `/portal/applications/${c.applicationId}/wizard`
-                                : `/portal/applications/${c.id}`}
-                              className="inline-flex items-center text-[10px] font-bold uppercase tracking-wider text-[#0F3D2E] hover:text-[#C6A969] transition-colors"
-                            >
-                              <span>Track</span>
-                              <ChevronRight className="h-3 w-3 ml-0.5" />
-                            </Link>
-                          </td>
-                        </tr>
-                      ))}
+                      {recentRows.map((row) => {
+                        const isSelected = row.id === selectedRowId;
+                        return (
+                          <tr
+                            key={row.id}
+                            onClick={() => handleSelectRow(row.id)}
+                            className={`cursor-pointer transition-colors ${
+                              isSelected ? "bg-[#C6A969]/10" : "hover:bg-[#F8F6F2]/30"
+                            }`}
+                          >
+                            <td className="py-3.5 pr-4 font-semibold text-[#1A1A1A]">
+                              {row.displayName}
+                            </td>
+                            <td className="py-3.5 px-4 text-[#6B7280]">
+                              {row.destination}
+                            </td>
+                            <td className="py-3.5 px-4 text-gray-500 font-mono">
+                              {formatShortDate(row.submitted)}
+                            </td>
+                            <td className="py-3.5 px-4">
+                              <StatusBadge status={row.statusLabel} />
+                            </td>
+                            <td className="py-3.5 pl-4 text-right">
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleSelectRow(row.id);
+                                }}
+                                className="inline-flex items-center text-[10px] font-bold uppercase tracking-wider text-[#0F3D2E] hover:text-[#C6A969] transition-colors"
+                              >
+                                <span>View Status</span>
+                                <ChevronRight className="h-3 w-3 ml-0.5" />
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
