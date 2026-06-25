@@ -717,3 +717,863 @@ exports.onApplicationPaid = functions.firestore
 
     return null;
   });
+
+// ===========================================================================
+// 10. AI Document Verification (Google Cloud Vision)
+// ---------------------------------------------------------------------------
+// Triggered when a client uploads a mandatory document (Passport, Photographs,
+// UAE Residence Visa, Emirates ID). The client SDK has already
+// stored the file in Firebase Storage and created a documents/{docId} record
+// with status "ai_processing". This function:
+//   1. OCRs the file with Vision DOCUMENT_TEXT_DETECTION.
+//   2. Extracts the expiry date for Passport / UAE Residence Visa / Emirates ID.
+//   3. Rejects expired documents; flags passports expiring in < 6 months.
+//   4. Scores blur (Vision blur likelihood where available + a Laplacian-variance
+//      fallback computed with Jimp).
+//   5. Writes aiCheck.{checked,result,reason,extractedText,expiryDate,blurScore,
+//      confidence} and sets the document status.
+//
+// Status rules:
+//   verified     = clear OCR, valid expiry (where applicable), readable image
+//   rejected     = expired OR clearly blurry
+//   needs_review = OCR unclear, expiry date not found, or low confidence
+//
+// Consultants/admins can always override the status afterwards: this function
+// only writes once (onCreate) and never re-runs on later manual status edits.
+// ---------------------------------------------------------------------------
+
+// Document-type keyword matcher (mirrors src/utils/mandatoryDocuments.js — kept
+// inline because functions are CommonJS and cannot import the frontend ESM util).
+// Bank Statements are NOT mandatory and are intentionally excluded here so they
+// are uploaded as optional supporting documents without AI verification.
+const AI_MANDATORY_CATEGORIES = [
+  { key: "passport", match: ["passport"], needsExpiry: true, isPhoto: false },
+  { key: "photographs", match: ["photograph", "photo"], needsExpiry: false, isPhoto: true },
+  { key: "uae_residence_visa", match: ["uae residence", "residence visa", "residence permit"], needsExpiry: true, isPhoto: false },
+  { key: "emirates_id", match: ["emirates"], needsExpiry: true, isPhoto: false },
+];
+
+function resolveDocCategory(docData) {
+  const haystack = [docData.docType, docData.type, docData.key, docData.fileName, docData.name]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+  return AI_MANDATORY_CATEGORIES.find((c) => c.match.some((kw) => haystack.includes(kw))) || null;
+}
+
+const MONTHS = {
+  jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5,
+  jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11,
+};
+
+// Parse a wide range of date formats found on travel documents into a Date (UTC).
+function parseDateToken(token) {
+  if (!token) return null;
+  const t = token.trim();
+
+  // DD MMM YYYY  (e.g. "12 JAN 2027", "12-JAN-2027") — common on passports/EID.
+  let m = t.match(/(\d{1,2})[\s\-/.]+([A-Za-z]{3,})[\s\-/.]+(\d{4})/);
+  if (m) {
+    const mon = MONTHS[m[2].slice(0, 3).toLowerCase()];
+    if (mon !== undefined) return new Date(Date.UTC(+m[3], mon, +m[1]));
+  }
+  // YYYY-MM-DD / YYYY.MM.DD / YYYY/MM/DD
+  m = t.match(/(\d{4})[\-/.](\d{1,2})[\-/.](\d{1,2})/);
+  if (m) return new Date(Date.UTC(+m[1], +m[2] - 1, +m[3]));
+  // DD/MM/YYYY / DD-MM-YYYY / DD.MM.YYYY  (UAE/EU day-first convention)
+  m = t.match(/(\d{1,2})[\-/.](\d{1,2})[\-/.](\d{4})/);
+  if (m) return new Date(Date.UTC(+m[3], +m[2] - 1, +m[1]));
+  return null;
+}
+
+// Collect every date-like substring in the OCR text with its raw match.
+function findAllDates(text) {
+  const patterns = [
+    /\d{1,2}[\s\-/.]+[A-Za-z]{3,}[\s\-/.]+\d{4}/g,
+    /\d{4}[\-/.]\d{1,2}[\-/.]\d{1,2}/g,
+    /\d{1,2}[\-/.]\d{1,2}[\-/.]\d{4}/g,
+  ];
+  const out = [];
+  for (const re of patterns) {
+    let mm;
+    while ((mm = re.exec(text)) !== null) {
+      const d = parseDateToken(mm[0]);
+      if (d && !isNaN(d.getTime())) out.push({ raw: mm[0], date: d, index: mm.index });
+    }
+  }
+  return out;
+}
+
+// Extract the expiry date. Prefer a date that sits near an expiry keyword;
+// otherwise fall back to the latest date found (expiry is usually the furthest
+// out). Returns { date, viaKeyword } or null.
+function extractExpiryDate(text) {
+  if (!text) return null;
+  const lower = text.toLowerCase();
+  const all = findAllDates(text);
+  if (all.length === 0) return null;
+
+  const keywords = ["expiry", "expire", "expires", "valid until", "date of expiry", "exp ", "exp.", "valid till", "valid thru"];
+  let best = null;
+  for (const kw of keywords) {
+    let from = 0;
+    let idx;
+    while ((idx = lower.indexOf(kw, from)) !== -1) {
+      // Find the date whose position is closest AFTER the keyword (within 40 chars).
+      const near = all
+        .filter((d) => d.index >= idx && d.index - idx < 40)
+        .sort((a, b) => a.index - b.index)[0];
+      if (near && (!best || near.index < best.index)) best = near;
+      from = idx + kw.length;
+    }
+  }
+  if (best) return { date: best.date, viaKeyword: true };
+
+  // Fallback: latest date in the document.
+  const latest = all.sort((a, b) => b.date - a.date)[0];
+  return { date: latest.date, viaKeyword: false };
+}
+
+// Average OCR confidence from the Vision fullTextAnnotation page/block tree.
+function computeOcrConfidence(fullTextAnnotation) {
+  if (!fullTextAnnotation || !Array.isArray(fullTextAnnotation.pages)) return null;
+  const confs = [];
+  for (const page of fullTextAnnotation.pages) {
+    if (typeof page.confidence === "number") confs.push(page.confidence);
+    for (const block of page.blocks || []) {
+      if (typeof block.confidence === "number") confs.push(block.confidence);
+    }
+  }
+  if (confs.length === 0) return null;
+  return confs.reduce((a, b) => a + b, 0) / confs.length;
+}
+
+// Laplacian-variance blur score via Jimp (pure-JS OpenCV-style fallback). Higher
+// variance = sharper image; low variance = blurry. Returns null if Jimp is not
+// available or the buffer can't be decoded (e.g. PDFs).
+async function computeLaplacianBlurScore(buffer) {
+  let Jimp;
+  try {
+    // Lazy-require so a missing/optional dependency never breaks the deploy or the
+    // other functions in this file at module load.
+    Jimp = require("jimp");
+  } catch (e) {
+    console.warn("aiVerifyDocument: jimp not installed; skipping Laplacian blur fallback.");
+    return null;
+  }
+  try {
+    const image = await Jimp.read(buffer);
+    image.grayscale();
+    const { width, height, data } = image.bitmap;
+    // Convolve with the Laplacian kernel and accumulate variance of the response.
+    let sum = 0;
+    let sumSq = 0;
+    let count = 0;
+    const lum = (x, y) => data[(y * width + x) * 4]; // grayscale → R channel
+    for (let y = 1; y < height - 1; y++) {
+      for (let x = 1; x < width - 1; x++) {
+        const l =
+          -4 * lum(x, y) +
+          lum(x - 1, y) + lum(x + 1, y) + lum(x, y - 1) + lum(x, y + 1);
+        sum += l;
+        sumSq += l * l;
+        count++;
+      }
+    }
+    if (count === 0) return null;
+    const mean = sum / count;
+    const variance = sumSq / count - mean * mean;
+    return Math.round(variance * 100) / 100;
+  } catch (e) {
+    console.warn("aiVerifyDocument: Laplacian blur computation failed:", e.message);
+    return null;
+  }
+}
+
+const VISION_BLUR_LIKELIHOOD_BLURRY = ["LIKELY", "VERY_LIKELY"];
+// Laplacian-variance thresholds (tuned for typical phone scans of documents).
+const BLUR_HARD_REJECT = 50;   // below this → clearly blurry → reject
+const BLUR_SOFT_REVIEW = 120;  // 50–120 → borderline → needs_review
+const OCR_CONFIDENCE_MIN = 0.6;
+const PASSPORT_MIN_MONTHS = 6;
+
+// ===========================================================================
+// Structured field extraction + profile matching (non-blocking flagging)
+// ---------------------------------------------------------------------------
+// After OCR we extract identity fields from the document text and compare them
+// to the client's saved profile (user_profiles/{uid}). This is FLAGGING ONLY:
+// nothing here changes the document's verified/rejected/needs_review status or
+// blocks the application. Results are written to aiCheck.extractedFields and a
+// separate profileMatch block for consultants to review.
+// ---------------------------------------------------------------------------
+
+const ISO = (d) => (d instanceof Date && !isNaN(d.getTime()) ? d.toISOString().slice(0, 10) : "");
+
+// Return the text on/after a labelled keyword (same line), e.g. "Nationality: INDIAN".
+function valueAfterLabel(text, labels) {
+  const lines = text.split(/\n+/);
+  for (const raw of lines) {
+    const line = raw.trim();
+    const lower = line.toLowerCase();
+    for (const label of labels) {
+      const idx = lower.indexOf(label);
+      if (idx !== -1) {
+        const after = line.slice(idx + label.length).replace(/^[\s:.\-]+/, "").trim();
+        if (after) return after;
+      }
+    }
+  }
+  return "";
+}
+
+// Parse the two-line passport MRZ (TD3). Line 1: P<ISSUER<SURNAME<<GIVEN<NAMES.
+// Line 2: PASSPORTNO(9) checkdigit NATIONALITY(3) YYMMDD(birth) ... YYMMDD(expiry).
+function parseMrz(text) {
+  const lines = text.split(/\n+/).map((l) => l.replace(/\s+/g, "").trim());
+  const l1 = lines.find((l) => /^P[<A-Z0-9]/.test(l) && l.includes("<<"));
+  const l2 = lines.find((l) => /^[A-Z0-9<]{30,}$/.test(l) && l !== l1 && /\d/.test(l));
+  const out = {};
+  if (l1) {
+    const body = l1.replace(/^P[A-Z<]?/, "");
+    const parts = body.split("<<");
+    if (parts.length >= 2) {
+      const surname = (parts[0] || "").replace(/^[A-Z]{3}/, "").replace(/</g, " ").trim();
+      const given = (parts[1] || "").replace(/</g, " ").trim();
+      const full = `${given} ${surname}`.replace(/\s+/g, " ").trim();
+      if (full) out.fullName = full;
+    }
+  }
+  if (l2) {
+    const passportNo = l2.slice(0, 9).replace(/</g, "").trim();
+    if (passportNo && /[A-Z0-9]/.test(passportNo)) out.passportNumber = passportNo;
+    const nat = l2.slice(10, 13).replace(/</g, "").trim();
+    if (/^[A-Z]{3}$/.test(nat)) out.nationalityCode = nat;
+    const yymmdd = (s) => {
+      if (!/^\d{6}$/.test(s)) return null;
+      let yy = +s.slice(0, 2);
+      const mm = +s.slice(2, 4);
+      const dd = +s.slice(4, 6);
+      if (mm < 1 || mm > 12 || dd < 1 || dd > 31) return null;
+      const year = yy <= 30 ? 2000 + yy : 1900 + yy;
+      return new Date(Date.UTC(year, mm - 1, dd));
+    };
+    const dob = yymmdd(l2.slice(13, 19));
+    if (dob) out.dateOfBirth = ISO(dob);
+    const exp = yymmdd(l2.slice(21, 27));
+    if (exp) out.passportExpiryDate = ISO(exp);
+    const sex = l2.charAt(20);
+    if (sex === "M" || sex === "F") out.gender = sex === "M" ? "male" : "female";
+  }
+  return out;
+}
+
+// ISO-3 country code → country name (only the variants common to UAE residents;
+// extend as needed). Used to resolve MRZ nationality codes.
+const COUNTRY_CODES = {
+  IND: "India", PAK: "Pakistan", BGD: "Bangladesh", LKA: "Sri Lanka", NPL: "Nepal",
+  PHL: "Philippines", EGY: "Egypt", JOR: "Jordan", SYR: "Syria", LBN: "Lebanon",
+  GBR: "United Kingdom", USA: "United States", ARE: "United Arab Emirates",
+  SAU: "Saudi Arabia", NGA: "Nigeria", KEN: "Kenya", ZAF: "South Africa",
+  CHN: "China", RUS: "Russia", FRA: "France", DEU: "Germany", ITA: "Italy",
+};
+
+// Extract structured identity fields for the given document category. Only
+// confidently-parsed values are returned; unclear fields are simply omitted so
+// the comparison treats them as "missing" rather than inventing a value.
+function extractStructuredFields(text, category, expiryDate) {
+  if (!text) return {};
+  const fields = {};
+  const mrz = category.key === "passport" ? parseMrz(text) : {};
+
+  // Names (passport relies on MRZ; otherwise a labelled "name" line).
+  if (mrz.fullName) {
+    fields.fullName = mrz.fullName;
+  } else {
+    const n = valueAfterLabel(text, ["full name", "name"]);
+    if (n && /[a-z]/i.test(n) && n.length >= 3 && n.length <= 60) fields.fullName = n;
+  }
+
+  // Date of birth.
+  if (mrz.dateOfBirth) {
+    fields.dateOfBirth = mrz.dateOfBirth;
+  } else {
+    const dobRaw = valueAfterLabel(text, ["date of birth", "birth date", "dob"]);
+    const dob = dobRaw ? parseDateToken(dobRaw) : null;
+    if (dob) fields.dateOfBirth = ISO(dob);
+  }
+
+  // Nationality.
+  if (mrz.nationalityCode && COUNTRY_CODES[mrz.nationalityCode]) {
+    fields.nationality = COUNTRY_CODES[mrz.nationalityCode];
+  } else {
+    const nat = valueAfterLabel(text, ["nationality"]);
+    if (nat && /[a-z]/i.test(nat) && nat.length <= 40) fields.nationality = nat.split(/\s{2,}|\|/)[0].trim();
+  }
+
+  // Gender.
+  if (mrz.gender) {
+    fields.gender = mrz.gender;
+  } else {
+    const sx = valueAfterLabel(text, ["sex", "gender"]).toLowerCase();
+    if (/^m\b|male/.test(sx)) fields.gender = "male";
+    else if (/^f\b|female/.test(sx)) fields.gender = "female";
+  }
+
+  if (category.key === "passport") {
+    if (mrz.passportNumber) {
+      fields.passportNumber = mrz.passportNumber;
+    } else {
+      const pn = valueAfterLabel(text, ["passport no", "passport number", "document no"]);
+      const m = pn.match(/[A-Z0-9]{6,9}/i);
+      if (m) fields.passportNumber = m[0].toUpperCase();
+    }
+    if (mrz.passportExpiryDate) fields.passportExpiryDate = mrz.passportExpiryDate;
+    else if (expiryDate) fields.passportExpiryDate = ISO(expiryDate);
+  }
+
+  if (category.key === "emirates_id") {
+    const m = text.match(/784[-\s]?\d{4}[-\s]?\d{7}[-\s]?\d/);
+    if (m) fields.emiratesIdNumber = m[0];
+  }
+
+  if (category.key === "uae_residence_visa") {
+    // UAE residence visa "file number" — digit groups separated by slashes,
+    // or a labelled file/U.I.D number.
+    const labelled = valueAfterLabel(text, ["file no", "file number", "u.i.d", "uid no", "visa no", "visa number"]);
+    const slashed = text.match(/\b\d{2,4}\/\d{2,4}\/\d{4,8}\b/);
+    if (labelled) {
+      const m = labelled.match(/[0-9/\-]{6,}/);
+      if (m) fields.residenceVisaNumber = m[0];
+    }
+    if (!fields.residenceVisaNumber && slashed) fields.residenceVisaNumber = slashed[0];
+    if (expiryDate) fields.residenceVisaExpiryDate = ISO(expiryDate);
+  }
+
+  return fields;
+}
+
+// ---- Normalizers ----
+const normName = (s) => String(s || "").toLowerCase().replace(/[^a-z\s]/g, " ").replace(/\s+/g, " ").trim();
+const normId = (s) => String(s || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+const normGender = (s) => {
+  const t = String(s || "").toLowerCase().trim();
+  if (t.startsWith("m")) return "male";
+  if (t.startsWith("f")) return "female";
+  return "";
+};
+function normDate(s) {
+  if (!s) return "";
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  const d = parseDateToken(String(s));
+  return d ? ISO(d) : "";
+}
+// Name match: tolerant of word order and extra middle names. True when the
+// smaller token set is fully contained in the larger.
+function namesMatch(a, b) {
+  const ta = normName(a).split(" ").filter(Boolean);
+  const tb = normName(b).split(" ").filter(Boolean);
+  if (ta.length === 0 || tb.length === 0) return null;
+  const [small, large] = ta.length <= tb.length ? [ta, tb] : [tb, ta];
+  const set = new Set(large);
+  return small.every((tok) => set.has(tok));
+}
+// Nationality match: equal, demonym/country variants (India/Indian), or shared
+// 4-letter stem. Leans toward match to avoid false mismatches (non-blocking).
+function nationalityMatch(a, b) {
+  const na = String(a || "").toLowerCase().trim();
+  const nb = String(b || "").toLowerCase().trim();
+  if (!na || !nb) return null;
+  if (na === nb) return true;
+  const stem = (s) => s.replace(/(ian|ese|ish|i|n)$/, "");
+  if (stem(na) === stem(nb)) return true;
+  if (na.slice(0, 4) === nb.slice(0, 4) && na.length >= 4 && nb.length >= 4) return true;
+  return false;
+}
+
+// Field-level comparison config per category. severity: high = identity-defining.
+const PROFILE_FIELD_MAP = {
+  fullName: { severity: "medium", get: (p) => [p?.personalInformation?.givenName, p?.personalInformation?.middleName, p?.personalInformation?.surname].filter(Boolean).join(" ").trim(), cmp: "name", reason: "Name does not match client profile" },
+  dateOfBirth: { severity: "high", get: (p) => p?.personalInformation?.dateOfBirth, cmp: "date", reason: "Date of birth does not match client profile" },
+  nationality: { severity: "medium", get: (p) => p?.personalInformation?.currentNationality, cmp: "nationality", reason: "Nationality does not match client profile" },
+  gender: { severity: "low", get: (p) => p?.personalInformation?.gender, cmp: "gender", reason: "Gender does not match client profile" },
+  passportNumber: { severity: "high", get: (p) => p?.passportInformation?.passportNumber, cmp: "id", reason: "Passport number does not match client profile" },
+  passportExpiryDate: { severity: "medium", get: (p) => p?.passportInformation?.dateOfExpiry, cmp: "date", reason: "Passport expiry date does not match client profile" },
+  emiratesIdNumber: { severity: "high", get: (p) => p?.uaeResidenceInformation?.emiratesId, cmp: "id", reason: "Emirates ID number does not match client profile" },
+  residenceVisaNumber: { severity: "high", get: (p) => p?.uaeResidenceInformation?.residenceVisaNumber || p?.uaeResidenceInformation?.unifiedNumber, cmp: "id", reason: "Residence visa number does not match client profile" },
+  residenceVisaExpiryDate: { severity: "medium", get: (p) => p?.uaeResidenceInformation?.visaExpiryDate, cmp: "date", reason: "Residence visa expiry date does not match client profile" },
+};
+
+const CATEGORY_FIELDS = {
+  passport: ["fullName", "dateOfBirth", "nationality", "passportNumber", "passportExpiryDate", "gender"],
+  emirates_id: ["fullName", "dateOfBirth", "nationality", "emiratesIdNumber", "gender"],
+  uae_residence_visa: ["fullName", "nationality", "residenceVisaNumber", "residenceVisaExpiryDate"],
+};
+
+function compareOne(cmp, profileVal, docVal) {
+  switch (cmp) {
+    case "name": return namesMatch(profileVal, docVal);
+    case "date": {
+      const a = normDate(profileVal); const b = normDate(docVal);
+      if (!a || !b) return null;
+      return a === b;
+    }
+    case "id": {
+      const a = normId(profileVal); const b = normId(docVal);
+      if (!a || !b) return null;
+      return a === b;
+    }
+    case "nationality": return nationalityMatch(profileVal, docVal);
+    case "gender": {
+      const a = normGender(profileVal); const b = normGender(docVal);
+      if (!a || !b) return null;
+      return a === b;
+    }
+    default: return null;
+  }
+}
+
+// Build the profileMatch result. Returns { status, mismatches, matchedFields,
+// missingFields }. needs_review when no profile, low confidence, or nothing
+// could be compared.
+function compareProfile(extractedFields, profile, category, confidence) {
+  const base = { mismatches: [], matchedFields: [], missingFields: [] };
+  if (!profile) return { ...base, status: "needs_review" };
+  if (confidence !== null && confidence < OCR_CONFIDENCE_MIN) return { ...base, status: "needs_review" };
+
+  const fieldsForCat = CATEGORY_FIELDS[category.key] || [];
+  let comparedCount = 0;
+
+  for (const field of fieldsForCat) {
+    const cfg = PROFILE_FIELD_MAP[field];
+    if (!cfg) continue;
+    const profileVal = cfg.get(profile);
+    const docVal = extractedFields[field];
+
+    if (!docVal || !profileVal) {
+      // Missing/unclear on either side → never a mismatch; flag for review.
+      base.missingFields.push(field);
+      continue;
+    }
+    const res = compareOne(cfg.cmp, profileVal, docVal);
+    if (res === null) {
+      base.missingFields.push(field);
+      continue;
+    }
+    comparedCount++;
+    if (res) {
+      base.matchedFields.push(field);
+    } else {
+      base.mismatches.push({
+        field,
+        profileValue: String(profileVal),
+        documentValue: String(docVal),
+        severity: cfg.severity,
+        reason: cfg.reason,
+      });
+    }
+  }
+
+  let status;
+  if (comparedCount === 0) status = "needs_review";
+  else if (base.mismatches.length > 0) status = "mismatch";
+  else if (base.missingFields.length > 0) status = "partial";
+  else status = "matched";
+
+  return { ...base, status };
+}
+
+// Core verification routine, shared by the onCreate trigger and the manual
+// reprocess callable. `opts.force` re-runs even if aiCheck.checked is already set.
+async function verifyDocumentAi(docRef, data, docId, opts = {}) {
+    // Only process the four mandatory document categories.
+    const category = resolveDocCategory(data);
+    if (!category) {
+      return null;
+    }
+    // Safety: never reprocess if a result already exists (e.g. backfills),
+    // unless an admin explicitly forces a re-run.
+    if (!opts.force && data.aiCheck && data.aiCheck.checked) {
+      return null;
+    }
+    if (!data.storageKey) {
+      await docRef.update({
+        status: "needs_review",
+        verificationStatus: "Needs Review",
+        aiCheck: {
+          checked: true,
+          result: "needs_review",
+          reason: "No stored file reference (storageKey) to analyze.",
+          reasonCode: "manual_review_required",
+          extractedText: "",
+          extractedFields: {},
+          expiryDate: null,
+          blurScore: null,
+          confidence: null,
+          category: category.key,
+          checkedAt: FieldValue.serverTimestamp(),
+        },
+        profileMatch: { checked: true, status: "needs_review", mismatches: [], matchedFields: [], missingFields: [], checkedAt: FieldValue.serverTimestamp() },
+        requiresManualReview: true,
+      });
+      return null;
+    }
+
+    // Lazy-require Vision so the rest of the functions load even before
+    // `npm install` adds the dependency.
+    let vision;
+    try {
+      vision = require("@google-cloud/vision");
+    } catch (e) {
+      console.error("aiVerifyDocument: @google-cloud/vision not installed.", e.message);
+      await docRef.update({
+        status: "needs_review",
+        verificationStatus: "Needs Review",
+        aiCheck: {
+          checked: true,
+          result: "needs_review",
+          reason: "AI verification dependency unavailable; manual review required.",
+          reasonCode: "manual_review_required",
+          extractedText: "",
+          extractedFields: {},
+          expiryDate: null,
+          blurScore: null,
+          confidence: null,
+          category: category.key,
+          checkedAt: FieldValue.serverTimestamp(),
+        },
+        profileMatch: { checked: true, status: "needs_review", mismatches: [], matchedFields: [], missingFields: [], checkedAt: FieldValue.serverTimestamp() },
+        requiresManualReview: true,
+      });
+      return null;
+    }
+
+    const client = new vision.ImageAnnotatorClient();
+    const mime = (data.mimeType || "").toLowerCase();
+    const isPdf = mime.includes("pdf") || (data.fileName || "").toLowerCase().endsWith(".pdf");
+
+    try {
+      // ---- Download the uploaded file from Storage ----
+      const bucket = admin.storage().bucket();
+      const [buffer] = await bucket.file(data.storageKey).download();
+
+      // ---- OCR (DOCUMENT_TEXT_DETECTION) ----
+      let fullText = "";
+      let fullTextAnnotation = null;
+      let faceAnnotations = [];
+
+      if (isPdf) {
+        // PDFs go through batchAnnotateFiles with inline content.
+        const [result] = await client.batchAnnotateFiles({
+          requests: [
+            {
+              inputConfig: { content: buffer, mimeType: "application/pdf" },
+              features: [{ type: "DOCUMENT_TEXT_DETECTION" }],
+              pages: [1, 2, 3, 4, 5],
+            },
+          ],
+        });
+        const responses = result.responses?.[0]?.responses || [];
+        fullText = responses.map((r) => r.fullTextAnnotation?.text || "").join("\n");
+        fullTextAnnotation = responses[0]?.fullTextAnnotation || null;
+      } else {
+        const [result] = await client.documentTextDetection({ image: { content: buffer } });
+        fullTextAnnotation = result.fullTextAnnotation || null;
+        fullText = (fullTextAnnotation && fullTextAnnotation.text) || "";
+        // Face blur likelihood is only meaningful for photographs.
+        if (category.isPhoto) {
+          const [faceResult] = await client.faceDetection({ image: { content: buffer } });
+          faceAnnotations = faceResult.faceAnnotations || [];
+        }
+      }
+
+      const extractedText = (fullText || "").slice(0, 5000);
+      const confidence = computeOcrConfidence(fullTextAnnotation);
+
+      // ---- Blur detection ----
+      // Vision blur likelihood (faces) where available + Laplacian fallback.
+      let visionBlurry = false;
+      if (faceAnnotations.length > 0) {
+        visionBlurry = faceAnnotations.some((f) =>
+          VISION_BLUR_LIKELIHOOD_BLURRY.includes(f.blurredLikelihood)
+        );
+      }
+      const blurScore = isPdf ? null : await computeLaplacianBlurScore(buffer);
+
+      // ---- Expiry extraction & validation ----
+      const now = new Date();
+      let expiryDate = null;
+      let expiryFound = false;
+      let expiryViaKeyword = false;
+      let expired = false;
+      let passportExpiringSoon = false;
+
+      if (category.needsExpiry) {
+        const exp = extractExpiryDate(fullText);
+        if (exp) {
+          expiryDate = exp.date;
+          expiryFound = true;
+          expiryViaKeyword = exp.viaKeyword;
+          expired = expiryDate.getTime() < now.getTime();
+          if (category.key === "passport" && !expired) {
+            const sixMonths = new Date(now);
+            sixMonths.setMonth(sixMonths.getMonth() + PASSPORT_MIN_MONTHS);
+            passportExpiringSoon = expiryDate.getTime() < sixMonths.getTime();
+          }
+        }
+      }
+
+      // ---- Decision ----
+      let result = "verified";
+      const reasons = [];
+      // Stable, internal reason code for the outcome. Never shown to clients
+      // directly — the client portal translates it to a friendly message via the
+      // central mapping (src/utils/documentStatusMessages.js). Admins see the raw
+      // aiCheck details unchanged.
+      let reasonCode = null;
+      const expiredCode = category.key === "passport" ? "expired_passport"
+        : category.key === "emirates_id" ? "expired_emirates_id"
+        : category.key === "uae_residence_visa" ? "expired_residence_visa"
+        : "expired_document";
+
+      const hasText = extractedText.trim().length > 0;
+      const lowConfidence = confidence !== null && confidence < OCR_CONFIDENCE_MIN;
+      const clearlyBlurry =
+        visionBlurry || (blurScore !== null && blurScore < BLUR_HARD_REJECT);
+      const borderlineBlurry =
+        blurScore !== null && blurScore >= BLUR_HARD_REJECT && blurScore < BLUR_SOFT_REVIEW;
+
+      if (category.needsExpiry && expired) {
+        result = "rejected";
+        reasonCode = expiredCode;
+        reasons.push(`Document expired on ${expiryDate.toISOString().slice(0, 10)}.`);
+      } else if (clearlyBlurry) {
+        result = "rejected";
+        reasonCode = "blurry_document";
+        reasons.push("Image is too blurry to read clearly.");
+      } else if (!hasText && !category.isPhoto) {
+        result = "needs_review";
+        reasonCode = "unreadable_document";
+        reasons.push("No readable text could be extracted.");
+      } else if (category.needsExpiry && !expiryFound) {
+        result = "needs_review";
+        reasonCode = "manual_review_required";
+        reasons.push("Expiry date could not be found.");
+      } else if (lowConfidence) {
+        result = "needs_review";
+        reasonCode = "manual_review_required";
+        reasons.push("OCR confidence is low; manual review recommended.");
+      } else if (passportExpiringSoon) {
+        result = "needs_review";
+        reasonCode = "passport_expiring_soon";
+        reasons.push(`Passport expires in less than ${PASSPORT_MIN_MONTHS} months.`);
+      } else if (borderlineBlurry) {
+        result = "needs_review";
+        reasonCode = "manual_review_required";
+        reasons.push("Image sharpness is borderline; please verify legibility.");
+      } else if (category.needsExpiry && !expiryViaKeyword) {
+        // Expiry was guessed (latest date) rather than read next to a keyword.
+        result = "needs_review";
+        reasonCode = "manual_review_required";
+        reasons.push("Expiry date inferred without a clear label; please confirm.");
+      }
+
+      if (result === "verified") {
+        reasons.push("Clear OCR, readable image, and valid expiry where applicable.");
+      }
+
+      // Map the AI result to the document status. "verified"/"rejected"/
+      // "needs_review" are consumed by the portal Documents checklist.
+      const verificationStatusLabel =
+        result === "verified" ? "Verified" : result === "rejected" ? "Rejected" : "Needs Review";
+
+      // ---- Structured extraction + profile matching (non-blocking flagging) ----
+      // Only the three identity documents are compared against the profile.
+      let extractedFields = {};
+      let profileMatch = { checked: true, status: "needs_review", mismatches: [], matchedFields: [], missingFields: [], checkedAt: FieldValue.serverTimestamp() };
+      const comparesToProfile = ["passport", "emirates_id", "uae_residence_visa"].includes(category.key);
+
+      if (comparesToProfile) {
+        extractedFields = extractStructuredFields(fullText, category, expiryDate);
+        // Resolve the client profile (user_profiles/{uid}); travellerId is the uid.
+        let profile = null;
+        try {
+          const profileId = data.travellerId || data.uploadedBy;
+          if (profileId) {
+            const profileSnap = await db.collection("user_profiles").doc(profileId).get();
+            if (profileSnap.exists) profile = profileSnap.data();
+          }
+        } catch (profileErr) {
+          console.warn(`aiVerifyDocument: profile fetch failed for ${docId}:`, profileErr.message);
+        }
+        const cmp = compareProfile(extractedFields, profile, category, confidence);
+        profileMatch = { checked: true, ...cmp, checkedAt: FieldValue.serverTimestamp() };
+      }
+
+      // Mismatch (or any non-clean match) flags the document for manual consultant
+      // review. This NEVER changes the verified/rejected AI status or blocks anything.
+      const requiresManualReview =
+        comparesToProfile && profileMatch.status !== "matched";
+
+      await docRef.update({
+        status: result,
+        verificationStatus: verificationStatusLabel,
+        requiresManualReview,
+        rejectionReasonCode: result === "rejected" ? reasonCode : null,
+        aiCheck: {
+          checked: true,
+          result,
+          reason: reasons.join(" "),
+          reasonCode,
+          extractedText,
+          extractedFields,
+          expiryDate: expiryDate ? admin.firestore.Timestamp.fromDate(expiryDate) : null,
+          blurScore,
+          confidence,
+          category: category.key,
+          expiringSoon: passportExpiringSoon,
+          visionBlurry,
+          checkedAt: FieldValue.serverTimestamp(),
+        },
+        profileMatch,
+      });
+
+      console.log(`aiVerifyDocument: ${docId} (${category.key}) → ${result}; profileMatch=${profileMatch.status}. ${reasons.join(" ")}`);
+    } catch (err) {
+      console.error(`aiVerifyDocument: error processing ${docId}:`, err);
+      // Fail to needs_review so a human checks it; never leave it stuck in ai_processing.
+      try {
+        await docRef.update({
+          status: "needs_review",
+          verificationStatus: "Needs Review",
+          aiCheck: {
+            checked: true,
+            result: "needs_review",
+            reason: `Automated verification failed: ${err.message}. Manual review required.`,
+            reasonCode: "manual_review_required",
+            extractedText: "",
+            extractedFields: {},
+            expiryDate: null,
+            blurScore: null,
+            confidence: null,
+            category: category.key,
+            checkedAt: FieldValue.serverTimestamp(),
+          },
+          profileMatch: { checked: true, status: "needs_review", mismatches: [], matchedFields: [], missingFields: [], checkedAt: FieldValue.serverTimestamp() },
+          requiresManualReview: true,
+        });
+      } catch (updateErr) {
+        console.error("aiVerifyDocument: failed to write error state:", updateErr);
+      }
+    }
+
+    return null;
+}
+
+// Firestore onCreate trigger — runs verification when a document is uploaded.
+exports.aiVerifyDocument = functions
+  .runWith({ timeoutSeconds: 120, memory: "1GB" })
+  .firestore.document("documents/{docId}")
+  .onCreate(async (snap, context) => {
+    return verifyDocumentAi(snap.ref, snap.data() || {}, context.params.docId);
+  });
+
+// ---------------------------------------------------------------------------
+// 10b. Manual reprocess (admin/manager callable)
+// ---------------------------------------------------------------------------
+// Re-runs AI verification for a single stuck/failed document. Used by the admin
+// "Re-run AI" button. Forces a re-run even if aiCheck.checked is already set.
+// Falls back to marking the document needs_review if verification throws, so a
+// document is never left stuck in ai_processing.
+exports.reprocessDocument = functions
+  .runWith({ timeoutSeconds: 120, memory: "1GB" })
+  .https.onCall(async (data, context) => {
+    if (!context.auth) {
+      throw new functions.https.HttpsError("unauthenticated", "Authentication required.");
+    }
+    // Manager-level (super_admin/admin/manager) or visa_ops may reprocess.
+    let callerDoc = await db.collection("users").doc(context.auth.uid).get();
+    if (!callerDoc.exists && context.auth.token && context.auth.token.email) {
+      callerDoc = await db.collection("users").doc(context.auth.token.email.toLowerCase()).get();
+    }
+    const role = callerDoc.exists ? callerDoc.data().role : null;
+    if (!["super_admin", "admin", "manager", "visa_ops"].includes(role)) {
+      throw new functions.https.HttpsError("permission-denied", "Staff access required.");
+    }
+
+    const docId = data && data.docId;
+    if (!docId) {
+      throw new functions.https.HttpsError("invalid-argument", "Missing docId.");
+    }
+    const docRef = db.collection("documents").doc(docId);
+    const snap = await docRef.get();
+    if (!snap.exists) {
+      throw new functions.https.HttpsError("not-found", "Document not found.");
+    }
+
+    try {
+      await verifyDocumentAi(docRef, snap.data() || {}, docId, { force: true });
+      const after = await docRef.get();
+      return { success: true, status: after.data()?.status || null };
+    } catch (err) {
+      console.error(`reprocessDocument: ${docId} failed:`, err);
+      // Never leave it stuck — fall back to needs_review.
+      await docRef.update({
+        status: "needs_review",
+        verificationStatus: "Needs Review",
+        requiresManualReview: true,
+      }).catch(() => {});
+      return { success: false, status: "needs_review", error: err.message };
+    }
+  });
+
+// ---------------------------------------------------------------------------
+// 10c. Scheduled sweeper — timeout fallback for stuck ai_processing documents
+// ---------------------------------------------------------------------------
+// Safety net: if the onCreate trigger ever fails to run, times out, or the
+// document is otherwise left in "ai_processing" for more than 10 minutes, this
+// scheduled job flips it to "needs_review" so a consultant reviews it manually.
+// A document is never left stuck. This does NOT block applying.
+const STUCK_THRESHOLD_MINUTES = 10;
+exports.sweepStuckAiDocuments = functions.pubsub
+  .schedule("every 10 minutes")
+  .onRun(async () => {
+    const cutoff = new Date(Date.now() - STUCK_THRESHOLD_MINUTES * 60 * 1000);
+    try {
+      const snap = await db
+        .collection("documents")
+        .where("status", "==", "ai_processing")
+        .get();
+      if (snap.empty) return null;
+
+      const batch = db.batch();
+      let count = 0;
+      snap.forEach((d) => {
+        const data = d.data() || {};
+        const created = data.createdAt && typeof data.createdAt.toDate === "function"
+          ? data.createdAt.toDate()
+          : (data.createdAt ? new Date(data.createdAt) : null);
+        // Only sweep documents that have been stuck longer than the threshold.
+        if (created && created > cutoff) return;
+        batch.update(d.ref, {
+          status: "needs_review",
+          verificationStatus: "Needs Review",
+          requiresManualReview: true,
+          aiCheck: Object.assign({}, data.aiCheck || {}, {
+            checked: true,
+            result: "needs_review",
+            reason: "AI verification did not complete in time; flagged for manual review.",
+            reasonCode: "manual_review_required",
+            checkedAt: FieldValue.serverTimestamp(),
+          }),
+        });
+        count++;
+      });
+      if (count > 0) {
+        await batch.commit();
+        console.log(`sweepStuckAiDocuments: flipped ${count} stuck document(s) to needs_review.`);
+      }
+    } catch (err) {
+      console.error("sweepStuckAiDocuments error:", err);
+    }
+    return null;
+  });

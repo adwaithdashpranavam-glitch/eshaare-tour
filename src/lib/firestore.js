@@ -15,10 +15,11 @@ import {
   limit,
   serverTimestamp
 } from "firebase/firestore";
-import { db, auth, functions, httpsCallable } from "./firebase";
+import { db, auth, functions, httpsCallable, storage } from "./firebase";
 export { db, auth };
 import toast from "react-hot-toast";
 import { validateAppointmentDates } from "../utils/appointmentDateRules";
+import { getMissingMandatoryDocuments } from "../utils/mandatoryDocuments";
 
 // Helper for error logging
 const handleError = (error, context) => {
@@ -286,6 +287,39 @@ export const createDocument = async (data) => {
   }
 };
 
+// Clients may delete any of THEIR OWN documents regardless of status — including
+// verified/approved ones. Deleting a verified mandatory document re-opens the
+// Apply-Now gate until a new verified document is uploaded. Ownership is enforced
+// by Firestore rules (travellerEmail must match the caller). This always returns
+// true; kept as a function so callers/UI have a single decision point.
+// eslint-disable-next-line no-unused-vars
+export const canClientDeleteDocument = (docData = {}) => true;
+
+// Delete a client document: removes the Storage file (best-effort) then the
+// Firestore record. The Firestore delete is authoritative for the UI (the
+// documents onSnapshot listener refreshes the list + mandatory checklist
+// automatically). A missing/already-deleted Storage object is not treated as a
+// failure. Throws only if the Firestore delete fails.
+export const deleteClientDocument = async (docId, storageKey) => {
+  if (!docId) throw new Error("deleteClientDocument: missing document id.");
+
+  if (storageKey) {
+    try {
+      const { ref: storageRef, deleteObject } = await import("firebase/storage");
+      await deleteObject(storageRef(storage, storageKey));
+    } catch (error) {
+      // object-not-found is fine (already gone); log anything else but continue
+      // so the Firestore record is still removed and the UI stays consistent.
+      if (error?.code !== "storage/object-not-found") {
+        console.warn("deleteClientDocument: storage delete warning:", error);
+      }
+    }
+  }
+
+  await deleteDoc(doc(db, "documents", docId));
+  return true;
+};
+
 export const getDocuments = (travellerId, callback) => {
   try {
     const docsRef = collection(db, "documents");
@@ -306,6 +340,26 @@ export const getDocuments = (travellerId, callback) => {
     });
   } catch (error) {
     handleError(error, "getDocuments");
+  }
+};
+
+// One-shot precheck used by Apply-Now handlers: queries the client's uploaded
+// documents (by traveller email, matching the Documents page query) and returns
+// the list of still-missing mandatory documents. An empty array means the client
+// is cleared to start a visa application. On query failure it fails CLOSED
+// (returns all mandatory docs as missing) so a transient error never lets an
+// incomplete client through the gate.
+export const fetchMissingMandatoryDocuments = async (email) => {
+  if (!email) return getMissingMandatoryDocuments([]);
+  try {
+    const docsRef = collection(db, "documents");
+    const q = query(docsRef, where("travellerEmail", "==", email.toLowerCase()));
+    const snapshot = await getDocs(q);
+    const docs = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+    return getMissingMandatoryDocuments(docs);
+  } catch (error) {
+    console.error("fetchMissingMandatoryDocuments failed:", error);
+    return getMissingMandatoryDocuments([]);
   }
 };
 

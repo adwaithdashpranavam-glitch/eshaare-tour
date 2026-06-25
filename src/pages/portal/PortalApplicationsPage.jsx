@@ -8,7 +8,7 @@ import StatusBadge from "../../components/ui/StatusBadge";
 import { formatShortDate } from "../../utils/formatters";
 import { getApplicationDisplayName } from "../../utils/helpers";
 import Modal from "../../components/ui/Modal";
-import { getApplicationsForCustomer, updateApplication, submitApplication, deleteApplication, isCompatibleSchengenDraft } from "../../lib/firestore";
+import { getApplicationsForCustomer, updateApplication, submitApplication, deleteApplication, isCompatibleSchengenDraft, fetchMissingMandatoryDocuments } from "../../lib/firestore";
 import { deriveApplicationPipelineStatus, getPipelineStatusLabel } from "../../utils/caseWorkspace";
 import LoadingSpinner from "../../components/ui/LoadingSpinner";
 import toast from "react-hot-toast";
@@ -143,8 +143,26 @@ export const PortalApplicationsPage = () => {
     };
   }, [user, userProfile]);
 
-  const handleOpenEdit = (draft) => {
-    if (draft.applicationType === "schengen" || draft.visaId === "schengen" || draft?.visaName?.toLowerCase().includes("schengen")) {
+  const handleOpenEdit = async (draft) => {
+    const opensWizard =
+      draft.applicationType === "schengen" ||
+      draft.visaId === "schengen" ||
+      draft?.visaName?.toLowerCase().includes("schengen");
+
+    if (opensWizard) {
+      // Mandatory-document gate before (re)opening the wizard for any visa type.
+      const checkingToast = toast.loading("Checking required documents...");
+      const missing = await fetchMissingMandatoryDocuments(userProfile?.email || user?.email);
+      toast.dismiss(checkingToast);
+      if (missing.length > 0) {
+        const missingLabels = missing.map((m) => m.label);
+        toast.error(
+          `Please upload and verify all mandatory documents before applying for a visa. Pending: ${missingLabels.join(", ")}.`,
+          { duration: 6000 }
+        );
+        navigate("/portal/documents", { state: { mandatoryDocsMissing: true, missing: missingLabels } });
+        return;
+      }
       navigate(`/portal/applications/${draft.id}/wizard`);
     } else {
       setSelectedDraft(draft);

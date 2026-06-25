@@ -7,6 +7,7 @@ import { buildClientTimeline, isDeliverableReady } from "../../utils/caseWorkspa
 import { getApplicationDisplayName } from "../../utils/helpers";
 import { useAuth } from "../../contexts/AuthContext";
 import { useTravelerProfile } from "../../contexts/TravelerProfileContext";
+import { useMandatoryDocuments } from "../../hooks/useMandatoryDocuments";
 import { 
   PersonalSection, 
   PassportSection, 
@@ -105,7 +106,11 @@ export default function SchengenWizard() {
   // so the UI never offers an action the rules would reject.
   const isStaff = !!role && ["super_admin", "admin", "manager"].includes(role.toLowerCase());
   const { profile: travelerProfile, loading: loadingProfile } = useTravelerProfile();
-  
+  // Direct-URL protection: clients must have all mandatory documents uploaded
+  // before they can open the wizard. Staff (consultants/admins) are exempt so
+  // they can review/complete cases.
+  const { loading: loadingMandatoryDocs, missing: missingMandatoryDocs } = useMandatoryDocuments();
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
@@ -234,6 +239,24 @@ export default function SchengenWizard() {
       fetchDraft();
     }
   }, [id, navigate, travelerProfile, loadingProfile]);
+
+  // Mandatory-document route guard. Once the draft and document status have both
+  // resolved, block clients (not staff) who are missing any mandatory document
+  // from an editable application. Submitted/read-only applications remain
+  // viewable so clients can always track an application they already filed.
+  useEffect(() => {
+    if (isStaff) return;
+    if (loading || loadingMandatoryDocs) return;
+    if (!draft || isReadOnly) return;
+    if (missingMandatoryDocs.length > 0) {
+      const missingLabels = missingMandatoryDocs.map((m) => m.label);
+      toast.error(
+        `Please upload and verify all mandatory documents before applying for a visa. Pending: ${missingLabels.join(", ")}.`,
+        { duration: 6000 }
+      );
+      navigate("/portal/documents", { state: { mandatoryDocsMissing: true, missing: missingLabels } });
+    }
+  }, [isStaff, loading, loadingMandatoryDocs, draft, isReadOnly, missingMandatoryDocs, navigate]);
 
   const getFieldValue = (field) => {
     if (!draft) return "";
