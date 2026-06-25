@@ -474,7 +474,7 @@ export const StaffManagementPage = () => {
                 type="text"
                 required
                 disabled={updatingProfile}
-                placeholder="https://images.unsplash.com/... or upload"
+                placeholder="https://images.unsplash.com/...?fm=webp or upload"
                 className="flex-1 px-3 py-2 bg-primary-container border border-on-primary-fixed-variant text-on-primary-container rounded focus:outline-none disabled:opacity-50 text-xs truncate"
                 value={editForm.img}
                 onChange={(e) => setEditForm({ ...editForm, img: e.target.value })}
@@ -506,7 +506,7 @@ export const StaffManagementPage = () => {
                   src={editForm.img}
                   alt="Profile Preview"
                   className="w-full h-full object-cover"
-                  onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=100&q=80"; }}
+                  onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=100&q=80&fm=webp"; }}
                 />
               </div>
             )}

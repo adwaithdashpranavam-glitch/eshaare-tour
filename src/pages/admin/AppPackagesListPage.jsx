@@ -12,7 +12,7 @@ const DEFAULT_PACKAGES = [
     title: "Symphony of Santorini",
     country: "Greece",
     price: "$1,299",
-    imageUrl: "https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?auto=format&fit=crop&w=600&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?auto=format&fit=crop&w=600&q=80&fm=webp",
     rating: 4.9,
     reviewCount: 124,
     category: "Packages",
@@ -25,7 +25,7 @@ const DEFAULT_PACKAGES = [
     title: "Zen Gardens & Neon Lights",
     country: "Japan",
     price: "$2,450",
-    imageUrl: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=600&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=600&q=80&fm=webp",
     rating: 4.8,
     reviewCount: 98,
     category: "Packages",
@@ -38,7 +38,7 @@ const DEFAULT_PACKAGES = [
     title: "Overwater Maldives Sanctuary",
     country: "Maldives",
     price: "$1,890",
-    imageUrl: "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=600&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=600&q=80&fm=webp",
     rating: 4.9,
     reviewCount: 210,
     category: "Packages",
@@ -51,7 +51,7 @@ const DEFAULT_PACKAGES = [
     title: "Swiss Alps Chamonix Explorer",
     country: "Switzerland",
     price: "$3,100",
-    imageUrl: "https://images.unsplash.com/photo-1502784444187-359ac186c5bb?auto=format&fit=crop&w=600&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1502784444187-359ac186c5bb?auto=format&fit=crop&w=600&q=80&fm=webp",
     rating: 4.7,
     reviewCount: 64,
     category: "Packages",
@@ -144,7 +144,7 @@ export const AppPackagesListPage = () => {
           title: "Kerala Backwaters",
           country: "India",
           price: "$224",
-          imageUrl: "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=800&q=80",
+          imageUrl: "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=800&q=80&fm=webp",
           rating: 4.8,
           reviewCount: 95,
           category: "Packages",
@@ -157,7 +157,7 @@ export const AppPackagesListPage = () => {
           title: "Interlaken Holu",
           country: "Switzerland",
           price: "$224",
-          imageUrl: "https://images.unsplash.com/photo-1502784444187-359ac186c5bb?q=80&w=800&auto=format&fit=crop",
+          imageUrl: "https://images.unsplash.com/photo-1502784444187-359ac186c5bb?q=80&w=800&auto=format&fit=crop&fm=webp",
           rating: 4.9,
           reviewCount: 112,
           category: "Packages",
@@ -170,7 +170,7 @@ export const AppPackagesListPage = () => {
           title: "Bespoke Honeymoon",
           country: "Maldives",
           price: "$399",
-          imageUrl: "https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=800&q=80",
+          imageUrl: "https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=800&q=80&fm=webp",
           rating: 5.0,
           reviewCount: 150,
           category: "Packages",
@@ -286,7 +286,7 @@ export const AppPackagesListPage = () => {
                 <tr key={p.id} className="hover:bg-white/5 transition-all duration-150">
                   <td className="px-6 py-4 w-20">
                     <img 
-                      src={p.imageUrl || "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=100&q=80"} 
+                      src={p.imageUrl || "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=100&q=80&fm=webp"} 
                       alt={p.title} 
                       className="w-12 h-12 rounded object-cover border border-on-primary-fixed-variant/40"
                     />

@@ -15,7 +15,7 @@ const PRESET_VISAS = [
     slug: "uk",
     name: "United Kingdom (UK) Visa",
     tagline: "Standard & Priority visitor visas for England, Scotland, Wales & Northern Ireland.",
-    imageUrl: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=800&q=80&fm=webp",
     category: "UK Visa",
     heroStats: [
       { label: "Processing Time", value: "10-15 Days", icon: "Clock" },
@@ -27,7 +27,7 @@ const PRESET_VISAS = [
     slug: "usa",
     name: "United States (USA) B1/B2 Visa",
     tagline: "10-year multiple-entry tourist and business visa with professional DS-160 auditing.",
-    imageUrl: "https://images.unsplash.com/photo-1501594907352-04cda38ebc29?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1501594907352-04cda38ebc29?auto=format&fit=crop&w=800&q=80&fm=webp",
     category: "USA Visa",
     heroStats: [
       { label: "Processing Time", value: "4-8 Weeks", icon: "Clock" },
@@ -39,7 +39,7 @@ const PRESET_VISAS = [
     slug: "schengen",
     name: "Schengen Europe Visa (General)",
     tagline: "Universal access to all 27 European Schengen member states with priority biometrics slots.",
-    imageUrl: "https://images.unsplash.com/photo-1499856871958-5b9627545d1a?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1499856871958-5b9627545d1a?auto=format&fit=crop&w=800&q=80&fm=webp",
     category: "Schengen Visa",
     heroStats: [
       { label: "Processing Time", value: "5-10 Days", icon: "Clock" },
@@ -51,7 +51,7 @@ const PRESET_VISAS = [
     slug: "france",
     name: "France Schengen Visa",
     tagline: "Apply for entry to France. Document check and VFS Global appointment assistance in Dubai.",
-    imageUrl: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=800&q=80&fm=webp",
     category: "Schengen Visa",
     heroStats: [
       { label: "Processing Time", value: "8-12 Days", icon: "Clock" },
@@ -63,7 +63,7 @@ const PRESET_VISAS = [
     slug: "italy",
     name: "Italy Schengen Visa",
     tagline: "Secure a biometrics appointment for Italy with flight itineraries & compliant hotel bookings.",
-    imageUrl: "https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&w=800&q=80&fm=webp",
     category: "Schengen Visa",
     heroStats: [
       { label: "Processing Time", value: "10-14 Days", icon: "Clock" },
@@ -75,7 +75,7 @@ const PRESET_VISAS = [
     slug: "germany",
     name: "Germany Schengen Visa",
     tagline: "Business & tourist document audit for rapid German Schengen visa processing.",
-    imageUrl: "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?auto=format&fit=crop&w=800&q=80&fm=webp",
     category: "Schengen Visa",
     heroStats: [
       { label: "Processing Time", value: "5-10 Days", icon: "Clock" },
@@ -87,7 +87,7 @@ const PRESET_VISAS = [
     slug: "spain",
     name: "Spain Schengen Visa",
     tagline: "Explore Madrid, Barcelona, and Andalucia with expert BLS Spain booking support.",
-    imageUrl: "https://images.unsplash.com/photo-1509840841025-9088ba78a826?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1509840841025-9088ba78a826?auto=format&fit=crop&w=800&q=80&fm=webp",
     category: "Schengen Visa",
     heroStats: [
       { label: "Processing Time", value: "10-15 Days", icon: "Clock" },
@@ -99,7 +99,7 @@ const PRESET_VISAS = [
     slug: "netherlands",
     name: "Netherlands Schengen Visa",
     tagline: "Audit your financial statement & employment files for Dutch Schengen entry.",
-    imageUrl: "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=800&q=80&fm=webp",
     category: "Schengen Visa",
     heroStats: [
       { label: "Processing Time", value: "7-12 Days", icon: "Clock" },
@@ -111,7 +111,7 @@ const PRESET_VISAS = [
     slug: "switzerland",
     name: "Switzerland Schengen Visa",
     tagline: "Premium travel itineraries and coverage verification for Swiss visa submissions.",
-    imageUrl: "https://images.unsplash.com/photo-1530122037265-a5f1f91d3b99?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1530122037265-a5f1f91d3b99?auto=format&fit=crop&w=800&q=80&fm=webp",
     category: "Schengen Visa",
     heroStats: [
       { label: "Processing Time", value: "6-10 Days", icon: "Clock" },
@@ -123,7 +123,7 @@ const PRESET_VISAS = [
     slug: "uae",
     name: "United Arab Emirates (UAE) Visa",
     tagline: "Express 30 & 60-day tourist visas for families visiting the Emirates.",
-    imageUrl: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=800&q=80&fm=webp",
     category: "GCC / Middle East Visa",
     heroStats: [
       { label: "Processing Time", value: "2-3 Days", icon: "Clock" },
@@ -135,7 +135,7 @@ const PRESET_VISAS = [
     slug: "saudi",
     name: "Saudi Arabia Visa",
     tagline: "Umrah, tourist, and business eVisa solutions with direct portal processing.",
-    imageUrl: "https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&w=800&q=80&fm=webp",
     category: "GCC / Middle East Visa",
     heroStats: [
       { label: "Processing Time", value: "3-5 Days", icon: "Clock" },
@@ -147,7 +147,7 @@ const PRESET_VISAS = [
     slug: "oman",
     name: "Oman Visa",
     tagline: "Transit and tourist eVisas for road or air travelers from the UAE.",
-    imageUrl: "https://images.unsplash.com/photo-1621680696874-edd80ce57b72?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1621680696874-edd80ce57b72?auto=format&fit=crop&w=800&q=80&fm=webp",
     category: "GCC / Middle East Visa",
     heroStats: [
       { label: "Processing Time", value: "1-2 Days", icon: "Clock" },
@@ -159,7 +159,7 @@ const PRESET_VISAS = [
     slug: "japan",
     name: "Japan Visa",
     tagline: "Short-stay tourist visa assistance including travel plan and reservation compliance.",
-    imageUrl: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=800&q=80&fm=webp",
     category: "Asia Visa",
     heroStats: [
       { label: "Processing Time", value: "5-7 Days", icon: "Clock" },
@@ -171,7 +171,7 @@ const PRESET_VISAS = [
     slug: "korea",
     name: "South Korea Visa",
     tagline: "Tourist visas and K-ETA application check-ins for UAE residents.",
-    imageUrl: "https://images.unsplash.com/photo-1538481199705-c710c4e965fc?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1538481199705-c710c4e965fc?auto=format&fit=crop&w=800&q=80&fm=webp",
     category: "Asia Visa",
     heroStats: [
       { label: "Processing Time", value: "7-10 Days", icon: "Clock" },
@@ -183,7 +183,7 @@ const PRESET_VISAS = [
     slug: "vietnam",
     name: "Vietnam Visa",
     tagline: "Fast-track approval letters and tourist eVisas handled within 72 hours.",
-    imageUrl: "https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=800&q=80&fm=webp",
     category: "Asia Visa",
     heroStats: [
       { label: "Processing Time", value: "3-4 Days", icon: "Clock" },
@@ -195,7 +195,7 @@ const PRESET_VISAS = [
     slug: "australia",
     name: "Australia Visa",
     tagline: "Visitor Visa (Subclass 600) audits for multi-entry tourism or business trips.",
-    imageUrl: "https://images.unsplash.com/photo-1524413840807-0c3cb6fa808d?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1524413840807-0c3cb6fa808d?auto=format&fit=crop&w=800&q=80&fm=webp",
     category: "Oceania Visa",
     heroStats: [
       { label: "Processing Time", value: "15-20 Days", icon: "Clock" },
@@ -207,7 +207,7 @@ const PRESET_VISAS = [
     slug: "new-zealand",
     name: "New Zealand Visa",
     tagline: "Visitor Visa and NZeTA document verification for smooth travel entries.",
-    imageUrl: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=800&q=80&fm=webp",
     category: "Oceania Visa",
     heroStats: [
       { label: "Processing Time", value: "15-25 Days", icon: "Clock" },
@@ -546,7 +546,7 @@ export const VisaServicesPage = () => {
   return (
     <div
       style={{
-        backgroundImage: "linear-gradient(rgba(250, 248, 245, 0.94), rgba(250, 248, 245, 0.94)), url('https://images.unsplash.com/photo-1506012787146-f92b2d7d6d96?auto=format&fit=crop&w=1600&q=80')",
+        backgroundImage: "linear-gradient(rgba(250, 248, 245, 0.94), rgba(250, 248, 245, 0.94)), url('https://images.unsplash.com/photo-1506012787146-f92b2d7d6d96?auto=format&fit=crop&w=1600&q=80&fm=webp')",
         backgroundAttachment: "fixed",
         backgroundSize: "cover",
         backgroundPosition: "center"
@@ -562,7 +562,7 @@ export const VisaServicesPage = () => {
         {/* Background Image with elegant overlay */}
         <div className="absolute inset-0 z-0">
           <img
-            src="https://images.unsplash.com/photo-1488085061387-422e29b40080?auto=format&fit=crop&w=2560&q=80"
+            src="https://images.unsplash.com/photo-1488085061387-422e29b40080?auto=format&fit=crop&w=2560&q=80&fm=webp"
             alt="Travel Background"
             className="w-full h-full object-cover opacity-100"
           />

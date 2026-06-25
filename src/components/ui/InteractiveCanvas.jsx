@@ -1,6 +1,6 @@
-import React from "react";
+import React, { memo } from "react";
 
-export const InteractiveCanvas = () => {
+export const InteractiveCanvas = memo(() => {
   return (
     <div className="aurora-wrapper">
       <div className="aurora-container">
@@ -26,7 +26,6 @@ export const InteractiveCanvas = () => {
           position: absolute;
           width: 100%;
           height: 100%;
-          filter: blur(140px);
           opacity: 0.28;
           transition: opacity 0.5s ease;
         }
@@ -35,6 +34,7 @@ export const InteractiveCanvas = () => {
           position: absolute;
           border-radius: 50%;
           mix-blend-mode: multiply;
+          will-change: transform;
         }
 
         .aurora-blob-1 {
@@ -96,9 +96,15 @@ export const InteractiveCanvas = () => {
           50% { transform: translate(-15vw, -10vh) scale(0.9) rotate(-90deg); }
           100% { transform: translate(10vw, 10vh) scale(1.15) rotate(-180deg); }
         }
+
+        @media (prefers-reduced-motion: reduce) {
+          .aurora-blob {
+            animation: none !important;
+          }
+        }
       `}</style>
     </div>
   );
-};
+});
 
 export default InteractiveCanvas;

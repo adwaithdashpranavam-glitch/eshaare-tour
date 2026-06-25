@@ -1,8 +1,8 @@
 import React from "react";
-import * as Icons from "lucide-react";
+import { TrendingUp } from "lucide-react";
 
-export const KPICard = ({ title, value, icon, trend, color = "gold" }) => {
-  const IconComponent = Icons[icon] || Icons.TrendingUp;
+export const KPICard = ({ title, value, Icon, trend, color = "gold" }) => {
+  const IconComponent = Icon || TrendingUp;
 
   const colorStyles = {
     gold: "text-secondary border-secondary/20",

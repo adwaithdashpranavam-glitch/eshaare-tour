@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { collection, onSnapshot, query, addDoc } from "firebase/firestore";
 import { db } from "../../lib/firebase";
-import { CreditCard, Landmark, DollarSign, Plus, Search, FileText, Send } from "lucide-react";
+import { CreditCard, Landmark, DollarSign, Plus, Search, FileText, Send, TrendingUp, AlertTriangle } from "lucide-react";
 import StatusBadge from "../../components/ui/StatusBadge";
 import KPICard from "../../components/ui/KPICard";
 import SearchInput from "../../components/ui/SearchInput";
@@ -128,10 +128,10 @@ export const PaymentsPage = () => {
 
       {/* KPI Cards Row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
-        <KPICard title="Today's Collections" value={`${formatCurrency(todayCollections)}`} icon="CreditCard" color="green" />
-        <KPICard title="Month Collections" value={`${formatCurrency(monthCollections)}`} icon="TrendingUp" color="gold" />
-        <KPICard title="Outstanding Overdue" value={`${formatCurrency(outstandingOverdue)}`} icon="AlertTriangle" color="red" />
-        <KPICard title="Pending Drafts" value={`${pendingDrafts} invoices`} icon="Landmark" color="orange" />
+        <KPICard title="Today's Collections" value={`${formatCurrency(todayCollections)}`} Icon={CreditCard} color="green" />
+        <KPICard title="Month Collections" value={`${formatCurrency(monthCollections)}`} Icon={TrendingUp} color="gold" />
+        <KPICard title="Outstanding Overdue" value={`${formatCurrency(outstandingOverdue)}`} Icon={AlertTriangle} color="red" />
+        <KPICard title="Pending Drafts" value={`${pendingDrafts} invoices`} Icon={Landmark} color="orange" />
       </div>
 
       {/* Search Bar */}

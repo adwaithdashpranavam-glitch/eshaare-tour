@@ -115,7 +115,7 @@ export const ExpertsManagementPage = () => {
         experienceYears: Number(expertForm.experienceYears) || 0,
         successRate: Number(expertForm.successRate) || 0,
         visasFiled: Number(expertForm.visasFiled) || 0,
-        img: expertForm.img || "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=600&q=80",
+        img: expertForm.img || "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=600&q=80&fm=webp",
         tags: tagsArray,
         displayOrder: Number(expertForm.displayOrder) || 1,
         status: expertForm.status
@@ -196,7 +196,7 @@ export const ExpertsManagementPage = () => {
           designation: "Managing Director",
           department: "Leadership",
           intro: "Coordinating premium custom holiday designs and ensuring absolute file compliance for high-net-worth travelers.",
-          img: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=600&q=80",
+          img: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=600&q=80&fm=webp",
           visasFiled: 2400,
           experienceYears: 12,
           successRate: 99,
@@ -211,7 +211,7 @@ export const ExpertsManagementPage = () => {
           designation: "Senior Visa Specialist",
           department: "Business Visas",
           intro: "Expert in Schengen, UK, and USA document audits with deep knowledge of VFS visa operations and embassy protocols.",
-          img: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=600&q=80",
+          img: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=600&q=80&fm=webp",
           visasFiled: 1850,
           experienceYears: 9,
           successRate: 98,
@@ -226,7 +226,7 @@ export const ExpertsManagementPage = () => {
           designation: "Luxury Tour Consultant",
           department: "Bespoke Tours",
           intro: "Crafting bespoke global itineraries for European tours, Japan escapes, and exotic destination getaways.",
-          img: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=600&q=80",
+          img: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=600&q=80&fm=webp",
           visasFiled: 950,
           experienceYears: 6,
           successRate: 100,
@@ -241,7 +241,7 @@ export const ExpertsManagementPage = () => {
           designation: "VFS Operations Lead",
           department: "VFS Slots",
           intro: "Managing slot bookings, biometric appointments, and rapid document dispatch for all Eshaare clients.",
-          img: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=600&q=80",
+          img: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=600&q=80&fm=webp",
           visasFiled: 3200,
           experienceYears: 11,
           successRate: 98,
@@ -333,7 +333,7 @@ export const ExpertsManagementPage = () => {
                       src={expert.img}
                       alt={expert.name}
                       className="w-full h-full object-cover"
-                      onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=100&q=80"; }}
+                      onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=100&q=80&fm=webp"; }}
                     />
                   </div>
                   <div>
@@ -592,7 +592,7 @@ export const ExpertsManagementPage = () => {
               <input
                 type="text"
                 disabled={saving}
-                placeholder="https://images.unsplash.com/... or upload"
+                placeholder="https://images.unsplash.com/...?fm=webp or upload"
                 className="flex-1 px-3 py-2 bg-primary-container border border-on-primary-fixed-variant text-on-primary-container rounded focus:outline-none focus:border-secondary disabled:opacity-50 text-xs truncate"
                 value={expertForm.img}
                 onChange={(e) => setExpertForm({ ...expertForm, img: e.target.value })}
@@ -624,7 +624,7 @@ export const ExpertsManagementPage = () => {
                   src={expertForm.img}
                   alt="Profile Preview"
                   className="w-full h-full object-cover"
-                  onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=100&q=80"; }}
+                  onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=100&q=80&fm=webp"; }}
                 />
               </div>
             )}

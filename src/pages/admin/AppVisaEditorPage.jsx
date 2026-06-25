@@ -246,7 +246,7 @@ export const AppVisaEditorPage = () => {
                 name="imageUrl"
                 required
                 className="flex-1 px-3.5 py-2 bg-primary-container border border-on-primary-fixed-variant text-on-primary-container placeholder-on-primary-container/30 rounded text-xs focus:outline-none focus:border-secondary"
-                placeholder="https://images.unsplash.com/..."
+                placeholder="https://images.unsplash.com/...?fm=webp"
                 value={formData.imageUrl}
                 onChange={handleChange}
               />

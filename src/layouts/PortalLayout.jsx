@@ -97,6 +97,8 @@ export const PortalLayout = () => {
             <img
               src={foxLogo}
               alt="Eshaare Tour"
+              width="90"
+              height="60"
               className="h-10 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
             />
             <div className="leading-none">

@@ -676,7 +676,7 @@ export const VisaTypeEditorPage = () => {
                     value={formData.imageUrl || ""}
                     onChange={(e) => setFormData(prev => ({ ...prev, imageUrl: e.target.value }))}
                     className="w-full px-3 py-2 bg-primary-container border border-on-primary-fixed-variant text-on-primary-container rounded focus:border-secondary focus:outline-none text-xs transition-colors"
-                    placeholder="e.g. https://images.unsplash.com/photo-..."
+                    placeholder="e.g. https://images.unsplash.com/photo-...?fm=webp"
                   />
                 </div>
                 <div className="flex items-center space-x-2">
@@ -1185,7 +1185,7 @@ export const VisaTypeEditorPage = () => {
                           value={dest.imageUrl}
                           onChange={(e) => updateDestinationField(idx, "imageUrl", e.target.value)}
                           className="w-full bg-primary-container border border-[#4D4740] px-2.5 py-1 text-xs text-white rounded focus:border-secondary focus:outline-none"
-                          placeholder="e.g. https://images.unsplash.com/..."
+                          placeholder="e.g. https://images.unsplash.com/...?fm=webp"
                         />
                       </div>
                     </div>

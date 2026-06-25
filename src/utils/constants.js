@@ -127,7 +127,7 @@ export const MOCK_PACKAGES = [
     duration: "7 Nights / 8 Days",
     price: 4999,
     highlights: ["Eiffel Tower entry", "Colosseum tour", "Premium hotels", "Daily breakfast", "Airport transfers"],
-    image: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=800&q=80"
+    image: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=800&q=80&fm=webp"
   },
   {
     slug: "tokyo-kyoto-cultural",
@@ -136,7 +136,7 @@ export const MOCK_PACKAGES = [
     duration: "6 Nights / 7 Days",
     price: 6999,
     highlights: ["Shinkansen Bullet Train", "Mount Fuji day trip", "Historic temples", "Bullet train tickets", "Local guides"],
-    image: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=800&q=80"
+    image: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=800&q=80&fm=webp"
   },
   {
     slug: "magical-london-scotland",
@@ -145,6 +145,6 @@ export const MOCK_PACKAGES = [
     duration: "8 Nights / 9 Days",
     price: 5499,
     highlights: ["London Eye experience", "Edinburgh Castle entry", "Scenic Highlands tour", "Internal transfers", "Luxury hotels"],
-    image: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=800&q=80"
+    image: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=800&q=80&fm=webp"
   }
 ];

@@ -81,7 +81,7 @@ const SCHENGEN_SUB_VISAS_PRESETS = [
     slug: "france",
     name: "🇫🇷 France Visa",
     tagline: "Apply for entry to France. Document check and VFS Global appointment assistance in Dubai.",
-    imageUrl: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=800&q=80&fm=webp",
     category: "Schengen Visa",
     heroStats: [
       { label: "Processing Time", value: "8-12 Days", icon: "Clock" },
@@ -93,7 +93,7 @@ const SCHENGEN_SUB_VISAS_PRESETS = [
     slug: "italy",
     name: "Italy Visa",
     tagline: "Secure a biometrics appointment for Italy with flight itineraries & compliant hotel bookings.",
-    imageUrl: "https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&w=800&q=80&fm=webp",
     category: "Schengen Visa",
     heroStats: [
       { label: "Processing Time", value: "10-14 Days", icon: "Clock" },
@@ -105,7 +105,7 @@ const SCHENGEN_SUB_VISAS_PRESETS = [
     slug: "germany",
     name: "🇩🇪 Germany Visa",
     tagline: "Business & tourist document audit for rapid German Schengen visa processing.",
-    imageUrl: "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?auto=format&fit=crop&w=800&q=80&fm=webp",
     category: "Schengen Visa",
     heroStats: [
       { label: "Processing Time", value: "5-10 Days", icon: "Clock" },
@@ -117,7 +117,7 @@ const SCHENGEN_SUB_VISAS_PRESETS = [
     slug: "spain",
     name: "🇪🇸 Spain Visa",
     tagline: "Explore Madrid, Barcelona, and Andalucia with expert BLS Spain booking support.",
-    imageUrl: "https://images.unsplash.com/photo-1509840841025-9088ba78a826?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1509840841025-9088ba78a826?auto=format&fit=crop&w=800&q=80&fm=webp",
     category: "Schengen Visa",
     heroStats: [
       { label: "Processing Time", value: "10-15 Days", icon: "Clock" },

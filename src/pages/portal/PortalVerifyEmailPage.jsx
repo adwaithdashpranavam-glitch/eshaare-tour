@@ -78,7 +78,7 @@ export const PortalVerifyEmailPage = () => {
       {/* Header with logout (top-right) */}
       <header className="h-16 bg-white border-b border-[#E5E7EB] sticky top-0 z-30 flex items-center justify-between px-4 md:px-8">
         <div className="flex items-center gap-2">
-          <img src={foxLogo} alt="Eshaare Tour" className="h-9 w-auto object-contain" />
+          <img src={foxLogo} alt="Eshaare Tour" width="90" height="60" className="h-9 w-auto object-contain" />
           <div className="leading-none">
             <h1 className="text-base md:text-lg text-[#0F3D2E] font-bold" style={{ fontFamily: "'Great Vibes', cursive" }}>
               Eshaare Tour

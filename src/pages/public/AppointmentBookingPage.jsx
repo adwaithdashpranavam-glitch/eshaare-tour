@@ -273,7 +273,7 @@ export const AppointmentBookingPage = () => {
         {/* Hero Section */}
         <section className="relative min-h-[70vh] flex items-center justify-center py-section-gap overflow-hidden bg-primary-container">
           <div className="absolute inset-0 opacity-20 pointer-events-none">
-            <img 
+            <img loading="lazy" decoding="async" 
               alt="UAE Skyline" 
               className="w-full h-full object-cover" 
               src="https://lh3.googleusercontent.com/aida-public/AB6AXuCBksZdVq6gDrnKDLpNBIUHsMqKFElY4wwZU-gQ5vl0vsf0tGn3BUBtz4WFwdoiAUyX2kC73lMV5GPzfwz2bRwCA1RqB00ZP3gis-CcUBzLRO2uAR4wFYoft6qOD2dsdiO7JEqTrPa-XFME3V8ptTvxPb1j-TkVSYw476UIwL8K2t8M16qj_ABTnhbhPtAEyd0SxincCt86MVHRU1MPM3XMCzHE602VrCd_2Re2cr3T-iP0VN-xUCALaQP9R0yc2k_THR95WPDIC7P9"
@@ -428,7 +428,7 @@ export const AppointmentBookingPage = () => {
                     <tr key={index} className="hover:bg-surface-variant transition-colors">
                       <td className="p-6 flex items-center gap-4">
                         <div className="w-10 h-6 bg-surface-container flex items-center justify-center overflow-hidden rounded-sm border border-outline-variant/10">
-                          <img className="w-full h-full object-cover" alt={`${slot.country} flag`} src={slot.flagUrl} />
+                          <img loading="lazy" decoding="async" className="w-full h-full object-cover" alt={`${slot.country} flag`} src={slot.flagUrl} />
                         </div>
                         <span className="font-semibold text-primary">{slot.country}</span>
                       </td>

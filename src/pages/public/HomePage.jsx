@@ -1,36 +1,63 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { createLead, getPackages, getActiveExperts } from "../../lib/firestore";
-import { generateLeadNo, formatWhatsAppPhone } from "../../utils/helpers";
-import { db, serverTimestamp } from "../../lib/firebase";
-import { collection, onSnapshot } from "firebase/firestore";
 import toast from "react-hot-toast";
 import InteractiveCanvas from "../../components/ui/InteractiveCanvas";
+import { AnimatedStatsBar } from "../../components/ui/AnimatedStatsBar";
+
 
 // ─── Service images (one per service, matched by index) ────────────────────
 const SERVICE_IMAGES = [
-  "https://images.unsplash.com/photo-1499856871958-5b9627545d1a?auto=format&fit=crop&w=900&q=80", // Schengen – Paris/Europe
-  "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=900&q=80", // UK – London
-  "https://images.unsplash.com/photo-1501594907352-04cda38ebc29?auto=format&fit=crop&w=900&q=80", // USA – New York
-  "https://images.unsplash.com/photo-1586724237569-f3d0c1dee8c6?auto=format&fit=crop&w=900&q=80", // Saudi – Riyadh
-  "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=900&q=80", // UAE – Dubai
-  "https://images.unsplash.com/photo-1621680696874-edd80ce57b72?auto=format&fit=crop&w=900&q=80", // Oman – Muscat
-  "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=900&q=80", // Japan – Kyoto
-  "https://images.unsplash.com/photo-1556740772-1a741367b93e?auto=format&fit=crop&w=900&q=80", // Business – corporate
-  "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=900&q=80", // VFS – airport
-  "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=900&q=80", // Insurance – health/travel
+  "https://images.unsplash.com/photo-1499856871958-5b9627545d1a?auto=format&fit=crop&w=900&q=80&fm=webp", // Schengen – Paris/Europe
+  "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=900&q=80&fm=webp", // UK – London
+  "https://images.unsplash.com/photo-1501594907352-04cda38ebc29?auto=format&fit=crop&w=900&q=80&fm=webp", // USA – New York
+  "https://images.unsplash.com/photo-1586724237569-f3d0c1dee8c6?auto=format&fit=crop&w=900&q=80&fm=webp", // Saudi – Riyadh
+  "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=900&q=80&fm=webp", // UAE – Dubai
+  "https://images.unsplash.com/photo-1621680696874-edd80ce57b72?auto=format&fit=crop&w=900&q=80&fm=webp", // Oman – Muscat
+  "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=900&q=80&fm=webp", // Japan – Kyoto
+  "https://images.unsplash.com/photo-1556740772-1a741367b93e?auto=format&fit=crop&w=900&q=80&fm=webp", // Business – corporate
+  "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=900&q=80&fm=webp", // VFS – airport
+  "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=900&q=80&fm=webp", // Insurance – health/travel
 ];
 
 export const HomePage = () => {
   const navigate = useNavigate();
 
   const [dbPackages, setDbPackages] = useState([]);
+  const [isPackagesLoading, setIsPackagesLoading] = useState(true);
+
   useEffect(() => {
-    const unsubscribe = getPackages((items) => {
-      setDbPackages(items);
-    });
-    return () => unsubscribe();
+    let unsubscribe;
+    let isMounted = true;
+    
+    const loadPackages = async () => {
+      try {
+        const { getPackages } = await import("../../lib/firestore");
+        if (isMounted) {
+          unsubscribe = getPackages((items) => {
+            setDbPackages(items);
+            setIsPackagesLoading(false);
+          });
+        }
+      } catch (err) {
+        console.error("Failed to load packages", err);
+        if (isMounted) setIsPackagesLoading(false);
+      }
+    };
+
+    const id = window.requestIdleCallback
+      ? window.requestIdleCallback(() => loadPackages())
+      : setTimeout(loadPackages, 1000);
+
+    return () => {
+      isMounted = false;
+      if (window.cancelIdleCallback && window.requestIdleCallback) {
+        window.cancelIdleCallback(id);
+      } else {
+        clearTimeout(id);
+      }
+      if (unsubscribe) unsubscribe();
+    };
   }, []);
 
   // ─── Hero Slider ────────────────────────────────────────────────────────
@@ -73,62 +100,44 @@ export const HomePage = () => {
     return () => clearInterval(timer);
   }, [slides.length]);
 
-  // ─── Animated counters ───────────────────────────────────────────────────
-  const [counts, setCounts] = useState({ visas: 0, countries: 0, rate: 0, support: 0 });
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCounts((prev) => {
-        const next = { ...prev };
-        if (next.visas < 1500) next.visas += 30; else next.visas = 1500;
-        if (next.countries < 120) next.countries += 3; else next.countries = 120;
-        if (next.rate < 98) next.rate += 2; else next.rate = 98;
-        if (next.support < 24) next.support += 1; else next.support = 24;
-        if (next.visas === 1500 && next.countries === 120 && next.rate === 98 && next.support === 24) {
-          clearInterval(interval);
-        }
-        return next;
-      });
-    }, 30);
-    return () => clearInterval(interval);
-  }, []);
 
   // ─── Continents ──────────────────────────────────────────────────────────
   const [activeContinent, setActiveContinent] = useState("Europe");
   const continentCountries = {
     Europe: [
-      { name: "France", flag: "🇫🇷", type: "Schengen Visa", image: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=600&q=80" },
-      { name: "Germany", flag: "🇩🇪", type: "Schengen Visa", image: "https://images.unsplash.com/photo-1599946347371-68eb71b16afc?auto=format&fit=crop&w=600&q=80" },
-      { name: "Switzerland", flag: "🇨🇭", type: "Schengen Visa", image: "https://images.unsplash.com/photo-1530122037265-a5f1f91d3b99?auto=format&fit=crop&w=600&q=80" },
-      { name: "United Kingdom", flag: "🇬🇧", type: "Standard Visitor", image: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=600&q=80" }
+      { name: "France", flag: "🇫🇷", type: "Schengen Visa", image: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=600&q=80&fm=webp" },
+      { name: "Germany", flag: "🇩🇪", type: "Schengen Visa", image: "https://images.unsplash.com/photo-1599946347371-68eb71b16afc?auto=format&fit=crop&w=600&q=80&fm=webp" },
+      { name: "Switzerland", flag: "🇨🇭", type: "Schengen Visa", image: "https://images.unsplash.com/photo-1530122037265-a5f1f91d3b99?auto=format&fit=crop&w=600&q=80&fm=webp" },
+      { name: "United Kingdom", flag: "🇬🇧", type: "Standard Visitor", image: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=600&q=80&fm=webp" }
     ],
     Asia: [
-      { name: "Japan", flag: "🇯🇵", type: "Tourist Visa", image: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=600&q=80" },
-      { name: "Saudi Arabia", flag: "🇸🇦", type: "eVisa / Tourist", image: "https://images.unsplash.com/photo-1586724237569-f3d0c1dee8c6?auto=format&fit=crop&w=600&q=80" },
-      { name: "Singapore", flag: "🇸🇬", type: "Tourist Visa", image: "https://images.unsplash.com/photo-1525625293386-3f8f99389edd?auto=format&fit=crop&w=600&q=80" },
-      { name: "Thailand", flag: "🇹🇭", type: "Visa on Arrival / Tourist", image: "https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?auto=format&fit=crop&w=600&q=80" }
+      { name: "Japan", flag: "🇯🇵", type: "Tourist Visa", image: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=600&q=80&fm=webp" },
+      { name: "Saudi Arabia", flag: "🇸🇦", type: "eVisa / Tourist", image: "https://images.unsplash.com/photo-1586724237569-f3d0c1dee8c6?auto=format&fit=crop&w=600&q=80&fm=webp" },
+      { name: "Singapore", flag: "🇸🇬", type: "Tourist Visa", image: "https://images.unsplash.com/photo-1525625293386-3f8f99389edd?auto=format&fit=crop&w=600&q=80&fm=webp" },
+      { name: "Thailand", flag: "🇹🇭", type: "Visa on Arrival / Tourist", image: "https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?auto=format&fit=crop&w=600&q=80&fm=webp" }
     ],
     Africa: [
-      { name: "South Africa", flag: "🇿🇦", type: "Tourist Visa", image: "https://images.unsplash.com/photo-1580060839134-75a5edca2e99?auto=format&fit=crop&w=600&q=80" },
-      { name: "Egypt", flag: "🇪🇬", type: "Tourist Visa / eVisa", image: "https://images.unsplash.com/photo-1503177119275-0aa32b3a9368?auto=format&fit=crop&w=600&q=80" },
-      { name: "Kenya", flag: "🇰🇪", type: "ETA / eVisa", image: "https://images.unsplash.com/photo-1516426122078-c23e76319801?auto=format&fit=crop&w=600&q=80" },
-      { name: "Morocco", flag: "🇲🇦", type: "Tourist Visa", image: "https://images.unsplash.com/photo-1539020140153-e479b8c22e70?auto=format&fit=crop&w=600&q=80" }
+      { name: "South Africa", flag: "🇿🇦", type: "Tourist Visa", image: "https://images.unsplash.com/photo-1580060839134-75a5edca2e99?auto=format&fit=crop&w=600&q=80&fm=webp" },
+      { name: "Egypt", flag: "🇪🇬", type: "Tourist Visa / eVisa", image: "https://images.unsplash.com/photo-1503177119275-0aa32b3a9368?auto=format&fit=crop&w=600&q=80&fm=webp" },
+      { name: "Kenya", flag: "🇰🇪", type: "ETA / eVisa", image: "https://images.unsplash.com/photo-1516426122078-c23e76319801?auto=format&fit=crop&w=600&q=80&fm=webp" },
+      { name: "Morocco", flag: "🇲🇦", type: "Tourist Visa", image: "https://images.unsplash.com/photo-1539020140153-e479b8c22e70?auto=format&fit=crop&w=600&q=80&fm=webp" }
     ],
     "North America": [
-      { name: "United States", flag: "🇺🇸", type: "B1/B2 Tourist", image: "https://images.unsplash.com/photo-1501594907352-04cda38ebc29?auto=format&fit=crop&w=600&q=80" },
-      { name: "Canada", flag: "🇨🇦", type: "Visitor Visa", image: "https://images.unsplash.com/photo-1503614472-8c93d56e92ce?auto=format&fit=crop&w=600&q=80" },
-      { name: "Mexico", flag: "🇲🇽", type: "Tourist Visa", image: "https://images.unsplash.com/photo-1518105779142-d975f22f1b0a?auto=format&fit=crop&w=600&q=80" }
+      { name: "United States", flag: "🇺🇸", type: "B1/B2 Tourist", image: "https://images.unsplash.com/photo-1501594907352-04cda38ebc29?auto=format&fit=crop&w=600&q=80&fm=webp" },
+      { name: "Canada", flag: "🇨🇦", type: "Visitor Visa", image: "https://images.unsplash.com/photo-1503614472-8c93d56e92ce?auto=format&fit=crop&w=600&q=80&fm=webp" },
+      { name: "Mexico", flag: "🇲🇽", type: "Tourist Visa", image: "https://images.unsplash.com/photo-1518105779142-d975f22f1b0a?auto=format&fit=crop&w=600&q=80&fm=webp" }
     ],
     "South America": [
-      { name: "Brazil", flag: "🇧🇷", type: "Tourist Visa", image: "https://images.unsplash.com/photo-1483729558449-99ef09a8c325?auto=format&fit=crop&w=600&q=80" },
-      { name: "Argentina", flag: "🇦🇷", type: "Tourist Visa", image: "https://images.unsplash.com/photo-1589909202802-8f4aadce1849?auto=format&fit=crop&w=600&q=80" },
-      { name: "Peru", flag: "🇵🇪", type: "Visa Free / Tourist", image: "https://images.unsplash.com/photo-1526392060635-9d6019884377?auto=format&fit=crop&w=600&q=80" }
+      { name: "Brazil", flag: "🇧🇷", type: "Tourist Visa", image: "https://images.unsplash.com/photo-1483729558449-99ef09a8c325?auto=format&fit=crop&w=600&q=80&fm=webp" },
+      { name: "Argentina", flag: "🇦🇷", type: "Tourist Visa", image: "https://images.unsplash.com/photo-1589909202802-8f4aadce1849?auto=format&fit=crop&w=600&q=80&fm=webp" },
+      { name: "Peru", flag: "🇵🇪", type: "Visa Free / Tourist", image: "https://images.unsplash.com/photo-1526392060635-9d6019884377?auto=format&fit=crop&w=600&q=80&fm=webp" }
     ],
     Oceania: [
-      { name: "Australia", flag: "🇦🇺", type: "Visitor Visa (Subclass 600)", image: "https://images.unsplash.com/photo-1523482580672-f109ba8cb9be?auto=format&fit=crop&w=600&q=80" },
-      { name: "New Zealand", flag: "🇳🇿", type: "Visitor Visa", image: "https://images.unsplash.com/photo-1469521669194-babb45599def?auto=format&fit=crop&w=600&q=80" }
+      { name: "Australia", flag: "🇦🇺", type: "Visitor Visa (Subclass 600)", image: "https://images.unsplash.com/photo-1523482580672-f109ba8cb9be?auto=format&fit=crop&w=600&q=80&fm=webp" },
+      { name: "New Zealand", flag: "🇳🇿", type: "Visitor Visa", image: "https://images.unsplash.com/photo-1469521669194-babb45599def?auto=format&fit=crop&w=600&q=80&fm=webp" }
     ],
     Antarctica: [
-      { name: "Expedition Permit", flag: "❄️", type: "Special Permit Support", image: "https://images.unsplash.com/photo-1517783999520-f068d7431a60?auto=format&fit=crop&w=600&q=80" }
+      { name: "Expedition Permit", flag: "❄️", type: "Special Permit Support", image: "https://images.unsplash.com/photo-1517783999520-f068d7431a60?auto=format&fit=crop&w=600&q=80&fm=webp" }
     ]
   };
 
@@ -156,6 +165,10 @@ export const HomePage = () => {
     }
     setIsSubmitting(true);
     try {
+      const { createLead } = await import("../../lib/firestore");
+      const { generateLeadNo, formatWhatsAppPhone } = await import("../../utils/helpers");
+      const { serverTimestamp } = await import("firebase/firestore");
+
       const generatedNo = await generateLeadNo();
       const submission = {
         leadNo: generatedNo,
@@ -264,7 +277,7 @@ export const HomePage = () => {
       location: "Kerala, India",
       price: "$224",
       priceSub: "/ Person",
-      img: "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=800&q=80",
+      img: "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=800&q=80&fm=webp",
       link: "/packages/kerala-backwater-escape"
     }),
     getFeaturedPackageData(1, {
@@ -272,7 +285,7 @@ export const HomePage = () => {
       location: "Gentrisch, Switzerland",
       price: "$224",
       priceSub: "/ Person",
-      img: "https://images.unsplash.com/photo-1502784444187-359ac186c5bb?q=80&w=800&auto=format&fit=crop",
+      img: "https://images.unsplash.com/photo-1502784444187-359ac186c5bb?q=80&w=800&auto=format&fit=crop&fm=webp",
       link: "/packages"
     }),
     getFeaturedPackageData(2, {
@@ -280,7 +293,7 @@ export const HomePage = () => {
       location: "Maldives Escape",
       price: "$399",
       priceSub: "/ Person",
-      img: "https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=800&q=80",
+      img: "https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=800&q=80&fm=webp",
       link: "/packages/customise"
     }),
     getFeaturedPackageData(3, {
@@ -288,7 +301,7 @@ export const HomePage = () => {
       location: "Tailor-made Journeys",
       price: "Bespoke",
       priceSub: "Pricing",
-      img: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=800&auto=format&fit=crop",
+      img: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=800&auto=format&fit=crop&fm=webp",
       link: "/packages/customise"
     })
   ];
@@ -299,7 +312,7 @@ export const HomePage = () => {
       name: "Rakhi G Hari",
       designation: "Managing Director",
       intro: "Coordinating premium custom holiday designs and ensuring absolute file compliance for high-net-worth travelers.",
-      img: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=600&q=80",
+      img: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=600&q=80&fm=webp",
       visasFiled: 2400,
       experienceYears: 12,
       successRate: 99
@@ -309,7 +322,7 @@ export const HomePage = () => {
       name: "Suresh Kumar",
       designation: "Senior Visa Specialist",
       intro: "Expert in Schengen, UK, and USA document audits with deep knowledge of VFS visa operations and embassy protocols.",
-      img: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=600&q=80",
+      img: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=600&q=80&fm=webp",
       visasFiled: 1850,
       experienceYears: 9,
       successRate: 98
@@ -319,7 +332,7 @@ export const HomePage = () => {
       name: "Aisha Al-Mansoori",
       designation: "Luxury Tour Consultant",
       intro: "Crafting bespoke global itineraries for European tours, Japan escapes, and exotic destination getaways.",
-      img: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=600&q=80",
+      img: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=600&q=80&fm=webp",
       visasFiled: 950,
       experienceYears: 6,
       successRate: 100
@@ -329,7 +342,7 @@ export const HomePage = () => {
       name: "Hassan Ali",
       designation: "VFS Operations Lead",
       intro: "Managing slot bookings, biometric appointments, and rapid document dispatch for all Eshaare clients.",
-      img: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=600&q=80",
+      img: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=600&q=80&fm=webp",
       visasFiled: 3200,
       experienceYears: 11,
       successRate: 98
@@ -342,17 +355,42 @@ export const HomePage = () => {
   const [activeSpecIndex, setActiveSpecIndex] = useState(0);
 
   useEffect(() => {
-    const unsubscribe = getActiveExperts((experts) => {
-      if (experts && experts.length > 0) {
-        setSpecialists(experts);
-      } else {
-        setSpecialists(fallbackSpecialists);
+    let unsubscribe;
+    let isMounted = true;
+
+    const loadExperts = async () => {
+      try {
+        const { getActiveExperts } = await import("../../lib/firestore");
+        if (isMounted) {
+          unsubscribe = getActiveExperts((experts) => {
+            if (experts && experts.length > 0) {
+              setSpecialists(experts);
+            } else {
+              setSpecialists(fallbackSpecialists);
+            }
+          }, (error) => {
+            console.warn("Firestore active experts load failed, using fallback:", error);
+            setSpecialists(fallbackSpecialists);
+          });
+        }
+      } catch (err) {
+        console.error("Failed to load experts", err);
       }
-    }, (error) => {
-      console.warn("Firestore active experts load failed, using fallback:", error);
-      setSpecialists(fallbackSpecialists);
-    });
-    return () => unsubscribe();
+    };
+
+    const id = window.requestIdleCallback
+      ? window.requestIdleCallback(() => loadExperts())
+      : setTimeout(loadExperts, 1000);
+
+    return () => {
+      isMounted = false;
+      if (window.cancelIdleCallback && window.requestIdleCallback) {
+        window.cancelIdleCallback(id);
+      } else {
+        clearTimeout(id);
+      }
+      if (unsubscribe) unsubscribe();
+    };
   }, []);
 
 
@@ -584,7 +622,7 @@ export const HomePage = () => {
             key={index}
             className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${activeSlide === index ? "opacity-100 z-10" : "opacity-0 z-0"}`}
           >
-            <img
+            <img decoding="async"
               src={slide.image}
               srcSet={slide.imageSrcSet}
               sizes="100vw"
@@ -661,77 +699,18 @@ export const HomePage = () => {
             <button
               key={index}
               onClick={() => setActiveSlide(index)}
-              className={`w-2 h-2 rounded-full transition-all ${activeSlide === index ? "bg-white scale-125" : "bg-white/50 hover:bg-white"}`}
+              className="w-8 h-8 flex items-center justify-center"
+              aria-label={`Go to slide ${index + 1}`}
               title={`Go to slide ${index + 1}`}
-            />
+            >
+              <span className={`block w-2 h-2 rounded-full transition-all ${activeSlide === index ? "bg-white scale-125" : "bg-white/50 hover:bg-white"}`} />
+            </button>
           ))}
         </div>
       </section>
 
       {/* TRUST / STATS BAR */}
-      <section className="relative -mt-8 md:-mt-5 z-30 px-margin-mobile md:px-margin-desktop">
-        <div className="max-w-container-max mx-auto">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5">
-
-            <div className="group relative flex items-center gap-4 bg-white/30 backdrop-blur-xl ring-1 ring-white/40 rounded-2xl px-5 py-4 md:px-6 md:py-5 shadow-[0_8px_30px_-10px_rgba(29,80,58,0.15)] hover:shadow-[0_16px_40px_-12px_rgba(212,175,55,0.25)] hover:bg-white/40 transition-all duration-500">
-              <div className="relative shrink-0">
-                <div className="size-10 rotate-45 border border-[#D4AF37]/50 flex items-center justify-center transition-transform duration-700 group-hover:rotate-[135deg]">
-                  <span className="material-symbols-outlined -rotate-45 group-hover:rotate-[-135deg] transition-transform duration-700 text-[#1D503A] text-[18px]">verified</span>
-                </div>
-                <div className="absolute -top-1 -left-1 size-1.5 border-t border-l border-[#D4AF37]/70" />
-                <div className="absolute -bottom-1 -right-1 size-1.5 border-b border-r border-[#D4AF37]/70" />
-              </div>
-              <div className="flex flex-col text-left min-w-0">
-                <div className="font-serif italic text-xl md:text-3xl text-[#1D503A] leading-tight">{counts.visas}+</div>
-                <p className="text-[11px] uppercase tracking-[0.18em] text-[#1D503A]/80 mt-0.5">Visas Approved</p>
-              </div>
-            </div>
-
-            <div className="group relative flex items-center gap-4 bg-white/30 backdrop-blur-xl ring-1 ring-white/40 rounded-2xl px-5 py-4 md:px-6 md:py-5 shadow-[0_8px_30px_-10px_rgba(29,80,58,0.15)] hover:shadow-[0_16px_40px_-12px_rgba(212,175,55,0.25)] hover:bg-white/40 transition-all duration-500">
-              <div className="relative shrink-0">
-                <div className="size-10 rotate-45 border border-[#D4AF37]/50 flex items-center justify-center transition-transform duration-700 group-hover:rotate-[135deg]">
-                  <span className="material-symbols-outlined -rotate-45 group-hover:rotate-[-135deg] transition-transform duration-700 text-[#1D503A] text-[18px]">public</span>
-                </div>
-                <div className="absolute -top-1 -left-1 size-1.5 border-t border-l border-[#D4AF37]/70" />
-                <div className="absolute -bottom-1 -right-1 size-1.5 border-b border-r border-[#D4AF37]/70" />
-              </div>
-              <div className="flex flex-col text-left min-w-0">
-                <div className="font-serif italic text-xl md:text-3xl text-[#1D503A] leading-tight">{counts.countries}+</div>
-                <p className="text-[11px] uppercase tracking-[0.18em] text-[#1D503A]/80 mt-0.5">Countries</p>
-              </div>
-            </div>
-
-            <div className="group relative flex items-center gap-4 bg-white/30 backdrop-blur-xl ring-1 ring-white/40 rounded-2xl px-5 py-4 md:px-6 md:py-5 shadow-[0_8px_30px_-10px_rgba(29,80,58,0.15)] hover:shadow-[0_16px_40px_-12px_rgba(212,175,55,0.25)] hover:bg-white/40 transition-all duration-500">
-              <div className="relative shrink-0">
-                <div className="size-10 rotate-45 bg-[#1D503A] flex items-center justify-center transition-transform duration-700 group-hover:rotate-[225deg]">
-                  <span className="material-symbols-outlined -rotate-45 group-hover:rotate-[-225deg] transition-transform duration-700 text-[#D4AF37] text-[18px]">trending_up</span>
-                </div>
-                <div className="absolute -top-1 -left-1 size-1.5 border-t border-l border-[#D4AF37]/70" />
-                <div className="absolute -bottom-1 -right-1 size-1.5 border-b border-r border-[#D4AF37]/70" />
-              </div>
-              <div className="flex flex-col text-left min-w-0">
-                <div className="font-serif italic text-xl md:text-3xl text-[#1D503A] leading-tight">{counts.rate}%</div>
-                <p className="text-[11px] uppercase tracking-[0.18em] text-[#1D503A]/80 mt-0.5">Success Rate</p>
-              </div>
-            </div>
-
-            <div className="group relative flex items-center gap-4 bg-white/30 backdrop-blur-xl ring-1 ring-white/40 rounded-2xl px-5 py-4 md:px-6 md:py-5 shadow-[0_8px_30px_-10px_rgba(29,80,58,0.15)] hover:shadow-[0_16px_40px_-12px_rgba(212,175,55,0.25)] hover:bg-white/40 transition-all duration-500">
-              <div className="relative shrink-0">
-                <div className="size-10 rotate-45 border border-[#D4AF37]/50 flex items-center justify-center transition-transform duration-700 group-hover:rotate-[135deg]">
-                  <span className="material-symbols-outlined -rotate-45 group-hover:rotate-[-135deg] transition-transform duration-700 text-[#1D503A] text-[18px]">support_agent</span>
-                </div>
-                <div className="absolute -top-1 -left-1 size-1.5 border-t border-l border-[#D4AF37]/70" />
-                <div className="absolute -bottom-1 -right-1 size-1.5 border-b border-r border-[#D4AF37]/70" />
-              </div>
-              <div className="flex flex-col text-left min-w-0">
-                <div className="font-serif italic text-xl md:text-3xl text-[#1D503A] leading-tight">{counts.support}/7</div>
-                <p className="text-[11px] uppercase tracking-[0.18em] text-[#1D503A]/80 mt-0.5">Support</p>
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </section>
+      <AnimatedStatsBar />
 
       {/* ─── SERVICE CARDS — VERTICAL SCROLL CAROUSEL ──────────────────────── */}
       <section
@@ -796,6 +775,7 @@ export const HomePage = () => {
                         alt={srv.name}
                         className="w-full h-full object-cover"
                         loading="lazy"
+                        decoding="async"
                       />
                       {/* Glassmorphism base: blurred image tint (reduced on mobile) */}
                       <div className="absolute inset-0 bg-surface/20 md:bg-surface/35 backdrop-blur-[1px] md:backdrop-blur-[2px]" />
@@ -815,6 +795,7 @@ export const HomePage = () => {
                         alt={srv.name}
                         className="w-full h-full object-cover scale-105"
                         loading="lazy"
+                        decoding="async"
                       />
                       {/* glass caption bar */}
                       <div className="absolute bottom-0 left-0 right-0 px-4 py-3 bg-white/10 backdrop-blur-md border-t border-white/20">
@@ -904,6 +885,7 @@ export const HomePage = () => {
                     alt={srv.name}
                     className="w-full h-full object-cover"
                     loading="lazy"
+                    decoding="async"
                   />
                   {/* Glass label */}
                   <div className={`
@@ -998,11 +980,13 @@ export const HomePage = () => {
                 to={featuredPackages[0].link}
                 className="relative group rounded-[24px] overflow-hidden h-[300px] shadow-lg border border-outline-variant/10 block cursor-pointer"
               >
+                {isPackagesLoading && <div className="absolute inset-0 z-20 bg-surface-variant animate-pulse" />}
                 <img
                   src={featuredPackages[0].img}
                   alt={featuredPackages[0].title}
                   className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                   loading="lazy"
+                  decoding="async"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
                 <div className="absolute bottom-4 left-4 right-4 bg-white/15 backdrop-blur-md border border-white/20 rounded-[18px] p-4 text-white">
@@ -1025,11 +1009,13 @@ export const HomePage = () => {
                 to={featuredPackages[1].link}
                 className="relative group rounded-[24px] overflow-hidden h-[300px] shadow-lg border border-outline-variant/10 block cursor-pointer"
               >
+                {isPackagesLoading && <div className="absolute inset-0 z-20 bg-surface-variant animate-pulse" />}
                 <img
                   src={featuredPackages[1].img}
                   alt={featuredPackages[1].title}
                   className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                   loading="lazy"
+                  decoding="async"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
                 <div className="absolute bottom-4 left-4 right-4 bg-white/15 backdrop-blur-md border border-white/20 rounded-[18px] p-4 text-white">
@@ -1075,11 +1061,13 @@ export const HomePage = () => {
                 to={featuredPackages[2].link}
                 className="relative group rounded-[24px] overflow-hidden flex-1 min-h-[180px] lg:min-h-0 shadow-lg border border-outline-variant/10 block cursor-pointer"
               >
+                {isPackagesLoading && <div className="absolute inset-0 z-20 bg-surface-variant animate-pulse" />}
                 <img
                   src={featuredPackages[2].img}
                   alt={featuredPackages[2].title}
                   className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                   loading="lazy"
+                  decoding="async"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
                 <div className="absolute bottom-4 left-4 right-4 bg-white/15 backdrop-blur-md border border-white/20 rounded-[18px] p-4 text-white">
@@ -1103,10 +1091,11 @@ export const HomePage = () => {
                 className="relative group rounded-[24px] overflow-hidden flex-1 min-h-[180px] lg:min-h-0 text-white border border-outline-variant/10 block cursor-pointer transition-transform hover:scale-[1.01]"
               >
                 <img
-                  src="https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=800&q=80"
+                  src="https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=800&q=80&fm=webp"
                   alt="Customise Package"
                   className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                   loading="lazy"
+                  decoding="async"
                 />
                 <div className="absolute inset-0 bg-[#0A231C]/90 group-hover:bg-[#0A231C]/85 transition-colors duration-300" />
                 <div className="relative z-10 flex flex-col justify-between h-full p-5">
@@ -1163,13 +1152,13 @@ export const HomePage = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
             {continentCountries[activeContinent].map((country, idx) => (
               <div key={idx} className="relative group overflow-hidden rounded-xl premium-shadow border border-outline-variant/10 h-48 flex flex-col justify-end p-6">
-                <img loading="lazy" src={country.image} alt={country.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                <img loading="lazy" decoding="async" src={country.image} alt={country.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10 group-hover:from-black/80 transition-colors duration-300"></div>
 
                 <div className="relative z-10 flex flex-col justify-end h-full">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-2xl drop-shadow-md">{country.flag}</span>
-                    <h4 className="font-bold text-headline-md text-white drop-shadow-md">{country.name}</h4>
+                    <h3 className="font-bold text-headline-md text-white drop-shadow-md">{country.name}</h3>
                   </div>
                   <span className="text-body-sm text-white/90 drop-shadow-sm mb-3">{country.type}</span>
 
@@ -1205,21 +1194,21 @@ export const HomePage = () => {
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-secondary text-3xl">verified</span>
                 <div>
-                  <h4 className="font-bold text-primary text-body-sm">Certified Experts</h4>
+                  <h3 className="font-bold text-primary text-body-sm">Certified Experts</h3>
                   <p className="text-on-surface-variant text-body-sm">UAE visa processing coordinators.</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-secondary text-3xl">hourglass_empty</span>
                 <div>
-                  <h4 className="font-bold text-primary text-body-sm">Express Timelines</h4>
+                  <h3 className="font-bold text-primary text-body-sm">Express Timelines</h3>
                   <p className="text-on-surface-variant text-body-sm">Priority embassy bookings.</p>
                 </div>
               </div>
             </div>
           </div>
           <div className="relative rounded-2xl overflow-hidden shadow-2xl h-[400px]">
-            <img src="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=800&q=80" alt="About Eshaare Tours" className="w-full h-full object-cover" />
+            <img src="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=800&q=80&fm=webp" alt="About Eshaare Tours" className="w-full h-full object-cover" loading="lazy" decoding="async" />
             <div className="absolute inset-0 bg-primary-container/20"></div>
           </div>
         </div>
@@ -1305,7 +1294,7 @@ export const HomePage = () => {
                 >
                   {/* Left Column: Image */}
                   <div className="w-full md:w-2/5 relative h-[180px] sm:h-[200px] md:h-auto overflow-hidden">
-                    <img
+                    <img decoding="async"
                       src={member.img}
                       alt={member.name}
                       className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
@@ -1446,7 +1435,7 @@ export const HomePage = () => {
           <div className="grid md:grid-cols-2 rounded-[4px] overflow-hidden ring-1 ring-[#D4AF37]/20 shadow-[0_30px_80px_-30px_rgba(29,80,58,0.25)] bg-white">
             {/* Image side */}
             <div className="relative min-h-[340px] md:min-h-full">
-              <img
+              <img decoding="async"
                 src="/stamps-collage.jpg"
                 alt="Vintage travel postage stamps from around the world"
                 className="absolute inset-0 w-full h-full object-cover"

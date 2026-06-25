@@ -42,7 +42,7 @@ export const PackagesPage = () => {
         {/* Background Image with elegant overlay */}
         <div className="absolute inset-0 z-0">
           <img loading="lazy"
-            src="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=2560&q=80"
+            src="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=2560&q=80&fm=webp"
             alt="Tour Packages Background"
             className="w-full h-full object-cover opacity-100"
           />
@@ -93,7 +93,7 @@ export const PackagesPage = () => {
               >
                 <div className="relative h-56 overflow-hidden">
                   <img loading="lazy"
-                    src={pkg.imageUrl || pkg.image || "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=800&q=80"}
+                    src={pkg.imageUrl || pkg.image || "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=800&q=80&fm=webp"}
                     alt={pkg.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />

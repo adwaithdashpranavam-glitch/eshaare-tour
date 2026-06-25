@@ -23,7 +23,7 @@ const DEFAULT_VISAS = [
       "Travel medical insurance covering minimum €30,000",
       "Proof of sufficient financial means (bank statements)"
     ],
-    imageUrl: "https://images.unsplash.com/photo-1486299267070-83823f5448dd?auto=format&fit=crop&w=400&q=80"
+    imageUrl: "https://images.unsplash.com/photo-1486299267070-83823f5448dd?auto=format&fit=crop&w=400&q=80&fm=webp"
   },
   {
     id: "united-kingdom",
@@ -39,7 +39,7 @@ const DEFAULT_VISAS = [
       "Employment verification letter/Business registration certificate",
       "Accommodation details & planned travel dates"
     ],
-    imageUrl: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=400&q=80"
+    imageUrl: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=400&q=80&fm=webp"
   },
   {
     id: "japan",
@@ -54,7 +54,7 @@ const DEFAULT_VISAS = [
       "Detailed schedule of stay in Japan",
       "Proof of financial resources (tax returns or bank balances)"
     ],
-    imageUrl: "https://images.unsplash.com/photo-1490730141103-6cac27aaab94?auto=format&fit=crop&w=400&q=80"
+    imageUrl: "https://images.unsplash.com/photo-1490730141103-6cac27aaab94?auto=format&fit=crop&w=400&q=80&fm=webp"
   },
   {
     id: "united-states",
@@ -70,7 +70,7 @@ const DEFAULT_VISAS = [
       "Proof of strong ties to home country (job, property, family)",
       "Financial stability proof"
     ],
-    imageUrl: "https://images.unsplash.com/photo-1501594907352-04cda38ebc29?auto=format&fit=crop&w=400&q=80"
+    imageUrl: "https://images.unsplash.com/photo-1501594907352-04cda38ebc29?auto=format&fit=crop&w=400&q=80&fm=webp"
   },
   {
     id: "australia",
@@ -86,7 +86,7 @@ const DEFAULT_VISAS = [
       "Proof of employment and leave approval",
       "Personal bank statement showing stable income"
     ],
-    imageUrl: "https://images.unsplash.com/photo-1523482596682-cd93a6e54520?auto=format&fit=crop&w=400&q=80"
+    imageUrl: "https://images.unsplash.com/photo-1523482596682-cd93a6e54520?auto=format&fit=crop&w=400&q=80&fm=webp"
   }
 ];
 
@@ -255,7 +255,7 @@ export const AppVisasListPage = () => {
                 <tr key={v.id} className="hover:bg-white/5 transition-all duration-150">
                   <td className="px-6 py-4 w-20">
                     <img 
-                      src={v.imageUrl || "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=100&q=80"} 
+                      src={v.imageUrl || "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=100&q=80&fm=webp"} 
                       alt={v.country} 
                       className="w-12 h-12 rounded object-cover border border-on-primary-fixed-variant/40"
                     />

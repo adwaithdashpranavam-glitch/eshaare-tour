@@ -105,7 +105,7 @@ export const PackageDetailPage = () => {
             <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant/10 overflow-hidden premium-shadow">
               <div className="relative h-80">
                 <img loading="lazy"
-                  src={currentPkg.imageUrl || currentPkg.image || "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=800&q=80"}
+                  src={currentPkg.imageUrl || currentPkg.image || "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=800&q=80&fm=webp"}
                   alt={currentPkg.title}
                   className="w-full h-full object-cover"
                 />

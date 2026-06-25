@@ -408,6 +408,8 @@ export const PublicLayout = () => {
               <img
                 src={foxLogo}
                 alt="Eshaare Tour"
+                width="90"
+                height="60"
                 className="h-12 sm:h-14 md:h-16 lg:h-20 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
               />
 
@@ -751,7 +753,7 @@ export const PublicLayout = () => {
 
             {/* Quick Links */}
             <div className="flex flex-col gap-4">
-              <h4 className="text-white font-headline-md text-body-lg font-semibold">Services</h4>
+              <h3 className="text-white font-headline-md text-body-lg font-semibold">Services</h3>
               <ul className="flex flex-col gap-2.5 text-body-sm">
                 <li>
                   <Link to="/visa-services" className="text-on-primary-container/80 hover:text-[#D4AF37] transition-colors">
@@ -778,7 +780,7 @@ export const PublicLayout = () => {
 
             {/* Support Links */}
             <div className="flex flex-col gap-4">
-              <h4 className="text-white font-headline-md text-body-lg font-semibold">Support</h4>
+              <h3 className="text-white font-headline-md text-body-lg font-semibold">Company</h3>
               <ul className="flex flex-col gap-2.5 text-body-sm">
                 <li>
                   <Link to="/track" className="text-on-primary-container/80 hover:text-[#D4AF37] transition-colors">
@@ -805,7 +807,7 @@ export const PublicLayout = () => {
 
             {/* Newsletter */}
             <div className="flex flex-col gap-4">
-              <h4 className="text-white font-headline-md text-body-lg font-semibold">Newsletter</h4>
+              <h3 className="text-white font-headline-md text-body-lg font-semibold">Newsletter</h3>
               <p className="text-body-sm leading-relaxed text-on-primary-container/80">
                 Subscribe to get the latest visa news updates and luxury tour package offers.
               </p>
@@ -865,6 +867,8 @@ export const PublicLayout = () => {
             <img
               src={foxLogo}
               alt="Eshaare Support"
+              width="48"
+              height="48"
               className="w-12 h-12 object-contain"
             />
             {/* Pulsing online badge */}

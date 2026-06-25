@@ -434,7 +434,7 @@ export async function updateVisaTypeSortOrders(updates) {
 const SEED_VISA_TYPES = [
   {
     slug: "schengen",
-    imageUrl: "https://images.unsplash.com/photo-1499856871958-5b9627545d1a?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1499856871958-5b9627545d1a?auto=format&fit=crop&w=800&q=80&fm=webp",
     name: "Schengen Europe Visa",
     tagline: "Travel freely across 27 European member states with expert support",
     isPublished: true,
@@ -511,7 +511,7 @@ const SEED_VISA_TYPES = [
   },
   {
     slug: "uk-visa",
-    imageUrl: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=800&q=80&fm=webp",
     name: "United Kingdom Visa",
     tagline: "Standard and priority UK visa processing from Dubai",
     isPublished: true,
@@ -577,7 +577,7 @@ const SEED_VISA_TYPES = [
   },
   {
     slug: "usa-visa",
-    imageUrl: "https://images.unsplash.com/photo-1501594907352-04cda38ebc29?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1501594907352-04cda38ebc29?auto=format&fit=crop&w=800&q=80&fm=webp",
     name: "United States Visa (B1/B2)",
     tagline: "Tourist and business visa with interview preparation",
     isPublished: true,
@@ -645,7 +645,7 @@ const SEED_VISA_TYPES = [
   },
   {
     slug: "uae-visa",
-    imageUrl: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=800&q=80&fm=webp",
     name: "UAE Tourist & Transit Visa",
     tagline: "Invite your family and friends to the UAE",
     isPublished: true,
@@ -712,7 +712,7 @@ const SEED_VISA_TYPES = [
   },
   {
     slug: "saudi-visa",
-    imageUrl: "https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&w=800&q=80&fm=webp",
     name: "Saudi Arabia Visa",
     tagline: "Umrah, tourist, and business visa for the Kingdom",
     isPublished: true,
@@ -814,9 +814,9 @@ const SEED_VISA_TYPES = [
       ]
     },
     popularLocations: [
-      { name: "Paris", imageUrl: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=500&q=80" },
-      { name: "Nice", imageUrl: "https://images.unsplash.com/photo-1533105079780-92b9be482077?auto=format&fit=crop&w=500&q=80" },
-      { name: "Lyon", imageUrl: "https://images.unsplash.com/photo-1509840841025-9088ba78a826?auto=format&fit=crop&w=500&q=80" }
+      { name: "Paris", imageUrl: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=500&q=80&fm=webp" },
+      { name: "Nice", imageUrl: "https://images.unsplash.com/photo-1533105079780-92b9be482077?auto=format&fit=crop&w=500&q=80&fm=webp" },
+      { name: "Lyon", imageUrl: "https://images.unsplash.com/photo-1509840841025-9088ba78a826?auto=format&fit=crop&w=500&q=80&fm=webp" }
     ],
     requiredDocuments: [
       "A passport valid for at least 6 months with two blank pages",
@@ -955,9 +955,9 @@ const SEED_VISA_TYPES = [
       ]
     },
     popularLocations: [
-      { name: "Zurich", imageUrl: "https://images.unsplash.com/photo-1515488042361-404e9250afef?auto=format&fit=crop&w=500&q=80" },
-      { name: "Geneva", imageUrl: "https://images.unsplash.com/photo-1581084282500-1c09930f7850?auto=format&fit=crop&w=500&q=80" },
-      { name: "Interlaken", imageUrl: "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=500&q=80" }
+      { name: "Zurich", imageUrl: "https://images.unsplash.com/photo-1515488042361-404e9250afef?auto=format&fit=crop&w=500&q=80&fm=webp" },
+      { name: "Geneva", imageUrl: "https://images.unsplash.com/photo-1581084282500-1c09930f7850?auto=format&fit=crop&w=500&q=80&fm=webp" },
+      { name: "Interlaken", imageUrl: "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=500&q=80&fm=webp" }
     ],
     requiredDocuments: [
       "Passport valid for at least 6 months",
@@ -1025,9 +1025,9 @@ const SEED_VISA_TYPES = [
       ]
     },
     popularLocations: [
-      { name: "Berlin", imageUrl: "https://images.unsplash.com/photo-1599946347371-68eb71b16afc?auto=format&fit=crop&w=500&q=80" },
-      { name: "Munich", imageUrl: "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?auto=format&fit=crop&w=500&q=80" },
-      { name: "Frankfurt", imageUrl: "https://images.unsplash.com/photo-1541746972996-4e0b0f43e01a?auto=format&fit=crop&w=500&q=80" }
+      { name: "Berlin", imageUrl: "https://images.unsplash.com/photo-1599946347371-68eb71b16afc?auto=format&fit=crop&w=500&q=80&fm=webp" },
+      { name: "Munich", imageUrl: "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?auto=format&fit=crop&w=500&q=80&fm=webp" },
+      { name: "Frankfurt", imageUrl: "https://images.unsplash.com/photo-1541746972996-4e0b0f43e01a?auto=format&fit=crop&w=500&q=80&fm=webp" }
     ],
     requiredDocuments: [
       "Passport valid for at least 6 months",
@@ -1055,7 +1055,7 @@ const SEED_VISA_TYPES = [
   },
   {
     slug: "oman",
-    imageUrl: "https://images.unsplash.com/photo-1621680696874-edd80ce57b72?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1621680696874-edd80ce57b72?auto=format&fit=crop&w=800&q=80&fm=webp",
     name: "Oman Visa",
     tagline: "Transit and tourist eVisas for road or air travelers from the UAE",
     isPublished: true,
@@ -1092,9 +1092,9 @@ const SEED_VISA_TYPES = [
       ]
     },
     popularLocations: [
-      { name: "Muscat", imageUrl: "https://images.unsplash.com/photo-1609137144813-881c1c1f4640?auto=format&fit=crop&w=500&q=80" },
-      { name: "Salalah", imageUrl: "https://images.unsplash.com/photo-1601919051950-bb9f3ff4dfee?auto=format&fit=crop&w=500&q=80" },
-      { name: "Nizwa", imageUrl: "https://images.unsplash.com/photo-1549880338-65ddcdfd017b?auto=format&fit=crop&w=500&q=80" }
+      { name: "Muscat", imageUrl: "https://images.unsplash.com/photo-1609137144813-881c1c1f4640?auto=format&fit=crop&w=500&q=80&fm=webp" },
+      { name: "Salalah", imageUrl: "https://images.unsplash.com/photo-1601919051950-bb9f3ff4dfee?auto=format&fit=crop&w=500&q=80&fm=webp" },
+      { name: "Nizwa", imageUrl: "https://images.unsplash.com/photo-1549880338-65ddcdfd017b?auto=format&fit=crop&w=500&q=80&fm=webp" }
     ],
     requiredDocuments: [
       "Passport copy (minimum 6 months validity)",
@@ -1120,7 +1120,7 @@ const SEED_VISA_TYPES = [
   },
   {
     slug: "japan",
-    imageUrl: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=800&q=80&fm=webp",
     name: "Japan Visa",
     tagline: "Short-stay tourist visa assistance including travel plan and reservation compliance",
     isPublished: true,
@@ -1160,9 +1160,9 @@ const SEED_VISA_TYPES = [
       ]
     },
     popularLocations: [
-      { name: "Tokyo", imageUrl: "https://images.unsplash.com/photo-1540959733332-eab4deceeaf7?auto=format&fit=crop&w=500&q=80" },
-      { name: "Kyoto", imageUrl: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=500&q=80" },
-      { name: "Osaka", imageUrl: "https://images.unsplash.com/photo-1590253509399-00550f588523?auto=format&fit=crop&w=500&q=80" }
+      { name: "Tokyo", imageUrl: "https://images.unsplash.com/photo-1540959733332-eab4deceeaf7?auto=format&fit=crop&w=500&q=80&fm=webp" },
+      { name: "Kyoto", imageUrl: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=500&q=80&fm=webp" },
+      { name: "Osaka", imageUrl: "https://images.unsplash.com/photo-1590253509399-00550f588523?auto=format&fit=crop&w=500&q=80&fm=webp" }
     ],
     requiredDocuments: [
       "Original Passport valid for at least 6 months",
@@ -1190,7 +1190,7 @@ const SEED_VISA_TYPES = [
   },
   {
     slug: "korea",
-    imageUrl: "https://images.unsplash.com/photo-1538481199705-c710c4e965fc?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1538481199705-c710c4e965fc?auto=format&fit=crop&w=800&q=80&fm=webp",
     name: "South Korea Visa",
     tagline: "Tourist visas and K-ETA application check-ins for UAE residents",
     isPublished: true,
@@ -1230,9 +1230,9 @@ const SEED_VISA_TYPES = [
       ]
     },
     popularLocations: [
-      { name: "Seoul", imageUrl: "https://images.unsplash.com/photo-1538481199705-c710c4e965fc?auto=format&fit=crop&w=500&q=80" },
-      { name: "Busan", imageUrl: "https://images.unsplash.com/photo-1608670868840-7e44ab6708f5?auto=format&fit=crop&w=500&q=80" },
-      { name: "Jeju Island", imageUrl: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=500&q=80" }
+      { name: "Seoul", imageUrl: "https://images.unsplash.com/photo-1538481199705-c710c4e965fc?auto=format&fit=crop&w=500&q=80&fm=webp" },
+      { name: "Busan", imageUrl: "https://images.unsplash.com/photo-1608670868840-7e44ab6708f5?auto=format&fit=crop&w=500&q=80&fm=webp" },
+      { name: "Jeju Island", imageUrl: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=500&q=80&fm=webp" }
     ],
     requiredDocuments: [
       "Original passport with 6 months validity",
@@ -1259,7 +1259,7 @@ const SEED_VISA_TYPES = [
   },
   {
     slug: "vietnam",
-    imageUrl: "https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=800&q=80&fm=webp",
     name: "Vietnam Visa",
     tagline: "Fast-track approval letters and tourist eVisas handled within 72 hours",
     isPublished: true,
@@ -1295,9 +1295,9 @@ const SEED_VISA_TYPES = [
       ]
     },
     popularLocations: [
-      { name: "Hanoi", imageUrl: "https://images.unsplash.com/photo-1509060464153-44667396260f?auto=format&fit=crop&w=500&q=80" },
-      { name: "Halong Bay", imageUrl: "https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=500&q=80" },
-      { name: "Ho Chi Minh", imageUrl: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=500&q=80" }
+      { name: "Hanoi", imageUrl: "https://images.unsplash.com/photo-1509060464153-44667396260f?auto=format&fit=crop&w=500&q=80&fm=webp" },
+      { name: "Halong Bay", imageUrl: "https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=500&q=80&fm=webp" },
+      { name: "Ho Chi Minh", imageUrl: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=500&q=80&fm=webp" }
     ],
     requiredDocuments: [
       "High-quality passport bio page photo (valid for 6+ months)",
@@ -1322,7 +1322,7 @@ const SEED_VISA_TYPES = [
   },
   {
     slug: "australia",
-    imageUrl: "https://images.unsplash.com/photo-1524413840807-0c3cb6fa808d?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1524413840807-0c3cb6fa808d?auto=format&fit=crop&w=800&q=80&fm=webp",
     name: "Australia Visa",
     tagline: "Visitor Visa (Subclass 600) audits for multi-entry tourism or business trips",
     isPublished: true,
@@ -1361,9 +1361,9 @@ const SEED_VISA_TYPES = [
       ]
     },
     popularLocations: [
-      { name: "Sydney", imageUrl: "https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?auto=format&fit=crop&w=500&q=80" },
-      { name: "Melbourne", imageUrl: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?auto=format&fit=crop&w=500&q=80" },
-      { name: "Brisbane", imageUrl: "https://images.unsplash.com/photo-1554797078-97a366e25757?auto=format&fit=crop&w=500&q=80" }
+      { name: "Sydney", imageUrl: "https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?auto=format&fit=crop&w=500&q=80&fm=webp" },
+      { name: "Melbourne", imageUrl: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?auto=format&fit=crop&w=500&q=80&fm=webp" },
+      { name: "Brisbane", imageUrl: "https://images.unsplash.com/photo-1554797078-97a366e25757?auto=format&fit=crop&w=500&q=80&fm=webp" }
     ],
     requiredDocuments: [
       "Scan of passport bio-page and all stamped pages",
@@ -1389,7 +1389,7 @@ const SEED_VISA_TYPES = [
   },
   {
     slug: "new-zealand",
-    imageUrl: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=800&q=80&fm=webp",
     name: "New Zealand Visa",
     tagline: "Visitor Visa and NZeTA document verification for smooth travel entries",
     isPublished: true,
@@ -1428,9 +1428,9 @@ const SEED_VISA_TYPES = [
       ]
     },
     popularLocations: [
-      { name: "Auckland", imageUrl: "https://images.unsplash.com/photo-1507699622108-4be3a09551ff?auto=format&fit=crop&w=500&q=80" },
-      { name: "Queenstown", imageUrl: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=500&q=80" },
-      { name: "Wellington", imageUrl: "https://images.unsplash.com/photo-1589871181831-a0808ee85c15?auto=format&fit=crop&w=500&q=80" }
+      { name: "Auckland", imageUrl: "https://images.unsplash.com/photo-1507699622108-4be3a09551ff?auto=format&fit=crop&w=500&q=80&fm=webp" },
+      { name: "Queenstown", imageUrl: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=500&q=80&fm=webp" },
+      { name: "Wellington", imageUrl: "https://images.unsplash.com/photo-1589871181831-a0808ee85c15?auto=format&fit=crop&w=500&q=80&fm=webp" }
     ],
     requiredDocuments: [
       "Passport bio-data page color scan",
@@ -1457,7 +1457,7 @@ const SEED_VISA_TYPES = [
   },
   {
     slug: "spain",
-    imageUrl: "https://images.unsplash.com/photo-1509840841025-9088ba78a826?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1509840841025-9088ba78a826?auto=format&fit=crop&w=800&q=80&fm=webp",
     name: "Spain Schengen Visa",
     tagline: "Explore Madrid, Barcelona, and Andalucia with expert BLS Spain booking support",
     isPublished: true,
@@ -1497,9 +1497,9 @@ const SEED_VISA_TYPES = [
       ]
     },
     popularLocations: [
-      { name: "Madrid", imageUrl: "https://images.unsplash.com/photo-1539650116574-8efeb43e2750?auto=format&fit=crop&w=500&q=80" },
-      { name: "Barcelona", imageUrl: "https://images.unsplash.com/photo-1583422409516-2895a77efedd?auto=format&fit=crop&w=500&q=80" },
-      { name: "Seville", imageUrl: "https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=500&q=80" }
+      { name: "Madrid", imageUrl: "https://images.unsplash.com/photo-1539650116574-8efeb43e2750?auto=format&fit=crop&w=500&q=80&fm=webp" },
+      { name: "Barcelona", imageUrl: "https://images.unsplash.com/photo-1583422409516-2895a77efedd?auto=format&fit=crop&w=500&q=80&fm=webp" },
+      { name: "Seville", imageUrl: "https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=500&q=80&fm=webp" }
     ],
     requiredDocuments: [
       "Passport valid for at least 6 months",
@@ -1527,7 +1527,7 @@ const SEED_VISA_TYPES = [
   },
   {
     slug: "netherlands",
-    imageUrl: "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=800&q=80&fm=webp",
     name: "Netherlands Schengen Visa",
     tagline: "Audit your financial statement & employment files for Dutch Schengen entry",
     isPublished: true,
@@ -1567,9 +1567,9 @@ const SEED_VISA_TYPES = [
       ]
     },
     popularLocations: [
-      { name: "Amsterdam", imageUrl: "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=500&q=80" },
-      { name: "Rotterdam", imageUrl: "https://images.unsplash.com/photo-1473976377429-97fb3c634024?auto=format&fit=crop&w=500&q=80" },
-      { name: "The Hague", imageUrl: "https://images.unsplash.com/photo-1581084282500-1c09930f7850?auto=format&fit=crop&w=500&q=80" }
+      { name: "Amsterdam", imageUrl: "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=500&q=80&fm=webp" },
+      { name: "Rotterdam", imageUrl: "https://images.unsplash.com/photo-1473976377429-97fb3c634024?auto=format&fit=crop&w=500&q=80&fm=webp" },
+      { name: "The Hague", imageUrl: "https://images.unsplash.com/photo-1581084282500-1c09930f7850?auto=format&fit=crop&w=500&q=80&fm=webp" }
     ],
     requiredDocuments: [
       "Passport valid for at least 6 months",

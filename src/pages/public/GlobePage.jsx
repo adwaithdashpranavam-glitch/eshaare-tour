@@ -49,19 +49,19 @@ const countries = [
       {
         name: "Burj Khalifa",
         image:
-          "https://images.unsplash.com/photo-1582672060674-bc2bd808a8b5?q=80&w=1200&auto=format&fit=crop",
+          "https://images.unsplash.com/photo-1582672060674-bc2bd808a8b5?q=80&w=1200&auto=format&fit=crop&fm=webp",
         tag: "Icon",
       },
       {
         name: "Palm Jumeirah",
         image:
-          "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?q=80&w=1200&auto=format&fit=crop",
+          "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?q=80&w=1200&auto=format&fit=crop&fm=webp",
         tag: "Resort",
       },
       {
         name: "Desert Safari Dubai",
         image:
-          "https://images.unsplash.com/photo-1473580044384-7ba9967e16a0?q=80&w=1200&auto=format&fit=crop",
+          "https://images.unsplash.com/photo-1473580044384-7ba9967e16a0?q=80&w=1200&auto=format&fit=crop&fm=webp",
         tag: "Experience",
       },
     ],
@@ -76,13 +76,13 @@ const countries = [
       {
         name: "Tokyo (Shibuya)",
         image:
-          "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?q=80&w=1200&auto=format&fit=crop",
+          "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?q=80&w=1200&auto=format&fit=crop&fm=webp",
         tag: "City",
       },
       {
         name: "Kyoto Kinkaku-ji",
         image:
-          "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?q=80&w=1200&auto=format&fit=crop",
+          "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?q=80&w=1200&auto=format&fit=crop&fm=webp",
         tag: "Heritage",
       },
     ],
@@ -97,7 +97,7 @@ const countries = [
       {
         name: "Interlaken & Jungfrau",
         image:
-          "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1200&auto=format&fit=crop",
+          "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1200&auto=format&fit=crop&fm=webp",
         tag: "Nature",
       },
     ],
@@ -112,7 +112,7 @@ const countries = [
       {
         name: "Kerala Backwaters",
         image:
-          "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?q=80&w=1200&auto=format&fit=crop",
+          "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?q=80&w=1200&auto=format&fit=crop&fm=webp",
         tag: "Wellness",
       },
     ],
@@ -126,7 +126,7 @@ const POIs = [
     lng: 55.2744,
     country: "UAE",
     image:
-      "https://images.unsplash.com/photo-1582672060674-bc2bd808a8b5?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1582672060674-bc2bd808a8b5?q=80&w=1200&auto=format&fit=crop&fm=webp",
     desc: "The world's tallest building, climbing 828 metres above Dubai's skyline with observation decks that redefine perspective.",
   },
   {
@@ -135,7 +135,7 @@ const POIs = [
     lng: 55.139,
     country: "UAE",
     image:
-      "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?q=80&w=1200&auto=format&fit=crop&fm=webp",
     desc: "The iconic palm tree-shaped archipelago containing world-class high-end resorts, private beaches and residences.",
   },
   {
@@ -144,7 +144,7 @@ const POIs = [
     lng: 55.289,
     country: "UAE",
     image:
-      "https://images.unsplash.com/photo-1473580044384-7ba9967e16a0?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1473580044384-7ba9967e16a0?q=80&w=1200&auto=format&fit=crop&fm=webp",
     desc: "Experience red dune bashing, camel riding, and traditional Arabian dinners under a canopy of stars.",
   },
   {
@@ -153,7 +153,7 @@ const POIs = [
     lng: 139.7016,
     country: "Japan",
     image:
-      "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?q=80&w=1200&auto=format&fit=crop&fm=webp",
     desc: "The electric heart of Tokyo — futuristic neon lights and the world-famous Shibuya scramble crossing.",
   },
   {
@@ -162,7 +162,7 @@ const POIs = [
     lng: 135.7292,
     country: "Japan",
     image:
-      "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?q=80&w=1200&auto=format&fit=crop&fm=webp",
     desc: "The breathtaking Zen Buddhist Golden Pavilion, its gilded façade perfectly mirrored in the surrounding pond.",
   },
   {
@@ -171,7 +171,7 @@ const POIs = [
     lng: 7.8632,
     country: "Switzerland",
     image:
-      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1200&auto=format&fit=crop&fm=webp",
     desc: "A stunning Swiss resort town between Alpine lakes with breathtaking panoramas of the Jungfrau peak.",
   },
   {
@@ -180,7 +180,7 @@ const POIs = [
     lng: 76.3388,
     country: "India",
     image:
-      "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?q=80&w=1200&auto=format&fit=crop&fm=webp",
     desc: "Cruise serene palm-fringed lagoons and mirror-still canals aboard a traditional luxury houseboat.",
   },
 ];
@@ -588,7 +588,7 @@ export default function GlobePage() {
         className="absolute inset-0 z-0"
         style={{
           backgroundImage:
-            "url('https://images.unsplash.com/photo-1462331940025-496dfbfc7564?q=80&w=2500&auto=format&fit=crop')",
+            "url('https://images.unsplash.com/photo-1462331940025-496dfbfc7564?q=80&w=2500&auto=format&fit=crop&fm=webp')",
           backgroundSize: "cover",
           backgroundPosition: "center",
         }}
