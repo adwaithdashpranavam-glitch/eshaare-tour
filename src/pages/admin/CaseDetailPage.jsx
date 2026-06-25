@@ -11,6 +11,7 @@ import { formatCurrency, formatDate } from "../../utils/formatters";
 import StatusBadge from "../../components/ui/StatusBadge";
 import Modal from "../../components/ui/Modal";
 import ConsultantDeliverables from "../../components/admin/ConsultantDeliverables";
+import ClientDocumentReview from "../../components/admin/ClientDocumentReview";
 import CaseStatusControl from "../../components/admin/CaseStatusControl";
 import CaseSummaryCard from "../../components/admin/CaseSummaryCard";
 import toast from "react-hot-toast";
@@ -279,6 +280,9 @@ export const CaseDetailPage = () => {
           
           {/* Case Status (manual stepper; later automated) */}
           <CaseStatusControl applicationId={caseData.applicationId} caseId={id} />
+
+          {/* Identity document AI review + profile-match flagging (non-blocking) */}
+          <ClientDocumentReview travellerEmail={caseData.travellerEmail} />
 
           {/* Consultant Deliverables — completed documents delivered to the client */}
           <ConsultantDeliverables applicationId={caseData.applicationId} caseId={id} />
