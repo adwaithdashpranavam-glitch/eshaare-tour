@@ -5,6 +5,13 @@ import foxLogo from "../assets/fox-logo.webp";
 import { useAuth } from "../contexts/AuthContext";
 import CanonicalTag from "../components/CanonicalTag";
 import {
+  InstagramIcon,
+  WhatsappIcon,
+  FacebookIcon,
+  LinkedinIcon,
+  TelegramIcon
+} from "../components/ui/BrandIcons";
+import {
   MapPin,
   Phone,
   ChevronDown,
@@ -381,197 +388,197 @@ export const PublicLayout = () => {
 
       {/* Sticky Top Navbar */}
       {!isPortal && (
-      <header
-        className={`fixed left-0 w-full z-50 transition-all duration-300 ${scrolled
-          ? "bg-white/95 backdrop-blur-md shadow-md border-b border-gray-100"
-          : "bg-white/90 backdrop-blur-xl shadow-md border-b border-gray-100"
-          } ${user ? "top-8" : "top-0"}`}
-      >
+        <header
+          className={`fixed left-0 w-full z-50 transition-all duration-300 ${scrolled
+            ? "bg-white/95 backdrop-blur-md shadow-md border-b border-gray-100"
+            : "bg-white/90 backdrop-blur-xl shadow-md border-b border-gray-100"
+            } ${user ? "top-8" : "top-0"}`}
+        >
 
-        <div className="max-w-[95rem] mx-auto px-2 xl:px-4 h-16 flex items-center justify-between">
+          <div className="max-w-[95rem] mx-auto px-2 xl:px-4 h-16 flex items-center justify-between">
 
-          {/* Logo with MapPin */}
-          <div className="flex items-center gap-1 sm:gap-3 min-w-0">
-            {location.pathname && location.pathname !== "/" && (
-              <button
-                onClick={() => navigate(-1)}
-                className="mr-1 flex items-center justify-center p-2 rounded-full hover:bg-gray-200/50 text-gray-800 transition-colors"
-                title="Go Back"
-              >
-                <ArrowLeft className="w-5 h-5 stroke-[2.5]" />
-              </button>
-            )}
-            <Link
-              to="/"
-              className="flex items-center gap-1 sm:gap-2 group shrink-0"
-            >
-              <img
-                src={foxLogo}
-                alt="Eshaare Tour"
-                width="90"
-                height="60"
-                className="h-12 sm:h-14 md:h-16 lg:h-20 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
-              />
-
-              {/* Brand Text */}
-              <div className="leading-none -ml-2.5 md:-ml-4">
-                <div
-                  className="text-xl sm:text-xl md:text-3xl lg:text-4xl text-[#1D503A]"
-                  style={{
-                    fontFamily: "'Great Vibes', cursive",
-                  }}
-                  aria-label="Eshaare Tours & Visas"
+            {/* Logo with MapPin */}
+            <div className="flex items-center gap-1 sm:gap-3 min-w-0">
+              {location.pathname && location.pathname !== "/" && (
+                <button
+                  onClick={() => navigate(-1)}
+                  className="mr-1 flex items-center justify-center p-2 rounded-full hover:bg-gray-200/50 text-gray-800 transition-colors"
+                  title="Go Back"
                 >
-                  Eshaare Tour
+                  <ArrowLeft className="w-5 h-5 stroke-[2.5]" />
+                </button>
+              )}
+              <Link
+                to="/"
+                className="flex items-center gap-1 sm:gap-2 group shrink-0"
+              >
+                <img
+                  src={foxLogo}
+                  alt="Eshaare Tour"
+                  width="90"
+                  height="60"
+                  className="h-12 sm:h-14 md:h-16 lg:h-20 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+                />
+
+                {/* Brand Text */}
+                <div className="leading-none -ml-2.5 md:-ml-4">
+                  <div
+                    className="text-xl sm:text-xl md:text-3xl lg:text-4xl text-[#1D503A]"
+                    style={{
+                      fontFamily: "'Great Vibes', cursive",
+                    }}
+                    aria-label="Eshaare Tours & Visas"
+                  >
+                    Eshaare Tour
+                  </div>
+
+                  <p className="text-[5px] sm:text-[6px] md:text-[7px] lg:text-[8px] tracking-[0.25em] uppercase text-gray-600 mt-0">
+                    Connecting Dreams Into Destinations
+                  </p>
                 </div>
+              </Link>
+            </div>
 
-                <p className="text-[5px] sm:text-[6px] md:text-[7px] lg:text-[8px] tracking-[0.25em] uppercase text-gray-600 mt-0">
-                  Connecting Dreams Into Destinations
-                </p>
-              </div>
-            </Link>
-          </div>
+            {/* Desktop Navigation */}
+            <nav className="hidden lg:flex items-center gap-6 xl:gap-8 ml-8">
+              {navData.map((navItem) => (
+                <div key={navItem.title} className="relative group/main py-8">
+                  {navItem.subcategories ? (
+                    <>
+                      <button className="text-gray-800 group-hover/main:text-[#1D503A] transition text-[10px] xl:text-sm font-semibold uppercase tracking-wide flex items-center gap-1 cursor-pointer">
+                        {navItem.title}
+                        <ChevronDown className="w-3.5 h-3.5" />
+                      </button>
+                      {/* Multi-level Hover Flyout Dropdown */}
+                      <div className="absolute top-[70px] left-0 w-64 bg-white border border-gray-100 shadow-xl rounded-xl opacity-0 invisible group-hover/main:opacity-100 group-hover/main:visible transition-all duration-300 py-2">
+                        {navItem.subcategories.map((sub) => (
+                          <div key={sub.title} className="relative group/sub">
+                            {sub.links && sub.links.length > 0 ? (
+                              <>
+                                <Link
+                                  to={toSlug(sub.title)}
+                                  className="px-5 py-3 hover:bg-orange-50/50 hover:text-[#1D503A] flex items-center justify-between text-sm font-medium text-gray-700 transition-colors"
+                                >
+                                  {sub.title}
+                                  <ChevronRight className="w-4 h-4 text-gray-400 group-hover/sub:text-[#1D503A]" />
+                                </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center gap-6 xl:gap-8 ml-8">
-            {navData.map((navItem) => (
-              <div key={navItem.title} className="relative group/main py-8">
-                {navItem.subcategories ? (
-                  <>
-                    <button className="text-gray-800 group-hover/main:text-[#1D503A] transition text-[10px] xl:text-sm font-semibold uppercase tracking-wide flex items-center gap-1 cursor-pointer">
-                      {navItem.title}
-                      <ChevronDown className="w-3.5 h-3.5" />
-                    </button>
-                    {/* Multi-level Hover Flyout Dropdown */}
-                    <div className="absolute top-[70px] left-0 w-64 bg-white border border-gray-100 shadow-xl rounded-xl opacity-0 invisible group-hover/main:opacity-100 group-hover/main:visible transition-all duration-300 py-2">
-                      {navItem.subcategories.map((sub) => (
-                        <div key={sub.title} className="relative group/sub">
-                          {sub.links && sub.links.length > 0 ? (
-                            <>
+                                <div className="absolute top-0 left-full -ml-1 w-60 bg-white border border-gray-100 shadow-xl rounded-xl opacity-0 invisible group-hover/sub:opacity-100 group-hover/sub:visible transition-all duration-300 py-2">
+                                  {sub.links.map((link) => {
+                                    const isObject = typeof link === "object" && link !== null;
+                                    const title = isObject ? link.title : link;
+                                    if (isObject) {
+                                      return (
+                                        <div key={title} className="relative group/subsub">
+                                          <Link
+                                            to={toSlug(title)}
+                                            className="px-5 py-2.5 hover:bg-orange-50/50 hover:text-[#1D503A] flex items-center justify-between text-sm text-gray-600 transition-colors"
+                                          >
+                                            {title}
+                                            <ChevronRight className="w-3.5 h-3.5 text-gray-400 group-hover/subsub:text-[#1D503A]" />
+                                          </Link>
+
+                                          <div className="absolute top-0 left-full -ml-1 w-60 bg-white border border-gray-100 shadow-xl rounded-xl opacity-0 invisible group-hover/subsub:opacity-100 group-hover/subsub:visible transition-all duration-300 py-2">
+                                            {link.links.map((subLink) => (
+                                              <Link
+                                                key={subLink}
+                                                to={toSlug(subLink)}
+                                                className="block px-5 py-2.5 hover:bg-orange-50/50 hover:text-[#1D503A] text-sm text-gray-600 transition-colors"
+                                              >
+                                                {subLink}
+                                              </Link>
+                                            ))}
+                                          </div>
+                                        </div>
+                                      );
+                                    }
+                                    return (
+                                      <Link
+                                        key={title}
+                                        to={toSlug(title)}
+                                        className="block px-5 py-2.5 hover:bg-orange-50/50 hover:text-[#1D503A] text-sm text-gray-600 transition-colors"
+                                      >
+                                        {title}
+                                      </Link>
+                                    );
+                                  })}
+                                </div>
+                              </>
+                            ) : (
                               <Link
                                 to={toSlug(sub.title)}
-                                className="px-5 py-3 hover:bg-orange-50/50 hover:text-[#1D503A] flex items-center justify-between text-sm font-medium text-gray-700 transition-colors"
+                                className="block px-5 py-3 hover:bg-orange-50/50 hover:text-[#1D503A] text-sm font-medium text-gray-700 transition-colors"
                               >
                                 {sub.title}
-                                <ChevronRight className="w-4 h-4 text-gray-400 group-hover/sub:text-[#1D503A]" />
                               </Link>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  ) : (
+                    <Link
+                      to={navItem.path}
+                      className="text-gray-800 hover:text-[#1D503A] transition text-[10px] xl:text-sm font-semibold uppercase tracking-wide flex items-center gap-1"
+                    >
+                      {navItem.title}
+                    </Link>
+                  )}
+                </div>
+              ))}
+            </nav>
 
-                              <div className="absolute top-0 left-full -ml-1 w-60 bg-white border border-gray-100 shadow-xl rounded-xl opacity-0 invisible group-hover/sub:opacity-100 group-hover/sub:visible transition-all duration-300 py-2">
-                                {sub.links.map((link) => {
-                                  const isObject = typeof link === "object" && link !== null;
-                                  const title = isObject ? link.title : link;
-                                  if (isObject) {
-                                    return (
-                                      <div key={title} className="relative group/subsub">
-                                        <Link
-                                          to={toSlug(title)}
-                                          className="px-5 py-2.5 hover:bg-orange-50/50 hover:text-[#1D503A] flex items-center justify-between text-sm text-gray-600 transition-colors"
-                                        >
-                                          {title}
-                                          <ChevronRight className="w-3.5 h-3.5 text-gray-400 group-hover/subsub:text-[#1D503A]" />
-                                        </Link>
+            {/* Desktop Right Side CTA Actions */}
+            <div className="hidden lg:flex items-center gap-3 xl:gap-4 shrink-0">
+              {!user ? (
+                <Link
+                  to="/portal/login"
+                  className="h-9 border border-[#1D503A] hover:bg-[#1D503A]/10 text-gray-800 px-6 rounded-full font-semibold text-sm flex items-center justify-center transition-all duration-300"
+                >
+                  Login
+                </Link>
+              ) : (
+                <Link
+                  to={isAdmin ? "/admin" : "/portal"}
+                  className="h-9 border border-gray-300 hover:bg-gray-100 text-gray-800 px-6 rounded-full font-semibold text-sm flex items-center justify-center transition-all duration-300"
+                >
+                  {isAdmin ? "Admin Portal" : "Dashboard"}
+                </Link>
+              )}
 
-                                        <div className="absolute top-0 left-full -ml-1 w-60 bg-white border border-gray-100 shadow-xl rounded-xl opacity-0 invisible group-hover/subsub:opacity-100 group-hover/subsub:visible transition-all duration-300 py-2">
-                                          {link.links.map((subLink) => (
-                                            <Link
-                                              key={subLink}
-                                              to={toSlug(subLink)}
-                                              className="block px-5 py-2.5 hover:bg-orange-50/50 hover:text-[#1D503A] text-sm text-gray-600 transition-colors"
-                                            >
-                                              {subLink}
-                                            </Link>
-                                          ))}
-                                        </div>
-                                      </div>
-                                    );
-                                  }
-                                  return (
-                                    <Link
-                                      key={title}
-                                      to={toSlug(title)}
-                                      className="block px-5 py-2.5 hover:bg-orange-50/50 hover:text-[#1D503A] text-sm text-gray-600 transition-colors"
-                                    >
-                                      {title}
-                                    </Link>
-                                  );
-                                })}
-                              </div>
-                            </>
-                          ) : (
-                            <Link
-                              to={toSlug(sub.title)}
-                              className="block px-5 py-3 hover:bg-orange-50/50 hover:text-[#1D503A] text-sm font-medium text-gray-700 transition-colors"
-                            >
-                              {sub.title}
-                            </Link>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </>
-                ) : (
-                  <Link
-                    to={navItem.path}
-                    className="text-gray-800 hover:text-[#1D503A] transition text-[10px] xl:text-sm font-semibold uppercase tracking-wide flex items-center gap-1"
-                  >
-                    {navItem.title}
-                  </Link>
-                )}
-              </div>
-            ))}
-          </nav>
-
-          {/* Desktop Right Side CTA Actions */}
-          <div className="hidden lg:flex items-center gap-3 xl:gap-4 shrink-0">
-            {!user ? (
               <Link
-                to="/portal/login"
-                className="h-9 border border-[#1D503A] hover:bg-[#1D503A]/10 text-gray-800 px-6 rounded-full font-semibold text-sm flex items-center justify-center transition-all duration-300"
+                to="/contact"
+                className="group relative flex items-center gap-2 h-9 bg-[#1D503A] border border-[#1D503A] text-white px-3 rounded-full font-semibold text-sm hover:bg-[#0e4a1e] transition-all duration-300 overflow-hidden shadow-md"
               >
-                Login
+                <Phone className="h-4 w-4" />
+                <span>Enquire Now</span>
               </Link>
-            ) : (
-              <Link
-                to={isAdmin ? "/admin" : "/portal"}
-                className="h-9 border border-gray-300 hover:bg-gray-100 text-gray-800 px-6 rounded-full font-semibold text-sm flex items-center justify-center transition-all duration-300"
-              >
-                {isAdmin ? "Admin Portal" : "Dashboard"}
-              </Link>
-            )}
 
-            <Link
-              to="/contact"
-              className="group relative flex items-center gap-2 h-9 bg-[#1D503A] border border-[#1D503A] text-white px-3 rounded-full font-semibold text-sm hover:bg-[#0e4a1e] transition-all duration-300 overflow-hidden shadow-md"
-            >
-              <Phone className="h-4 w-4" />
-              <span>Enquire Now</span>
-            </Link>
+              {/* Profile Avatar / user monogram */}
+              {user && (
+                <Link
+                  to={isAdmin ? "/admin" : "/portal"}
+                  className="h-11 w-11 rounded-full border border-gray-200 shadow-sm bg-orange-50 flex items-center justify-center font-bold text-xs text-[#1D503A] hover:bg-orange-100/50 transition-colors shrink-0"
+                  title={`${isAdmin ? "Admin Portal" : "User Portal"}: ${userName}`}
+                >
+                  {userMonogram}
+                </Link>
+              )}
+            </div>
 
-            {/* Profile Avatar / user monogram */}
-            {user && (
-              <Link
-                to={isAdmin ? "/admin" : "/portal"}
-                className="h-11 w-11 rounded-full border border-gray-200 shadow-sm bg-orange-50 flex items-center justify-center font-bold text-xs text-[#1D503A] hover:bg-orange-100/50 transition-colors shrink-0"
-                title={`${isAdmin ? "Admin Portal" : "User Portal"}: ${userName}`}
+            {/* Mobile Hamburg Trigger */}
+            <div className="lg:hidden flex items-center gap-2">
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="text-gray-700 p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+                title="Menu"
               >
-                {userMonogram}
-              </Link>
-            )}
+                {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              </button>
+            </div>
+
           </div>
-
-          {/* Mobile Hamburg Trigger */}
-          <div className="lg:hidden flex items-center gap-2">
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="text-gray-700 p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
-              title="Menu"
-            >
-              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </button>
-          </div>
-
-        </div>
-      </header>
+        </header>
       )}
 
       {/* Mobile Menu Drawer */}
@@ -633,9 +640,8 @@ export const PublicLayout = () => {
                                             >
                                               <span>{title}</span>
                                               <ChevronDown
-                                                className={`w-3 h-3 transition-transform ${
-                                                  mobileSubSubExpanded === title ? "rotate-180" : ""
-                                                }`}
+                                                className={`w-3 h-3 transition-transform ${mobileSubSubExpanded === title ? "rotate-180" : ""
+                                                  }`}
                                               />
                                             </button>
 
@@ -736,8 +742,9 @@ export const PublicLayout = () => {
 
       {/* Footer matching figma style colorings */}
       {!isPortal && (
-        <footer className="relative z-10 bg-primary-container text-on-primary-container pt-16 pb-48">
-          <div className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop grid grid-cols-1 md:grid-cols-4 gap-gutter mb-12">
+        <footer className="relative z-10 bg-primary-container text-on-primary-container pt-12 pb-16">
+          <div className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
+
             {/* Brand Col */}
             <div className="flex flex-col gap-4">
               <Link to="/" className="flex items-center gap-2 text-white">
@@ -746,6 +753,7 @@ export const PublicLayout = () => {
                   ESHAAR TOUR
                 </span>
               </Link>
+
               <p className="text-body-sm leading-relaxed text-on-primary-container/80">
                 Premium visa processing assistance & curated luxury tour packages for UAE residents. Your gateway to global travel.
               </p>
@@ -753,8 +761,11 @@ export const PublicLayout = () => {
 
             {/* Quick Links */}
             <div className="flex flex-col gap-4">
-              <h3 className="text-white font-headline-md text-body-lg font-semibold">Services</h3>
-              <ul className="flex flex-col gap-2.5 text-body-sm">
+              <h3 className="text-white font-headline-md text-body-lg font-semibold">
+                Services
+              </h3>
+
+              <ul className="flex flex-col gap-3 text-body-sm">
                 <li>
                   <Link to="/visa-services" className="text-on-primary-container/80 hover:text-[#D4AF37] transition-colors">
                     Visa Services
@@ -778,10 +789,13 @@ export const PublicLayout = () => {
               </ul>
             </div>
 
-            {/* Support Links */}
+            {/* Company Links */}
             <div className="flex flex-col gap-4">
-              <h3 className="text-white font-headline-md text-body-lg font-semibold">Company</h3>
-              <ul className="flex flex-col gap-2.5 text-body-sm">
+              <h3 className="text-white font-headline-md text-body-lg font-semibold">
+                Company
+              </h3>
+
+              <ul className="flex flex-col gap-3 text-body-sm">
                 <li>
                   <Link to="/track" className="text-on-primary-container/80 hover:text-[#D4AF37] transition-colors">
                     Track Application
@@ -807,10 +821,14 @@ export const PublicLayout = () => {
 
             {/* Newsletter */}
             <div className="flex flex-col gap-4">
-              <h3 className="text-white font-headline-md text-body-lg font-semibold">Newsletter</h3>
+              <h3 className="text-white font-headline-md text-body-lg font-semibold">
+                Newsletter
+              </h3>
+
               <p className="text-body-sm leading-relaxed text-on-primary-container/80">
-                Subscribe to get the latest visa news updates and luxury tour package offers.
+                Subscribe to get visa updates and offers.
               </p>
+
               <form onSubmit={handleNewsletterSubmit} className="flex gap-2 items-center">
                 <input
                   type="email"
@@ -820,9 +838,10 @@ export const PublicLayout = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
+
                 <button
                   type="submit"
-                  className="bg-[#1D503A] text-white p-3 rounded-lg hover:bg-[#143d2c] hover:scale-105 transition-all flex items-center justify-center shadow-sm shrink-0"
+                  className="bg-[#1D503A] text-white p-3 rounded-lg hover:bg-[#143d2c] transition-all flex items-center justify-center shrink-0"
                   aria-label="Subscribe"
                 >
                   <Send className="h-4 w-4" />
@@ -832,12 +851,30 @@ export const PublicLayout = () => {
           </div>
 
           {/* Bottom Bar */}
-          <div className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between text-body-sm text-on-primary-container/60">
-            <p>{"\u00A9"} {new Date().getFullYear()} Eshaare Tours UAE. All rights reserved.</p>
-            <div className="flex gap-6 mt-4 md:mt-0">
-              <a href="https://instagram.com" target="_blank" rel="noreferrer" className="hover:text-[#D4AF37] transition-colors">Instagram</a>
-              <a href="https://wa.me/971557338429" target="_blank" rel="noreferrer" className="hover:text-[#D4AF37] transition-colors">WhatsApp</a>
-              <a href="https://facebook.com" target="_blank" rel="noreferrer" className="hover:text-[#D4AF37] transition-colors">Facebook</a>
+          <div className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop pt-6 border-t border-white/5 flex flex-col md:flex-row items-center justify-between text-body-sm text-on-primary-container/60">
+
+            <p>© {new Date().getFullYear()} Eshaare Tours UAE. All rights reserved.</p>
+
+            <div className="flex gap-6 mt-4 md:mt-0 flex-wrap justify-center md:justify-end">
+              <a href="https://www.instagram.com/eshaare_tours/?utm_source=qr&r=nametag" target="_blank" rel="noreferrer" className="flex items-center gap-1.5 hover:text-[#D4AF37] transition-colors">
+                <InstagramIcon className="w-4 h-4" /> Instagram
+              </a>
+
+              <a href="https://wa.me/971557338429" target="_blank" rel="noreferrer" className="flex items-center gap-1.5 hover:text-[#D4AF37] transition-colors">
+                <WhatsappIcon className="w-4 h-4" /> WhatsApp
+              </a>
+
+              <a href="https://facebook.com" target="_blank" rel="noreferrer" className="flex items-center gap-1.5 hover:text-[#D4AF37] transition-colors">
+                <FacebookIcon className="w-4 h-4" /> Facebook
+              </a>
+
+              <a href="https://www.linkedin.com/in/eshaare-tours" target="_blank" rel="noreferrer" className="flex items-center gap-1.5 hover:text-[#D4AF37] transition-colors">
+                <LinkedinIcon className="w-4 h-4" /> LinkedIn
+              </a>
+
+              <a href="https://t.me/eshaaretours" target="_blank" rel="noreferrer" className="flex items-center gap-1.5 hover:text-[#D4AF37] transition-colors">
+                <TelegramIcon className="w-4 h-4" /> Telegram
+              </a>
             </div>
           </div>
         </footer>

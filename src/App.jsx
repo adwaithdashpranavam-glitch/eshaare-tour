@@ -20,7 +20,7 @@ import PortalLayout from "./layouts/PortalLayout";
 import ScrollToTop from "./components/ui/ScrollToTop";
 
 // Public Pages
-const HomePage = lazy(() => import("./pages/public/HomePage"));
+import HomePage from "./pages/public/HomePage";
 const VisaServicesPage = lazy(() => import("./pages/public/VisaServicesPage"));
 const VisaDetailPage = lazy(() => import("./pages/public/VisaDetailPage"));
 const PackagesPage = lazy(() => import("./pages/public/PackagesPage"));
