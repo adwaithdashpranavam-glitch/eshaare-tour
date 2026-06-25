@@ -63,6 +63,8 @@ export const PublicLayout = () => {
   const [mobileExpanded, setMobileExpanded] = useState(null);
   const [mobileSubExpanded, setMobileSubExpanded] = useState(null);
   const [mobileSubSubExpanded, setMobileSubSubExpanded] = useState(null);
+  const [footerInView, setFooterInView] = useState(false);
+  const footerRef = useRef(null);
 
   // Search state matching figma
   const [openSearch, setOpenSearch] = useState(false);
@@ -95,6 +97,19 @@ export const PublicLayout = () => {
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Intersection Observer to detect when footer is in view
+  useEffect(() => {
+    if (!footerRef.current) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setFooterInView(entry.isIntersecting);
+      },
+      { rootMargin: "0px", threshold: 0 }
+    );
+    observer.observe(footerRef.current);
+    return () => observer.disconnect();
   }, []);
 
   // Focus search input when modal opens
@@ -742,7 +757,7 @@ export const PublicLayout = () => {
 
       {/* Footer matching figma style colorings */}
       {!isPortal && (
-        <footer className="relative z-10 bg-primary-container text-on-primary-container pt-12 pb-16">
+        <footer ref={footerRef} className="relative z-10 bg-primary-container text-on-primary-container pt-12 pb-16">
           <div className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
 
             {/* Brand Col */}
@@ -882,7 +897,7 @@ export const PublicLayout = () => {
 
       {/* WhatsApp FAB with Fox Mascot & Auto-fading Speech Bubble */}
       {!isPortal && (
-        <div className="fixed bottom-8 right-8 z-[100] flex items-center">
+        <div className={`fixed right-8 z-[100] flex items-center transition-all duration-300 ${footerInView ? 'opacity-0 translate-y-10 pointer-events-none' : 'opacity-100 translate-y-0 bottom-8'}`}>
           {/* Fading Speech Bubble */}
           <div
             className={`mr-3.5 bg-white text-gray-800 text-xs font-semibold py-3 px-4 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] border border-gray-100 relative transition-all duration-500 ease-out transform origin-right whitespace-nowrap
@@ -918,7 +933,7 @@ export const PublicLayout = () => {
 
       {/* FIGMA DESIGN FIXED BOTTOM NAVBAR */}
       {!isPortal && (
-        <div className="fixed bottom-1 left-1/2 z-[9999] w-[75%] max-w-2xl -translate-x-1/2 rounded-full border border-white/10 bg-white/90 shadow-[0_8px_24px_rgba(0,0,0,0.15)] backdrop-blur-xl">
+        <div className={`fixed left-1/2 z-[9999] w-[75%] max-w-2xl -translate-x-1/2 rounded-full border border-white/10 bg-white/90 shadow-[0_8px_24px_rgba(0,0,0,0.15)] backdrop-blur-xl transition-all duration-300 ${footerInView ? 'opacity-0 translate-y-20 pointer-events-none bottom-1' : 'opacity-100 translate-y-0 bottom-1'}`}>
           <div className="grid grid-cols-5 items-center py-1">
 
             {/* GLOBE */}
