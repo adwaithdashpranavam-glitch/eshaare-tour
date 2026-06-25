@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import toast from "react-hot-toast";
-import InteractiveCanvas from "../../components/ui/InteractiveCanvas";
 import { AnimatedStatsBar } from "../../components/ui/AnimatedStatsBar";
 
 
@@ -613,7 +612,6 @@ export const HomePage = () => {
         <title>ESHAARE | Visa Consultant & Travel Agency in Dubai</title>
         <meta name="description" content="Book custom holiday packages from Dubai with Eshaare Tours UAE. Premium travel agency in Dubai providing Schengen Visa UAE, UK, US, and Canada visa consultancy." />
       </Helmet>
-      <InteractiveCanvas />
 
       {/* HERO SLIDER SECTION */}
       <section className="relative z-10 overflow-hidden h-[91vh] min-h-[500px]">
