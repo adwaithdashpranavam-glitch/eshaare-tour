@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
-import { getVisaTypeBySlug, saveVisaType, createLead, createApplicationDraft, getVisaTypes } from "../../lib/firestore";
+import { getVisaTypeBySlug, saveVisaType, createLead, createApplicationDraft, getVisaTypes, fetchMissingMandatoryDocuments } from "../../lib/firestore";
 import { useAuth } from "../../contexts/AuthContext";
 import { generateLeadNo, formatWhatsAppPhone } from "../../utils/helpers";
 import { serverTimestamp } from "../../lib/firebase";
@@ -256,6 +256,22 @@ export const VisaDetailPage = () => {
   const handleApplyClick = async (packageType = "standard", amount = 299) => {
     if (!user) {
       setIsAuthRequiredModalOpen(true);
+      return;
+    }
+
+    // Mandatory-document gate (applies to ALL visa types). If the client has not
+    // uploaded every mandatory document, do not create/open the wizard — send
+    // them to the Documents page with a clear warning listing what is missing.
+    const checkingToast = toast.loading("Checking required documents...");
+    const missing = await fetchMissingMandatoryDocuments(userProfile?.email || user?.email);
+    toast.dismiss(checkingToast);
+    if (missing.length > 0) {
+      const missingLabels = missing.map((m) => m.label);
+      toast.error(
+        `Please upload and verify all mandatory documents before applying for a visa. Pending: ${missingLabels.join(", ")}.`,
+        { duration: 6000 }
+      );
+      navigate("/portal/documents", { state: { mandatoryDocsMissing: true, missing: missingLabels } });
       return;
     }
 

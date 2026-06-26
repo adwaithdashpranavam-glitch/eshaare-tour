@@ -146,7 +146,11 @@ service cloud.firestore {
     }
 
     function validateDocumentSchema(data) {
-      let allowedFields = ['id', 'travellerId', 'travellerEmail', 'visaCaseId', 'docType', 'type', 'fileName', 'mimeType', 'storageKey', 'fileSizeBytes', 'fileUrl', 'verificationStatus', 'status', 'uploadedBy', 'createdAt', 'rejectionReason', 'verifiedBy', 'verifiedAt'];
+      // Note: 'aiCheck', 'profileMatch' and 'requiresManualReview' are written by
+      // the aiVerifyDocument Cloud Function (Admin SDK, bypasses rules) but must be
+      // listed here so later client/staff updates — which carry these existing
+      // fields unchanged — still pass the hasOnly() allowlist.
+      let allowedFields = ['id', 'travellerId', 'travellerEmail', 'visaCaseId', 'docType', 'type', 'fileName', 'mimeType', 'storageKey', 'fileSizeBytes', 'fileUrl', 'verificationStatus', 'status', 'uploadedBy', 'createdAt', 'rejectionReason', 'verifiedBy', 'verifiedAt', 'aiCheck', 'profileMatch', 'requiresManualReview', 'rejectionReasonCode', 'clientRejectionMessage', 'adminNotes', 'verificationNotes'];
       return data.keys().hasOnly(allowedFields) &&
              data.type is string &&
              data.fileUrl is string &&
@@ -382,7 +386,16 @@ service cloud.firestore {
       allow update: if (isManager() || (isActive() && request.auth.token != null && request.auth.token.email != null && resource.data.travellerEmail.lower() == request.auth.token.email.lower()))
                     && validateDocumentSchema(request.resource.data)
                     && (isManager() || !request.resource.data.diff(resource.data).affectedKeys().hasAny(['verificationStatus', 'status', 'verifiedBy', 'verifiedAt']));
-      allow delete: if isManager() || (isActive() && request.auth.token != null && request.auth.token.email != null && resource.data.travellerEmail.lower() == request.auth.token.email.lower());
+      // Staff (managers+) may delete any document. A client may delete only their
+      // OWN document (travellerEmail match) — regardless of status, including
+      // verified ones (deleting a verified mandatory doc re-opens the Apply-Now
+      // gate). Clients can never delete another client's documents.
+      allow delete: if isManager()
+                    || (
+                      isActive()
+                      && request.auth.token != null && request.auth.token.email != null
+                      && resource.data.travellerEmail.lower() == request.auth.token.email.lower()
+                    );
     }
 
     // ==========================================
