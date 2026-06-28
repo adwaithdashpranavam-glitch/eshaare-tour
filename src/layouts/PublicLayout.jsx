@@ -60,6 +60,7 @@ export const PublicLayout = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [scrolled, setScrolled] = useState(false);
+  const [pastHero, setPastHero] = useState(false);
   const [mobileExpanded, setMobileExpanded] = useState(null);
   const [mobileSubExpanded, setMobileSubExpanded] = useState(null);
   const [mobileSubSubExpanded, setMobileSubSubExpanded] = useState(null);
@@ -73,6 +74,13 @@ export const PublicLayout = () => {
 
   // Tooltip state for WhatsApp FAB
   const [showTooltip, setShowTooltip] = useState(false);
+
+  const [heroTheme, setHeroTheme] = useState("dark");
+  useEffect(() => {
+    const handleTheme = (e) => setHeroTheme(e.detail);
+    window.addEventListener("heroThemeChange", handleTheme);
+    return () => window.removeEventListener("heroThemeChange", handleTheme);
+  }, []);
 
   // Auto-show and hide tooltip on page load
   useEffect(() => {
@@ -94,8 +102,10 @@ export const PublicLayout = () => {
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
+      setPastHero(window.scrollY > window.innerHeight * 0.75);
     };
     window.addEventListener("scroll", handleScroll);
+    handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -326,6 +336,51 @@ export const PublicLayout = () => {
     )
     : [];
 
+  const isHome = location.pathname === "/";
+  const applyHeroTheme = isHome && !pastHero;
+
+  let headerBgClass = scrolled
+    ? "bg-white/95 backdrop-blur-md shadow-md border-b border-gray-100"
+    : "bg-white/90 backdrop-blur-xl shadow-md border-b border-gray-100";
+  let navTextColor = "text-gray-800";
+  let navBrandColor = "text-[#1D503A]";
+  let navHoverColor = "group-hover/main:text-[#1D503A]";
+  let navSubtextClass = "text-gray-600";
+  let btnLoginClass = "border-[#1D503A] hover:bg-[#1D503A]/10 text-gray-800";
+  let backBtnClass = "hover:bg-gray-200/50 text-gray-800";
+  let hamburgerClass = "text-gray-700 bg-gray-100 hover:bg-gray-200";
+
+  if (applyHeroTheme) {
+    if (heroTheme === "dark") {
+      headerBgClass = "bg-[#162721]/90 backdrop-blur-xl shadow-md border-b border-white/10";
+      navTextColor = "text-white";
+      navBrandColor = "text-white";
+      navHoverColor = "group-hover/main:text-gray-300";
+      navSubtextClass = "text-gray-300";
+      btnLoginClass = "border-white hover:bg-white/10 text-white";
+      backBtnClass = "hover:bg-white/20 text-white";
+      hamburgerClass = "text-white bg-white/10 hover:bg-white/20";
+    } else if (heroTheme === "split") {
+      headerBgClass = "bg-[#fdfaf2]/95 backdrop-blur-xl shadow-md border-b border-[#e8dac1]";
+      navTextColor = "text-[#3a2f26]";
+      navBrandColor = "text-[#1D503A]";
+      navHoverColor = "group-hover/main:text-[#1D503A]";
+      navSubtextClass = "text-[#7a6b5c]";
+      btnLoginClass = "border-[#3a2f26] hover:bg-[#3a2f26]/10 text-[#3a2f26]";
+      backBtnClass = "hover:bg-[#e8dac1]/50 text-[#3a2f26]";
+      hamburgerClass = "text-[#3a2f26] bg-[#3a2f26]/10 hover:bg-[#3a2f26]/20";
+    } else {
+      headerBgClass = "bg-[#fff0f3]/95 backdrop-blur-xl shadow-md border-b border-[#ffccd5]";
+      navTextColor = "text-[#5c2438]";
+      navBrandColor = "text-[#5c2438]";
+      navHoverColor = "group-hover/main:text-[#5c2438]";
+      navSubtextClass = "text-[#9c5f74]";
+      btnLoginClass = "border-[#5c2438] hover:bg-[#5c2438]/10 text-[#5c2438]";
+      backBtnClass = "hover:bg-[#ffccd5]/50 text-[#5c2438]";
+      hamburgerClass = "text-[#5c2438] bg-[#5c2438]/10 hover:bg-[#5c2438]/20";
+    }
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-surface font-body-md text-on-surface">
       <CanonicalTag />
@@ -404,10 +459,7 @@ export const PublicLayout = () => {
       {/* Sticky Top Navbar */}
       {!isPortal && (
         <header
-          className={`fixed left-0 w-full z-50 transition-all duration-300 ${scrolled
-            ? "bg-white/95 backdrop-blur-md shadow-md border-b border-gray-100"
-            : "bg-white/90 backdrop-blur-xl shadow-md border-b border-gray-100"
-            } ${user ? "top-8" : "top-0"}`}
+          className={`fixed left-0 w-full z-50 transition-all duration-700 ${headerBgClass} ${user ? "top-8" : "top-0"}`}
         >
 
           <div className="max-w-[95rem] mx-auto px-2 xl:px-4 h-16 flex items-center justify-between">
@@ -417,7 +469,7 @@ export const PublicLayout = () => {
               {location.pathname && location.pathname !== "/" && (
                 <button
                   onClick={() => navigate(-1)}
-                  className="mr-1 flex items-center justify-center p-2 rounded-full hover:bg-gray-200/50 text-gray-800 transition-colors"
+                  className={`mr-1 flex items-center justify-center p-2 rounded-full transition-colors duration-700 ${backBtnClass}`}
                   title="Go Back"
                 >
                   <ArrowLeft className="w-5 h-5 stroke-[2.5]" />
@@ -438,7 +490,7 @@ export const PublicLayout = () => {
                 {/* Brand Text */}
                 <div className="leading-none -ml-2.5 md:-ml-4">
                   <div
-                    className="text-xl sm:text-xl md:text-3xl lg:text-4xl text-[#1D503A]"
+                    className={`text-xl sm:text-xl md:text-3xl lg:text-4xl transition-colors duration-700 ${navBrandColor}`}
                     style={{
                       fontFamily: "'Great Vibes', cursive",
                     }}
@@ -447,7 +499,7 @@ export const PublicLayout = () => {
                     Eshaare Tour
                   </div>
 
-                  <p className="text-[5px] sm:text-[6px] md:text-[7px] lg:text-[8px] tracking-[0.25em] uppercase text-gray-600 mt-0">
+                  <p className={`text-[5px] sm:text-[6px] md:text-[7px] lg:text-[8px] tracking-[0.25em] uppercase mt-0 transition-colors duration-700 ${navSubtextClass}`}>
                     Connecting Dreams Into Destinations
                   </p>
                 </div>
@@ -460,7 +512,7 @@ export const PublicLayout = () => {
                 <div key={navItem.title} className="relative group/main py-8">
                   {navItem.subcategories ? (
                     <>
-                      <button className="text-gray-800 group-hover/main:text-[#1D503A] transition text-[10px] xl:text-sm font-semibold uppercase tracking-wide flex items-center gap-1 cursor-pointer">
+                      <button className={`transition-colors duration-700 text-[10px] xl:text-sm font-semibold uppercase tracking-wide flex items-center gap-1 cursor-pointer ${navTextColor} ${navHoverColor}`}>
                         {navItem.title}
                         <ChevronDown className="w-3.5 h-3.5" />
                       </button>
@@ -534,7 +586,7 @@ export const PublicLayout = () => {
                   ) : (
                     <Link
                       to={navItem.path}
-                      className="text-gray-800 hover:text-[#1D503A] transition text-[10px] xl:text-sm font-semibold uppercase tracking-wide flex items-center gap-1"
+                      className={`transition-colors duration-700 text-[10px] xl:text-sm font-semibold uppercase tracking-wide flex items-center gap-1 ${navTextColor} ${navHoverColor}`}
                     >
                       {navItem.title}
                     </Link>
@@ -548,14 +600,14 @@ export const PublicLayout = () => {
               {!user ? (
                 <Link
                   to="/portal/login"
-                  className="h-9 border border-[#1D503A] hover:bg-[#1D503A]/10 text-gray-800 px-6 rounded-full font-semibold text-sm flex items-center justify-center transition-all duration-300"
+                  className={`h-9 border px-6 rounded-full font-semibold text-sm flex items-center justify-center transition-all duration-700 ${btnLoginClass}`}
                 >
                   Login
                 </Link>
               ) : (
                 <Link
                   to={isAdmin ? "/admin" : "/portal"}
-                  className="h-9 border border-gray-300 hover:bg-gray-100 text-gray-800 px-6 rounded-full font-semibold text-sm flex items-center justify-center transition-all duration-300"
+                  className={`h-9 border px-6 rounded-full font-semibold text-sm flex items-center justify-center transition-all duration-700 ${btnLoginClass}`}
                 >
                   {isAdmin ? "Admin Portal" : "Dashboard"}
                 </Link>
@@ -585,7 +637,7 @@ export const PublicLayout = () => {
             <div className="lg:hidden flex items-center gap-2">
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="text-gray-700 p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+                className={`p-2 rounded-full transition-colors duration-700 ${hamburgerClass}`}
                 title="Menu"
               >
                 {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -933,7 +985,7 @@ export const PublicLayout = () => {
 
       {/* FIGMA DESIGN FIXED BOTTOM NAVBAR */}
       {!isPortal && (
-        <div className={`fixed left-1/2 z-[9999] w-[75%] max-w-2xl -translate-x-1/2 rounded-full border border-white/10 bg-white/90 shadow-[0_8px_24px_rgba(0,0,0,0.15)] backdrop-blur-xl transition-all duration-300 ${footerInView ? 'opacity-0 translate-y-20 pointer-events-none bottom-1' : 'opacity-100 translate-y-0 bottom-1'}`}>
+        <div className={`fixed left-1/2 z-[9999] w-[75%] max-w-2xl -translate-x-1/2 rounded-full border border-white/10 bg-white/90 shadow-[0_8px_24px_rgba(0,0,0,0.15)] backdrop-blur-xl transition-all duration-300 ${(footerInView || (!pastHero && location.pathname === '/')) ? 'opacity-0 translate-y-20 pointer-events-none bottom-1' : 'opacity-100 translate-y-0 bottom-1'}`}>
           <div className="grid grid-cols-5 items-center py-1">
 
             {/* GLOBE */}

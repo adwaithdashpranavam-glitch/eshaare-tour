@@ -190,8 +190,8 @@ export const ExpertsManagementPage = () => {
     try {
       const fallbackSpecialists = [
         {
-          name: "Rakhi G Hari",
-          email: "rakhi@eshaareuae.com",
+          name: "RJohn Doe",
+          email: "John@eshaareuae.com",
           phone: "",
           designation: "Managing Director",
           department: "Leadership",

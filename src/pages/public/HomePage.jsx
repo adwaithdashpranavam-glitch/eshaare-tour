@@ -3,6 +3,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import toast from "react-hot-toast";
 import { AnimatedStatsBar } from "../../components/ui/AnimatedStatsBar";
+import { db } from "../../lib/firebase";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 
 
 // ─── Service images (one per service, matched by index) ────────────────────
@@ -25,10 +27,55 @@ export const HomePage = () => {
   const [dbPackages, setDbPackages] = useState([]);
   const [isPackagesLoading, setIsPackagesLoading] = useState(true);
 
+  // Form State
+  const [visaStep, setVisaStep] = useState(1);
+  const [isSubmittingVisa, setIsSubmittingVisa] = useState(false);
+  const [isFormFocused, setIsFormFocused] = useState(false);
+  const [visaFormData, setVisaFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    nationality: "",
+    travelDate: "",
+    travelers: "",
+    lookingFor: ""
+  });
+
+  const handleVisaSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmittingVisa(true);
+    try {
+      await addDoc(collection(db, "leads"), {
+        contactName: visaFormData.name,
+        contactEmail: visaFormData.email,
+        contactPhone: visaFormData.phone,
+        nationality: visaFormData.nationality,
+        travelDate: visaFormData.travelDate,
+        travelers: visaFormData.travelers,
+        visaType: visaFormData.lookingFor,
+        destination: "General", // Default for Kanban flag icon
+        source: "Website Hero Form",
+        stage: "New", // Kanban uses 'stage'
+        leadNo: "L-" + Math.floor(100000 + Math.random() * 900000).toString(),
+        isDeleted: false,
+        isActive: true,
+        assignedTo: "Unassigned",
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
+      setVisaStep(3);
+    } catch (err) {
+      console.error("Error submitting lead: ", err);
+      toast.error("Failed to submit request.");
+    } finally {
+      setIsSubmittingVisa(false);
+    }
+  };
+
   useEffect(() => {
     let unsubscribe;
     let isMounted = true;
-    
+
     const loadPackages = async () => {
       try {
         const { getPackages } = await import("../../lib/firestore");
@@ -61,43 +108,72 @@ export const HomePage = () => {
 
   // ─── Hero Slider ────────────────────────────────────────────────────────
   const [activeSlide, setActiveSlide] = useState(0);
-  const slides = [
-    {
-      image: "/hero-1-1600.webp",
-      imageSrcSet: "/hero-1-800.webp 800w, /hero-1-1600.webp 1600w",
-      headline: "Holiday Packages from Dubai | Eshaare Tours",
-      subtext: "Book the best custom holiday packages from Dubai with Eshaare Tours UAE. Enjoy tailor-made vacations, family holidays, honeymoon trips, and premium international tours.",
-      animated: true,
-      ctaText: "Plan Your Trip Today",
-      ctaLink: "/packages"
-    },
-    {
-      image: "/hero-2-1600.webp",
-      imageSrcSet: "/hero-2-800.webp 800w, /hero-2-1600.webp 1600w",
-      headline: "Visa Services & Visa Consultant in Dubai",
-      subtext: "Get expert visa assistance from Dubai for Schengen Visa UAE, UK, USA, Canada, and Australia. Fast VFS appointment booking support and complete document compliance audits.",
-      animated: false,
-      ctaText: "Start Your Visa Process",
-      ctaLink: "/contact"
-    },
-
-    {
-      image: "/hero-3-1600.webp",
-      imageSrcSet: "/hero-3-800.webp 800w, /hero-3-1600.webp 1600w",
-      headline: "Best Travel Agency in Dubai | Eshaare UAE",
-      subtext: "Premium travel agency in Dubai providing custom travel and visa services. We manage flights, luxury hotels, express VFS slot bookings, and custom holiday planning worldwide.",
-      animated: false,
-      ctaText: "Chat on WhatsApp",
-      ctaLink: "https://wa.me/971557338429"
-    }
-  ];
 
   useEffect(() => {
+    if (slides && slides[activeSlide]) {
+      const event = new CustomEvent("heroThemeChange", { detail: slides[activeSlide].theme });
+      window.dispatchEvent(event);
+    }
+  }, [activeSlide]);
+
+  const slides = [
+    {
+      image: "/hero_aurora_cabin.jpg",
+      headline: <>Looking for <br /><span className="text-[#a0d2b4] italic font-serif">Visa Experts?</span></>,
+      subtext: "From document verification to application submission, our experts make your visa process faster, simpler, and stress-free.",
+      theme: "dark",
+    },
+    {
+      image: "/hero_sunset_pool.jpg",
+      headline: <>Tired of <br /><span className="text-[#1a4a38] italic font-serif">slot booking?</span></>,
+      subtext: (
+        <div className="space-y-4">
+          <p className="font-bold text-lg text-[#1a4a38]"><span className="italic">AI</span> assisted slot bookings, document guidance and visa support – all in one place.</p>
+          <p className="text-gray-600">We simplify your visa journey with smart assistance, expert support, and seamless travel planning.</p>
+        </div>
+      ),
+      theme: "split",
+    },
+    {
+      image: "/hero_japan_sunset.jpg",
+      headline: <>Your Journey <br />Starts <span className="text-[#1a4a38] italic font-serif">Here.</span></>,
+      subtext: "Premium travel agency in Dubai providing custom travel and visa services. We manage flights, luxury hotels, express VFS slot bookings, and custom holiday planning worldwide.",
+      theme: "light",
+    }
+
+  ];
+
+  const hasFormData = visaFormData.name !== '' || visaFormData.email !== '' || visaFormData.phone !== '';
+
+  useEffect(() => {
+    if (isFormFocused || visaStep > 1 || hasFormData) return;
     const timer = setInterval(() => {
       setActiveSlide((prev) => (prev + 1) % slides.length);
     }, 5000);
     return () => clearInterval(timer);
-  }, [slides.length]);
+  }, [isFormFocused, visaStep, slides.length, hasFormData]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 300) {
+        if (visaStep !== 1 || hasFormData || isFormFocused) {
+          setVisaStep(1);
+          setVisaFormData({
+            name: "",
+            email: "",
+            phone: "",
+            nationality: "",
+            travelDate: "",
+            travelers: "",
+            lookingFor: ""
+          });
+          setIsFormFocused(false);
+        }
+      }
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [visaStep, hasFormData, isFormFocused]);
 
 
   // ─── Continents ──────────────────────────────────────────────────────────
@@ -307,8 +383,8 @@ export const HomePage = () => {
 
   const fallbackSpecialists = [
     {
-      id: "fallback-rakhi",
-      name: "Rakhi G Hari",
+      id: "fallback-John Doe",
+      name: "John Doe",
       designation: "Managing Director",
       intro: "Coordinating premium custom holiday designs and ensuring absolute file compliance for high-net-worth travelers.",
       img: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=600&q=80&fm=webp",
@@ -417,7 +493,7 @@ export const HomePage = () => {
       };
     }
     const des = (member?.designation || "").toLowerCase();
-    if (des.includes("managing") || des.includes("director") || des.includes("rakhi")) {
+    if (des.includes("managing") || des.includes("director") || des.includes("John Doe")) {
       return {
         highlighted: "Leadership",
         secondary: ["Schengen", "UK Visas"]
@@ -606,6 +682,38 @@ export const HomePage = () => {
 
   // ─────────────────────────────────────────────────────────────────────────
 
+  const currentTheme = slides[activeSlide].theme;
+
+  let bottomBarBgClass = "";
+  let bottomBarTextClass = "";
+  let bottomBarSubtextClass = "";
+  let bottomBarIconBgClass = "";
+  let bottomBarIconTextClass = "";
+  let bottomBarBorderClass = "";
+
+  if (currentTheme === "dark") {
+    bottomBarBgClass = "bg-[#162721]/80 backdrop-blur-xl border-white/10";
+    bottomBarTextClass = "text-white";
+    bottomBarSubtextClass = "text-gray-300";
+    bottomBarIconBgClass = "bg-[#1a4a38]/80 border-white/20";
+    bottomBarIconTextClass = "text-white";
+    bottomBarBorderClass = "border-white/10";
+  } else if (currentTheme === "split") {
+    bottomBarBgClass = "bg-[#fdfaf2]/95 backdrop-blur-xl border-[#e8dac1]";
+    bottomBarTextClass = "text-[#3a2f26]";
+    bottomBarSubtextClass = "text-[#7a6b5c]";
+    bottomBarIconBgClass = "bg-[#f4e7d3] border-[#e8dac1]";
+    bottomBarIconTextClass = "text-[#5c4d3c]";
+    bottomBarBorderClass = "border-[#e8dac1]";
+  } else {
+    bottomBarBgClass = "bg-[#fff0f3]/95 backdrop-blur-xl border-[#ffccd5]";
+    bottomBarTextClass = "text-[#5c2438]";
+    bottomBarSubtextClass = "text-[#9c5f74]";
+    bottomBarIconBgClass = "bg-[#ffe0e6] border-[#ffccd5]";
+    bottomBarIconTextClass = "text-[#7a3b51]";
+    bottomBarBorderClass = "border-[#ffccd5]";
+  }
+
   return (
     <div className="relative min-h-screen">
       <Helmet>
@@ -614,101 +722,322 @@ export const HomePage = () => {
       </Helmet>
 
       {/* HERO SLIDER SECTION */}
-      <section className="relative z-10 overflow-hidden h-[91vh] min-h-[500px]">
-        {slides.map((slide, index) => (
-          <div
-            key={index}
-            className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${activeSlide === index ? "opacity-100 z-10" : "opacity-0 z-0"}`}
-          >
-            <img decoding="async"
-              src={slide.image}
-              srcSet={slide.imageSrcSet}
-              sizes="100vw"
-              alt={slide.headline}
-              fetchPriority={index === 0 ? "high" : "auto"}
-              loading={index === 0 ? "eager" : "lazy"}
-              width="1920"
-              height="1080"
-              className={`w-full h-full object-cover ${slide.animated ? "animate-aurora-pan" : ""}`}
-            />
-            <div className="absolute inset-0 bg-black/40"></div>
-            <div className="absolute inset-0 flex flex-col justify-center max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop text-white">
-              {index === (activeSlide ?? 0) ? (
-                <h1
-                  className={`font-display-lg text-display-lg-mobile md:text-display-lg text-white mb-4 max-w-2xl leading-tight
-                    transition-all duration-700 delay-300
-                    ${activeSlide === index ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
-                >
-                  {slide.headline}
-                </h1>
-              ) : (
-                <div
-                  aria-hidden="true"
-                  className={`font-display-lg text-display-lg-mobile md:text-display-lg text-white mb-4 max-w-2xl leading-tight
-                    transition-all duration-700 delay-300
-                    ${activeSlide === index ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
-                >
-                  {slide.headline}
+      <section className="relative z-10 w-full min-h-[60vh] md:min-h-[650px] flex items-center bg-gray-50 overflow-hidden">
+        {slides.map((slide, index) => {
+          const isActive = activeSlide === index;
+          // Theme configurations
+          const isDark = slide.theme === 'dark';
+          const isSplit = slide.theme === 'split';
+          const isLight = slide.theme === 'light';
+
+          let cardBgClass = "";
+          let cardTextClass = "";
+          let cardSubTextClass = "";
+          let tabDefaultClass = "";
+          let tabHoverClass = "";
+          let statBgClass = "";
+          let statTextClass = "";
+          let statSubtextClass = "";
+          let searchBarBgClass = "";
+          let searchBarInputClass = "";
+          let searchBarBtnClass = "";
+
+          if (isDark) {
+            cardBgClass = "bg-[#162721]/80 backdrop-blur-xl border border-white/10";
+            cardTextClass = "text-white";
+            cardSubTextClass = "text-gray-300";
+            tabDefaultClass = "text-gray-300 border border-white/20";
+            tabHoverClass = "hover:bg-[#1a4a38] hover:border-[#1a4a38] hover:text-white";
+            statBgClass = "bg-black/20";
+            statTextClass = "text-white";
+            statSubtextClass = "text-gray-400";
+            searchBarBgClass = "bg-[#1a4a38]";
+            searchBarInputClass = "text-white placeholder-white/80";
+            searchBarBtnClass = "bg-[#225c46] hover:bg-[#2b7257] text-white";
+          } else if (isSplit) {
+            cardBgClass = "bg-[#fdfaf2]/95 backdrop-blur-xl border border-[#e8dac1]";
+            cardTextClass = "text-[#3a2f26]";
+            cardSubTextClass = "text-[#7a6b5c]";
+            tabDefaultClass = "text-[#5c4d3c] border border-[#e8dac1]";
+            tabHoverClass = "hover:bg-[#d8c3a5] hover:border-[#d8c3a5] hover:text-white";
+            statBgClass = "bg-[#f4e7d3]/50";
+            statTextClass = "text-[#3a2f26]";
+            statSubtextClass = "text-[#7a6b5c]";
+            searchBarBgClass = "bg-[#f0e3cc]";
+            searchBarInputClass = "text-[#3a2f26] placeholder-[#8a7b6b]";
+            searchBarBtnClass = "bg-[#d8c3a5] hover:bg-[#c9b18f] text-white";
+          } else {
+            cardBgClass = "bg-[#fff0f3]/95 backdrop-blur-xl border border-[#ffccd5]";
+            cardTextClass = "text-[#5c2438]";
+            cardSubTextClass = "text-[#9c5f74]";
+            tabDefaultClass = "text-[#7a3b51] border border-[#ffccd5]";
+            tabHoverClass = "hover:bg-[#ff8fa3] hover:border-[#ff8fa3] hover:text-white";
+            statBgClass = "bg-[#ffe0e6]/60";
+            statTextClass = "text-[#5c2438]";
+            statSubtextClass = "text-[#9c5f74]";
+            searchBarBgClass = "bg-[#ffe6eb]";
+            searchBarInputClass = "text-[#5c2438] placeholder-[#a67184]";
+            searchBarBtnClass = "bg-[#ff8fa3] hover:bg-[#ff758f] text-white";
+          }
+
+          return (
+            <div
+              key={index}
+              className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ease-in-out ${isActive ? "opacity-100 z-10" : "opacity-0 z-0"}`}
+            >
+              {/* Background Image */}
+              <img
+                src={slide.image}
+                srcSet={slide.imageSrcSet || undefined}
+                sizes={slide.imageSrcSet ? "100vw" : undefined}
+                alt="Eshaare Tours Hero Background"
+                fetchPriority={index === 0 ? "high" : "auto"}
+                loading={index === 0 ? "eager" : "lazy"}
+                width="1920"
+                height="1080"
+                className="w-full h-full object-cover"
+              />
+
+              {/* Theme Overlays */}
+              {isDark && (
+                <div className="absolute inset-0 bg-black/40"></div>
+              )}
+              {isSplit && (
+                <div className="absolute inset-0 bg-gradient-to-r from-white via-white/80 to-transparent w-full md:w-[60%]"></div>
+              )}
+              {isLight && (
+                <div className="absolute inset-0 bg-gradient-to-r from-[#fdfbf6]/90 via-[#fdfbf6]/70 to-transparent w-full md:w-[60%]"></div>
+              )}
+
+              {/* Content Container */}
+              <div className="absolute inset-0 flex items-start pt-20 md:pt-16">
+                <div className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop w-full grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-8 items-center pb-10 md:pb-16">
+
+                  {/* Left Column */}
+                  <div className={`flex flex-col max-w-xl transition-all duration-700 delay-300 transform ${isActive ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"} ${isDark ? "text-white" : "text-gray-900"}`}>
+
+                    {/* Headline */}
+                    <h1 className="font-display-lg text-4xl md:text-[58px] font-bold leading-[1.1] mb-5 tracking-tight">
+                      {slide.headline}
+                    </h1>
+
+                    {/* Subtext */}
+                    <div className={`text-base md:text-[17px] mb-8 leading-relaxed max-w-lg ${isDark ? "text-gray-200" : "text-gray-600"}`}>
+                      {slide.subtext}
+                    </div>
+
+                    {/* CTAs */}
+                    <div className="flex flex-col sm:flex-row gap-4">
+                      <a href="https://wa.me/971557338429" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 px-6 py-3 text-sm bg-[#1a4a38] hover:bg-[#133829] text-white rounded-full font-bold transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5">
+                        <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z" /></svg>
+                        Chat on WhatsApp
+                        <span className="material-symbols-outlined ml-1 text-lg">arrow_forward</span>
+                      </a>
+                      <Link to="/contact" className={`inline-flex items-center justify-center gap-2 px-6 py-3 text-sm rounded-full font-bold transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 ${isDark ? "bg-white text-gray-900 hover:bg-gray-50" : "bg-white text-gray-900 border border-gray-200 hover:bg-gray-50"}`}>
+                        <span className="material-symbols-outlined text-xl text-gray-600">call</span>
+                        Get a Free Consultation
+                      </Link>
+                    </div>
+                  </div>
+
+                  {/* Right Column: Stats Card with Multi-step form */}
+                  <div className={`hidden lg:block transition-all duration-700 delay-500 transform ${isActive ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"}`}>
+                    <div
+                      className={`mx-auto lg:ml-0 lg:mr-auto max-w-[360px] w-full p-5 sm:p-6 rounded-[24px] shadow-[0_20px_40px_-10px_rgba(0,0,0,0.18)] ${cardBgClass} relative overflow-hidden flex flex-col justify-between`}
+                      style={{ minHeight: "410px" }}
+                      onFocus={() => setIsFormFocused(true)}
+                      onBlur={(e) => {
+                        if (!e.currentTarget.contains(e.relatedTarget)) {
+                          setIsFormFocused(false);
+                        }
+                      }}
+                    >
+                      <div className="absolute inset-0 bg-white/10 backdrop-blur-[2px]"></div>
+
+                      {visaStep === 1 && (
+                        <div className="mb-4 mt-1 relative z-10 flex-1">
+                          <h2 className={`text-center text-[20px] font-bold mb-1 ${cardTextClass}`}>
+                            Where do you want to go?
+                          </h2>
+                          <p className={`text-center mb-4 text-[12px] ${cardSubTextClass}`}>
+                            Start your travel Visa application
+                          </p>
+
+                          <form className="space-y-2.5" onSubmit={(e) => { e.preventDefault(); setVisaStep(2); }}>
+                            <div className="grid grid-cols-2 gap-2.5">
+                              <div>
+                                <label className={`block text-[10px] font-bold tracking-wide mb-1 ${cardTextClass}`}>NAME</label>
+                                <input required type="text" placeholder="John Doe" className={`w-full h-[40px] rounded-xl px-3 bg-white/20 border outline-none text-[12px] placeholder:opacity-60 transition-colors ${isDark ? "border-white/20 text-white" : "border-black/10 text-black placeholder:text-black/60 focus:border-black/30"}`} value={visaFormData.name} onChange={e => setVisaFormData({ ...visaFormData, name: e.target.value })} />
+                              </div>
+                              <div>
+                                <label className={`block text-[10px] font-bold tracking-wide mb-1 ${cardTextClass}`}>EMAIL</label>
+                                <input required type="email" placeholder="john@email.com" className={`w-full h-[40px] rounded-xl px-3 bg-white/20 border outline-none text-[12px] placeholder:opacity-60 transition-colors ${isDark ? "border-white/20 text-white" : "border-black/10 text-black placeholder:text-black/60 focus:border-black/30"}`} value={visaFormData.email} onChange={e => setVisaFormData({ ...visaFormData, email: e.target.value })} />
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2.5">
+                              <div>
+                                <label className={`block text-[10px] font-bold tracking-wide mb-1 ${cardTextClass}`}>PHONE NUMBER</label>
+                                <input required type="tel" placeholder="+919812345678" className={`w-full h-[40px] rounded-xl px-3 bg-white/20 border outline-none text-[12px] placeholder:opacity-60 transition-colors ${isDark ? "border-white/20 text-white" : "border-black/10 text-black placeholder:text-black/60 focus:border-black/30"}`} value={visaFormData.phone} onChange={e => setVisaFormData({ ...visaFormData, phone: e.target.value })} />
+                              </div>
+                              <div>
+                                <label className={`block text-[10px] font-bold tracking-wide mb-1 ${cardTextClass}`}>NATIONALITY</label>
+                                <input required type="text" placeholder="Indian" className={`w-full h-[40px] rounded-xl px-3 bg-white/20 border outline-none text-[12px] placeholder:opacity-60 transition-colors ${isDark ? "border-white/20 text-white" : "border-black/10 text-black placeholder:text-black/60 focus:border-black/30"}`} value={visaFormData.nationality} onChange={e => setVisaFormData({ ...visaFormData, nationality: e.target.value })} />
+                              </div>
+                            </div>
+                            <button type="submit" className={`w-full h-[40px] mt-3 rounded-full font-semibold flex items-center justify-center gap-2 transition hover:scale-[1.02] text-[14px] shadow-sm ${searchBarBtnClass}`}>
+                              Continue <span className="text-lg leading-none">→</span>
+                            </button>
+                          </form>
+                        </div>
+                      )}
+
+                      {visaStep === 2 && (
+                        <div className="mb-4 mt-1 relative z-10 flex-1">
+                          <button onClick={() => setVisaStep(1)} className={`text-lg mb-1 hover:opacity-70 transition ${cardTextClass}`}>←</button>
+                          <h2 className={`text-center text-[20px] font-bold mb-1 ${cardTextClass}`}>Tell us more</h2>
+                          
+                          <form className="space-y-3 mt-4" onSubmit={handleVisaSubmit}>
+                            <div className="grid grid-cols-2 gap-2.5">
+                              <div>
+                                <label className={`block text-[10px] font-bold tracking-wide mb-1 ${cardTextClass}`}>TRAVEL DATE *</label>
+                                <input required type="date" className={`w-full h-[40px] rounded-xl px-3 bg-white/20 border outline-none text-[12px] transition-colors ${isDark ? "border-white/20 text-white [color-scheme:dark]" : "border-black/10 text-black focus:border-black/30 [color-scheme:light]"}`} value={visaFormData.travelDate} onChange={e => setVisaFormData({ ...visaFormData, travelDate: e.target.value })} />
+                              </div>
+                              <div>
+                                <label className={`block text-[10px] font-bold tracking-wide mb-1 ${cardTextClass}`}>NO. OF TRAVELERS *</label>
+                                <input required type="number" min="1" placeholder="2" className={`w-full h-[40px] rounded-xl px-3 bg-white/20 border outline-none text-[12px] placeholder:opacity-60 transition-colors ${isDark ? "border-white/20 text-white" : "border-black/10 text-black placeholder:text-black/60 focus:border-black/30"}`} value={visaFormData.travelers} onChange={e => setVisaFormData({ ...visaFormData, travelers: e.target.value })} />
+                              </div>
+                            </div>
+                            <div>
+                              <label className={`block text-[10px] font-bold tracking-wide mb-1 ${cardTextClass}`}>WHAT ARE YOU LOOKING FOR? *</label>
+                              <input required type="text" placeholder="e.g., Schengen Visa, Tour Package" className={`w-full h-[40px] rounded-xl px-3 bg-white/20 border outline-none text-[12px] placeholder:opacity-60 transition-colors ${isDark ? "border-white/20 text-white" : "border-black/10 text-black placeholder:text-black/60 focus:border-black/30"}`} value={visaFormData.lookingFor} onChange={e => setVisaFormData({ ...visaFormData, lookingFor: e.target.value })} />
+                            </div>
+                            <button type="submit" disabled={isSubmittingVisa} className={`w-full h-[40px] mt-3 rounded-full font-semibold flex items-center justify-center gap-2 transition hover:scale-[1.02] text-[14px] shadow-sm disabled:opacity-70 ${searchBarBtnClass}`}>
+                              {isSubmittingVisa ? "Submitting..." : "Submit Request"} <span className="text-lg leading-none">→</span>
+                            </button>
+                          </form>
+                        </div>
+                      )}
+
+                      {visaStep === 3 && (
+                        <div className="mb-4 mt-2 relative z-10 text-center py-2 flex-1 flex flex-col justify-center">
+                          <div className="mx-auto w-[60px] h-[60px] rounded-full bg-[#ecfff8] flex items-center justify-center mb-4">
+                            <div className="w-[30px] h-[30px] rounded-full border-[3px] border-[#00b878] flex items-center justify-center">
+                              <span className="text-[#00b878] text-lg font-bold">✓</span>
+                            </div>
+                          </div>
+                          <h2 className={`text-[20px] font-bold leading-tight mb-3 ${cardTextClass}`}>Success! Request received.</h2>
+                          <p className={`text-[12px] leading-relaxed max-w-[260px] mx-auto mb-6 ${cardSubTextClass}`}>
+                            Thank you! One of our specialized consultants will contact you within 24 hours.
+                          </p>
+                        </div>
+                      )}
+                      {/* Stats Row */}
+                      <div className="grid grid-cols-3 gap-2 relative z-10 mt-2">
+                        <div className={`p-3 rounded-[1rem] text-center flex flex-col items-center justify-center ${statBgClass}`}>
+                          <div className="flex items-center gap-1.5 text-[#d4af37] mb-1">
+                            <span className="material-symbols-outlined text-[18px]">public</span>
+                            <span className={`font-bold text-[14px] ${statTextClass}`}>120+</span>
+                          </div>
+                          <span className={`text-[11px] ${statSubtextClass}`}>Countries</span>
+                        </div>
+                        <div className={`p-3 rounded-[1rem] text-center flex flex-col items-center justify-center ${statBgClass}`}>
+                          <div className="flex items-center gap-1.5 text-[#d4af37] mb-1">
+                            <span className="material-symbols-outlined text-[18px]">verified</span>
+                            <span className={`font-bold text-[14px] ${statTextClass}`}>98%</span>
+                          </div>
+                          <span className={`text-[11px] ${statSubtextClass}`}>Success Rate</span>
+                        </div>
+                        <div className={`p-3 rounded-[1rem] text-center flex flex-col items-center justify-center ${statBgClass}`}>
+                          <div className="flex items-center gap-1.5 text-[#d4af37] mb-1">
+                            <span className="material-symbols-outlined text-[18px]">support_agent</span>
+                            <span className={`font-bold text-[14px] ${statTextClass}`}>24/7</span>
+                          </div>
+                          <span className={`text-[11px] ${statSubtextClass}`}>Support</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
                 </div>
-              )}
-              <p
-                className={`font-body-lg text-body-lg text-white/90 max-w-lg mb-8 leading-relaxed
-                  transition-all duration-700 delay-500
-                  ${activeSlide === index ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
-              >
-                {slide.subtext}
-              </p>
-              {slide.ctaLink.startsWith("http") ? (
-                <a
-                  href={slide.ctaLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`group inline-flex items-center gap-2 w-fit px-8 py-4 rounded-xl font-bold text-white
-                    bg-white/15 backdrop-blur-xl ring-1 ring-white/30
-                    shadow-[0_10px_30px_-10px_rgba(0,0,0,0.35)]
-                    hover:bg-white/25 hover:ring-white/50
-                    hover:shadow-[0_16px_40px_-12px_rgba(255,255,255,0.25)]
-                    transition-all duration-700 delay-700 hover:scale-105
-                    ${activeSlide === index ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
-                >
-                  <span>{slide.ctaText}</span>
-                  <span className="material-symbols-outlined transition-transform group-hover:translate-x-1">arrow_forward</span>
-                </a>
-              ) : (
-                <Link
-                  to={slide.ctaLink}
-                  className={`group inline-flex items-center gap-2 w-fit px-8 py-4 rounded-xl font-bold text-white
-                    bg-white/15 backdrop-blur-xl ring-1 ring-white/30
-                    shadow-[0_10px_30px_-10px_rgba(0,0,0,0.35)]
-                    hover:bg-white/25 hover:ring-white/50
-                    hover:shadow-[0_16px_40px_-12px_rgba(255,255,255,0.25)]
-                    transition-all duration-700 delay-700 hover:scale-105
-                    ${activeSlide === index ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
-                >
-                  <span>{slide.ctaText}</span>
-                  <span className="material-symbols-outlined transition-transform group-hover:translate-x-1">arrow_forward</span>
-                </Link>
-              )}
+              </div>
             </div>
-          </div>
-        ))}
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+          );
+        })}
+
+        {/* Slider Controls (Hidden on small mobile if needed, but keeping for functionality) */}
+        <div className="absolute bottom-32 md:bottom-28 left-1/2 -translate-x-1/2 z-20 flex gap-2">
           {slides.map((_, index) => (
             <button
               key={index}
               onClick={() => setActiveSlide(index)}
-              className="w-8 h-8 flex items-center justify-center"
+              className="group py-2 px-1"
               aria-label={`Go to slide ${index + 1}`}
-              title={`Go to slide ${index + 1}`}
             >
-              <span className={`block w-2 h-2 rounded-full transition-all ${activeSlide === index ? "bg-white scale-125" : "bg-white/50 hover:bg-white"}`} />
+              <div className={`h-1.5 rounded-full transition-all duration-500 ease-out ${activeSlide === index ? "w-10 bg-white shadow-sm" : "w-2 bg-white/40 group-hover:bg-white/60"}`} />
             </button>
           ))}
         </div>
       </section>
 
-      {/* TRUST / STATS BAR */}
-      <AnimatedStatsBar />
+      {/* FLOATING BOTTOM BAR (SERVICE COLUMNS) */}
+      <div className="relative z-20 -mt-28 max-w-7xl mx-auto px-4 mb-10">
+        <div className={`rounded-[1.5rem] shadow-[0_15px_40px_-10px_rgba(0,0,0,0.18)] p-4 lg:p-5 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 lg:gap-3 border transition-colors duration-700 ${bottomBarBgClass}`}>
+
+          <div className={`flex items-center gap-4 flex-1 w-full border-b lg:border-b-0 lg:border-r pb-6 lg:pb-0 lg:pr-4 transition-colors duration-700 ${bottomBarBorderClass}`}>
+            <div className={`w-10 h-10 flex items-center justify-center rounded-[12px] border shrink-0 transition-colors duration-700 ${bottomBarIconBgClass} ${bottomBarIconTextClass}`}>
+              <span className="material-symbols-outlined text-[20px]">book</span>
+            </div>
+            <div>
+              <h3 className={`font-bold text-[13px] mb-0.5 leading-tight transition-colors duration-700 ${bottomBarTextClass}`}>Visa Assistance</h3>
+              <p className={`text-[11px] leading-snug transition-colors duration-700 ${bottomBarSubtextClass}`}>Fast & reliable visa<br className="hidden lg:block" />processing</p>
+            </div>
+          </div>
+
+          <div className={`flex items-center gap-4 flex-1 w-full border-b lg:border-b-0 lg:border-r pb-6 lg:pb-0 lg:px-4 transition-colors duration-700 ${bottomBarBorderClass}`}>
+            <div className={`w-10 h-10 flex items-center justify-center rounded-[12px] border shrink-0 transition-colors duration-700 ${bottomBarIconBgClass} ${bottomBarIconTextClass}`}>
+              <span className="material-symbols-outlined text-[20px]">flight_takeoff</span>
+            </div>
+            <div>
+              <h3 className={`font-bold text-[13px] mb-0.5 leading-tight transition-colors duration-700 ${bottomBarTextClass}`}>Flight Bookings</h3>
+              <p className={`text-[11px] leading-snug transition-colors duration-700 ${bottomBarSubtextClass}`}>Best deals on<br className="hidden lg:block" />domestic & international</p>
+            </div>
+          </div>
+
+          <div className={`flex items-center gap-4 flex-1 w-full border-b lg:border-b-0 lg:border-r pb-6 lg:pb-0 lg:px-4 transition-colors duration-700 ${bottomBarBorderClass}`}>
+            <div className={`w-10 h-10 flex items-center justify-center rounded-[12px] border shrink-0 transition-colors duration-700 ${bottomBarIconBgClass} ${bottomBarIconTextClass}`}>
+              <span className="material-symbols-outlined text-[20px]">room_service</span>
+            </div>
+            <div>
+              <h3 className={`font-bold text-[13px] mb-0.5 leading-tight transition-colors duration-700 ${bottomBarTextClass}`}>Luxury Stays</h3>
+              <p className={`text-[11px] leading-snug transition-colors duration-700 ${bottomBarSubtextClass}`}>Handpicked hotels<br className="hidden lg:block" />for your comfort</p>
+            </div>
+          </div>
+
+          <div className={`flex items-center gap-4 flex-1 w-full border-b lg:border-b-0 lg:border-r pb-6 lg:pb-0 lg:px-4 transition-colors duration-700 ${bottomBarBorderClass}`}>
+            <div className={`w-10 h-10 flex items-center justify-center rounded-[12px] border shrink-0 transition-colors duration-700 ${bottomBarIconBgClass} ${bottomBarIconTextClass}`}>
+              <span className="material-symbols-outlined text-[20px]">park</span>
+            </div>
+            <div>
+              <h3 className={`font-bold text-[13px] mb-0.5 leading-tight transition-colors duration-700 ${bottomBarTextClass}`}>Holiday Packages</h3>
+              <p className={`text-[11px] leading-snug transition-colors duration-700 ${bottomBarSubtextClass}`}>Customized holidays<br className="hidden lg:block" />worldwide</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4 flex-1 w-full lg:pl-4">
+            <div className={`w-10 h-10 flex items-center justify-center rounded-[12px] border shrink-0 transition-colors duration-700 ${bottomBarIconBgClass} ${bottomBarIconTextClass}`}>
+              <span className="material-symbols-outlined text-[20px]">event_available</span>
+            </div>
+            <div>
+              <h3 className={`font-bold text-[13px] mb-0.5 leading-tight transition-colors duration-700 ${bottomBarTextClass}`}>VFS Slot Booking</h3>
+              <p className={`text-[11px] leading-snug transition-colors duration-700 ${bottomBarSubtextClass}`}>Express slot booking<br className="hidden lg:block" />& support</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      {/* TRUST / STATS BAR (Hidden as per request) */}
+      {/* <AnimatedStatsBar /> */}
 
       {/* ─── SERVICE CARDS — VERTICAL SCROLL CAROUSEL ──────────────────────── */}
       <section
@@ -1206,7 +1535,7 @@ export const HomePage = () => {
             </div>
           </div>
           <div className="relative rounded-2xl overflow-hidden shadow-2xl h-[400px]">
-            <img src="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=800&q=80&fm=webp" alt="About Eshaare Tours" className="w-full h-full object-cover" loading="lazy" decoding="async" />
+            <img src="/about_eshaare_korea.jpg" alt="About Eshaare Tours" className="w-full h-full object-cover" loading="lazy" decoding="async" />
             <div className="absolute inset-0 bg-primary-container/20"></div>
           </div>
         </div>
@@ -1413,8 +1742,8 @@ export const HomePage = () => {
       </section>
 
       {/* LEAD INQUIRY SECTION */}
-      <section id="enquire" className="relative z-10 w-full bg-[#FCFBF8]/45 backdrop-blur-[2px] py-20 md:py-28 font-['Assistant',ui-sans-serif,system-ui]">
-        <div className="max-w-7xl mx-auto px-6">
+      <section id="enquire" className="relative z-10 -mt-10 w-full bg-[#FCFBF8]/45 backdrop-blur-[2px] py-10 md:py-14 font-['Assistant',ui-sans-serif,system-ui]">
+        <div className="max-w-5xl mx-auto px-4">
           {/* Header */}
           <div className="text-center mb-14">
             <div className="flex items-center justify-center gap-3 mb-4">
@@ -1432,7 +1761,7 @@ export const HomePage = () => {
           {/* Card */}
           <div className="grid md:grid-cols-2 rounded-[4px] overflow-hidden ring-1 ring-[#D4AF37]/20 shadow-[0_30px_80px_-30px_rgba(29,80,58,0.25)] bg-white">
             {/* Image side */}
-            <div className="relative min-h-[340px] md:min-h-full">
+            <div className="relative min-h-[150px] md:min-h-full">
               <img decoding="async"
                 src="/stamps-collage.jpg"
                 alt="Vintage travel postage stamps from around the world"
@@ -1451,7 +1780,7 @@ export const HomePage = () => {
             {/* Form side */}
             <form
               onSubmit={onSubmit}
-              className="p-8 md:p-12 flex flex-col gap-6 bg-[#FCFBF8]"
+              className="p-4 md:p-5 flex flex-col gap-3 bg-[#FCFBF8]"
             >
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <Field label="Your Name *">
@@ -1517,7 +1846,7 @@ export const HomePage = () => {
               </Field>
               <Field label="Write here">
                 <textarea
-                  rows={3}
+                  rows={1}
                   placeholder="We'd love to mail you or text you..."
                   value={form.message}
                   onChange={(e) => update("message", e.target.value)}
@@ -1527,7 +1856,7 @@ export const HomePage = () => {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="group relative mt-2 inline-flex items-center justify-center gap-2 bg-[#1D503A] text-white px-8 py-4 rounded-[2px] text-sm uppercase tracking-[0.25em] font-semibold hover:bg-[#143d2c] transition-colors disabled:opacity-50"
+                className="group relative mt-2 inline-flex items-center justify-center gap-2 bg-[#1D503A] text-white px-6 py-2.5 rounded-[2px] text-sm uppercase tracking-[0.25em] font-semibold hover:bg-[#143d2c] transition-colors disabled:opacity-50"
               >
                 <span>{isSubmitting ? "Sending..." : "Send Enquiry"}</span>
                 <span className="size-1.5 rotate-45 bg-[#D4AF37] transition-transform group-hover:translate-x-1" />
@@ -1541,8 +1870,8 @@ export const HomePage = () => {
             background: transparent;
             border: none;
             border-bottom: 1px solid rgba(29,80,58,0.2);
-            padding: 8px 0;
-            font-size: 15px;
+            padding: 4px 0;
+            font-size: 13px;
             color: #1D503A;
             outline: none;
             transition: border-color 200ms;
@@ -1560,7 +1889,7 @@ export const HomePage = () => {
       <section className="relative z-10 overflow-hidden py-[120px] px-margin-mobile md:px-margin-desktop bg-transparent font-['Assistant',ui-sans-serif,system-ui]">
         <div className="max-w-7xl mx-auto px-6">
           {/* Header */}
-          <div className="text-center mb-14">
+          <div className="text-center mb-8">
             <div className="flex items-center justify-center gap-3 mb-4">
               <div className="h-px w-10 bg-[#D4AF37]/40" />
               <span className="size-1.5 rotate-45 bg-[#D4AF37]" />

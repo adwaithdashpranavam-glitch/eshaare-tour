@@ -298,8 +298,8 @@ service cloud.firestore {
     // 5. Leads Collection
     // ==========================================
     match /leads/{leadId} {
-      // Public creation is blocked completely (only allowed through backend Cloud Function)
-      allow create: if false;
+      // Allow public creation of leads via frontend forms (e.g., HomePage, VisaEligibilityPage)
+      allow create: if true;
       allow read, write: if isManager() || 
                            (isStaff() && (resource.data.ownerId == request.auth.uid || resource.data.assignedToId == request.auth.uid));
 
