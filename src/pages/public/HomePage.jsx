@@ -383,8 +383,8 @@ export const HomePage = () => {
 
   const fallbackSpecialists = [
     {
-      id: "fallback-John Doe",
-      name: "John Doe",
+      id: "fallback-Your Name",
+      name: "Your Nmae",
       designation: "Managing Director",
       intro: "Coordinating premium custom holiday designs and ensuring absolute file compliance for high-net-worth travelers.",
       img: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=600&q=80&fm=webp",
@@ -723,26 +723,46 @@ export const HomePage = () => {
 
       {/* HERO SLIDER SECTION */}
       <section className="relative z-10 w-full min-h-[60vh] md:min-h-[650px] flex items-center bg-gray-50 overflow-hidden">
-        {slides.map((slide, index) => {
-          const isActive = activeSlide === index;
-          // Theme configurations
-          const isDark = slide.theme === 'dark';
-          const isSplit = slide.theme === 'split';
-          const isLight = slide.theme === 'light';
+        {/* 1. BACKGROUNDS & OVERLAYS */}
+        <div className="absolute inset-0">
+          {slides.map((slide, index) => {
+            const isActive = index === activeSlide;
+            const isDark = slide.theme === "dark";
+            const isSplit = slide.theme === "split";
+            const isLight = slide.theme === "light";
 
-          let cardBgClass = "";
-          let cardTextClass = "";
-          let cardSubTextClass = "";
-          let tabDefaultClass = "";
-          let tabHoverClass = "";
-          let statBgClass = "";
-          let statTextClass = "";
-          let statSubtextClass = "";
-          let searchBarBgClass = "";
-          let searchBarInputClass = "";
-          let searchBarBtnClass = "";
+            return (
+              <div
+                key={index}
+                className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ease-in-out ${isActive ? "opacity-100 z-10" : "opacity-0 z-0"}`}
+              >
+                <img
+                  src={slide.image}
+                  srcSet={slide.imageSrcSet || undefined}
+                  sizes={slide.imageSrcSet ? "100vw" : undefined}
+                  alt="Eshaare Tours Hero Background"
+                  fetchPriority={index === 0 ? "high" : "auto"}
+                  loading={index === 0 ? "eager" : "lazy"}
+                  width="1920"
+                  height="1080"
+                  className="w-full h-full object-cover"
+                />
+                {isDark && <div className="absolute inset-0 bg-black/40"></div>}
+                {isSplit && <div className="absolute inset-0 bg-gradient-to-r from-white via-white/80 to-transparent w-full md:w-[60%]"></div>}
+                {isLight && <div className="absolute inset-0 bg-gradient-to-r from-[#fdfbf6]/90 via-[#fdfbf6]/70 to-transparent w-full md:w-[60%]"></div>}
+              </div>
+            );
+          })}
+        </div>
 
-          if (isDark) {
+        {/* 2. FOREGROUND CONTENT (Rendered Once) */}
+        {(() => {
+          const activeTheme = slides[activeSlide].theme;
+          const isDarkActive = activeTheme === "dark";
+          const isSplitActive = activeTheme === "split";
+
+          let cardBgClass, cardTextClass, cardSubTextClass, tabDefaultClass, tabHoverClass, statBgClass, statTextClass, statSubtextClass, searchBarBgClass, searchBarInputClass, searchBarBtnClass;
+          if (isDarkActive) {
             cardBgClass = "bg-[#162721]/80 backdrop-blur-xl border border-white/10";
             cardTextClass = "text-white";
             cardSubTextClass = "text-gray-300";
@@ -754,7 +774,7 @@ export const HomePage = () => {
             searchBarBgClass = "bg-[#1a4a38]";
             searchBarInputClass = "text-white placeholder-white/80";
             searchBarBtnClass = "bg-[#225c46] hover:bg-[#2b7257] text-white";
-          } else if (isSplit) {
+          } else if (isSplitActive) {
             cardBgClass = "bg-[#fdfaf2]/95 backdrop-blur-xl border border-[#e8dac1]";
             cardTextClass = "text-[#3a2f26]";
             cardSubTextClass = "text-[#7a6b5c]";
@@ -781,188 +801,161 @@ export const HomePage = () => {
           }
 
           return (
-            <div
-              key={index}
-              className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ease-in-out ${isActive ? "opacity-100 z-10" : "opacity-0 z-0"}`}
-            >
-              {/* Background Image */}
-              <img
-                src={slide.image}
-                srcSet={slide.imageSrcSet || undefined}
-                sizes={slide.imageSrcSet ? "100vw" : undefined}
-                alt="Eshaare Tours Hero Background"
-                fetchPriority={index === 0 ? "high" : "auto"}
-                loading={index === 0 ? "eager" : "lazy"}
-                width="1920"
-                height="1080"
-                className="w-full h-full object-cover"
-              />
+            <div className="relative z-10 w-full flex flex-col justify-center min-h-[100dvh] pt-16 lg:pt-8 pb-48 lg:pb-32 -translate-y-6 lg:-translate-y-10 px-margin-mobile md:px-margin-desktop">
+              <div className="max-w-container-max mx-auto w-full grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-8 items-center flex-1 my-auto">
 
-              {/* Theme Overlays */}
-              {isDark && (
-                <div className="absolute inset-0 bg-black/40"></div>
-              )}
-              {isSplit && (
-                <div className="absolute inset-0 bg-gradient-to-r from-white via-white/80 to-transparent w-full md:w-[60%]"></div>
-              )}
-              {isLight && (
-                <div className="absolute inset-0 bg-gradient-to-r from-[#fdfbf6]/90 via-[#fdfbf6]/70 to-transparent w-full md:w-[60%]"></div>
-              )}
-
-              {/* Content Container */}
-              <div className="absolute inset-0 flex items-start pt-20 md:pt-16">
-                <div className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop w-full grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-8 items-center pb-10 md:pb-16">
-
-                  {/* Left Column */}
-                  <div className={`flex flex-col max-w-xl transition-all duration-700 delay-300 transform ${isActive ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"} ${isDark ? "text-white" : "text-gray-900"}`}>
-
-                    {/* Headline */}
-                    <h1 className="font-display-lg text-4xl md:text-[58px] font-bold leading-[1.1] mb-5 tracking-tight">
-                      {slide.headline}
-                    </h1>
-
-                    {/* Subtext */}
-                    <div className={`text-base md:text-[17px] mb-8 leading-relaxed max-w-lg ${isDark ? "text-gray-200" : "text-gray-600"}`}>
-                      {slide.subtext}
-                    </div>
-
-                    {/* CTAs */}
-                    <div className="flex flex-col sm:flex-row gap-4">
-                      <a href="https://wa.me/971557338429" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 px-6 py-3 text-sm bg-[#1a4a38] hover:bg-[#133829] text-white rounded-full font-bold transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5">
-                        <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z" /></svg>
-                        Chat on WhatsApp
-                        <span className="material-symbols-outlined ml-1 text-lg">arrow_forward</span>
-                      </a>
-                      <Link to="/contact" className={`inline-flex items-center justify-center gap-2 px-6 py-3 text-sm rounded-full font-bold transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 ${isDark ? "bg-white text-gray-900 hover:bg-gray-50" : "bg-white text-gray-900 border border-gray-200 hover:bg-gray-50"}`}>
-                        <span className="material-symbols-outlined text-xl text-gray-600">call</span>
-                        Get a Free Consultation
-                      </Link>
-                    </div>
-                  </div>
-
-                  {/* Right Column: Stats Card with Multi-step form */}
-                  <div className={`hidden lg:block transition-all duration-700 delay-500 transform ${isActive ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"}`}>
-                    <div
-                      className={`mx-auto lg:ml-0 lg:mr-auto max-w-[360px] w-full p-5 sm:p-6 rounded-[24px] shadow-[0_20px_40px_-10px_rgba(0,0,0,0.18)] ${cardBgClass} relative overflow-hidden flex flex-col justify-between`}
-                      style={{ minHeight: "410px" }}
-                      onFocus={() => setIsFormFocused(true)}
-                      onBlur={(e) => {
-                        if (!e.currentTarget.contains(e.relatedTarget)) {
-                          setIsFormFocused(false);
-                        }
-                      }}
-                    >
-                      <div className="absolute inset-0 bg-white/10 backdrop-blur-[2px]"></div>
-
-                      {visaStep === 1 && (
-                        <div className="mb-4 mt-1 relative z-10 flex-1">
-                          <h2 className={`text-center text-[20px] font-bold mb-1 ${cardTextClass}`}>
-                            Where do you want to go?
-                          </h2>
-                          <p className={`text-center mb-4 text-[12px] ${cardSubTextClass}`}>
-                            Start your travel Visa application
-                          </p>
-
-                          <form className="space-y-2.5" onSubmit={(e) => { e.preventDefault(); setVisaStep(2); }}>
-                            <div className="grid grid-cols-2 gap-2.5">
-                              <div>
-                                <label className={`block text-[10px] font-bold tracking-wide mb-1 ${cardTextClass}`}>NAME</label>
-                                <input required type="text" placeholder="John Doe" className={`w-full h-[40px] rounded-xl px-3 bg-white/20 border outline-none text-[12px] placeholder:opacity-60 transition-colors ${isDark ? "border-white/20 text-white" : "border-black/10 text-black placeholder:text-black/60 focus:border-black/30"}`} value={visaFormData.name} onChange={e => setVisaFormData({ ...visaFormData, name: e.target.value })} />
-                              </div>
-                              <div>
-                                <label className={`block text-[10px] font-bold tracking-wide mb-1 ${cardTextClass}`}>EMAIL</label>
-                                <input required type="email" placeholder="john@email.com" className={`w-full h-[40px] rounded-xl px-3 bg-white/20 border outline-none text-[12px] placeholder:opacity-60 transition-colors ${isDark ? "border-white/20 text-white" : "border-black/10 text-black placeholder:text-black/60 focus:border-black/30"}`} value={visaFormData.email} onChange={e => setVisaFormData({ ...visaFormData, email: e.target.value })} />
-                              </div>
-                            </div>
-                            <div className="grid grid-cols-2 gap-2.5">
-                              <div>
-                                <label className={`block text-[10px] font-bold tracking-wide mb-1 ${cardTextClass}`}>PHONE NUMBER</label>
-                                <input required type="tel" placeholder="+919812345678" className={`w-full h-[40px] rounded-xl px-3 bg-white/20 border outline-none text-[12px] placeholder:opacity-60 transition-colors ${isDark ? "border-white/20 text-white" : "border-black/10 text-black placeholder:text-black/60 focus:border-black/30"}`} value={visaFormData.phone} onChange={e => setVisaFormData({ ...visaFormData, phone: e.target.value })} />
-                              </div>
-                              <div>
-                                <label className={`block text-[10px] font-bold tracking-wide mb-1 ${cardTextClass}`}>NATIONALITY</label>
-                                <input required type="text" placeholder="Indian" className={`w-full h-[40px] rounded-xl px-3 bg-white/20 border outline-none text-[12px] placeholder:opacity-60 transition-colors ${isDark ? "border-white/20 text-white" : "border-black/10 text-black placeholder:text-black/60 focus:border-black/30"}`} value={visaFormData.nationality} onChange={e => setVisaFormData({ ...visaFormData, nationality: e.target.value })} />
-                              </div>
-                            </div>
-                            <button type="submit" className={`w-full h-[40px] mt-3 rounded-full font-semibold flex items-center justify-center gap-2 transition hover:scale-[1.02] text-[14px] shadow-sm ${searchBarBtnClass}`}>
-                              Continue <span className="text-lg leading-none">→</span>
-                            </button>
-                          </form>
+                {/* Left Column (Text transitions) */}
+                <div className="grid max-w-xl w-full">
+                  {slides.map((slide, index) => {
+                    const isActive = index === activeSlide;
+                    const isDark = slide.theme === "dark";
+                    return (
+                      <div key={index} className={`col-start-1 row-start-1 flex flex-col transition-all duration-700 delay-300 transform ${isActive ? "translate-y-0 opacity-100 z-10" : "translate-y-8 opacity-0 z-0 pointer-events-none"} ${isDark ? "text-white" : "text-gray-900"}`}>
+                        <h1 className="font-display-lg text-4xl md:text-[58px] font-bold leading-[1.1] mb-5 tracking-tight">
+                          {slide.headline}
+                        </h1>
+                        <div className={`text-base md:text-[17px] mb-8 leading-relaxed max-w-lg ${isDark ? "text-gray-200" : "text-gray-600"}`}>
+                          {slide.subtext}
                         </div>
-                      )}
+                        <div className="flex flex-col sm:flex-row gap-4">
+                          <a href="https://wa.me/971557338429" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 px-6 py-3 text-sm bg-[#1a4a38] hover:bg-[#133829] text-white rounded-full font-bold transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5">
+                            <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z" /></svg>
+                            Chat on WhatsApp
+                            <span className="material-symbols-outlined ml-1 text-lg">arrow_forward</span>
+                          </a>
+                          <Link to="/contact" className={`inline-flex items-center justify-center gap-2 px-6 py-3 text-sm rounded-full font-bold transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 ${isDark ? "bg-white text-gray-900 hover:bg-gray-50" : "bg-white text-gray-900 border border-gray-200 hover:bg-gray-50"}`}>
+                            <span className="material-symbols-outlined text-xl text-gray-600">call</span>
+                            Get a Free Consultation
+                          </Link>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
 
-                      {visaStep === 2 && (
-                        <div className="mb-4 mt-1 relative z-10 flex-1">
-                          <button onClick={() => setVisaStep(1)} className={`text-lg mb-1 hover:opacity-70 transition ${cardTextClass}`}>←</button>
-                          <h2 className={`text-center text-[20px] font-bold mb-1 ${cardTextClass}`}>Tell us more</h2>
-                          
-                          <form className="space-y-3 mt-4" onSubmit={handleVisaSubmit}>
-                            <div className="grid grid-cols-2 gap-2.5">
-                              <div>
-                                <label className={`block text-[10px] font-bold tracking-wide mb-1 ${cardTextClass}`}>TRAVEL DATE *</label>
-                                <input required type="date" className={`w-full h-[40px] rounded-xl px-3 bg-white/20 border outline-none text-[12px] transition-colors ${isDark ? "border-white/20 text-white [color-scheme:dark]" : "border-black/10 text-black focus:border-black/30 [color-scheme:light]"}`} value={visaFormData.travelDate} onChange={e => setVisaFormData({ ...visaFormData, travelDate: e.target.value })} />
-                              </div>
-                              <div>
-                                <label className={`block text-[10px] font-bold tracking-wide mb-1 ${cardTextClass}`}>NO. OF TRAVELERS *</label>
-                                <input required type="number" min="1" placeholder="2" className={`w-full h-[40px] rounded-xl px-3 bg-white/20 border outline-none text-[12px] placeholder:opacity-60 transition-colors ${isDark ? "border-white/20 text-white" : "border-black/10 text-black placeholder:text-black/60 focus:border-black/30"}`} value={visaFormData.travelers} onChange={e => setVisaFormData({ ...visaFormData, travelers: e.target.value })} />
-                              </div>
+                {/* Right Column: Stats Card with Multi-step form */}
+                <div className="block transition-all duration-700 delay-500 transform translate-y-0 opacity-100">
+                  <div
+                    className={`mx-auto lg:ml-0 lg:mr-auto max-w-[360px] w-full p-5 sm:p-6 rounded-[24px] shadow-[0_20px_40px_-10px_rgba(0,0,0,0.18)] ${cardBgClass} relative overflow-hidden flex flex-col justify-between`}
+                    style={{ minHeight: "410px" }}
+                    onFocus={() => setIsFormFocused(true)}
+                    onBlur={(e) => {
+                      if (!e.currentTarget.contains(e.relatedTarget)) {
+                        setIsFormFocused(false);
+                      }
+                    }}
+                  >
+                    <div className="absolute inset-0 bg-white/10 backdrop-blur-[2px]"></div>
+
+                    {visaStep === 1 && (
+                      <div className="mb-4 mt-1 relative z-10 flex-1">
+                        <h2 className={`text-center text-[20px] font-bold mb-1 ${cardTextClass}`}>
+                          Where do you want to go?
+                        </h2>
+                        <p className={`text-center mb-4 text-[12px] ${cardSubTextClass}`}>
+                          Start your travel Visa application
+                        </p>
+
+                        <form className="space-y-2.5" onSubmit={(e) => { e.preventDefault(); setVisaStep(2); }}>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                            <div>
+                              <label className={`block text-[10px] font-bold tracking-wide mb-1 ${cardTextClass}`}>NAME</label>
+                              <input required type="text" placeholder="Your Name" className={`w-full h-[40px] rounded-xl px-3 bg-white/20 border outline-none text-[12px] placeholder:opacity-60 transition-colors ${isDarkActive ? "border-white/20 text-white" : "border-black/10 text-black placeholder:text-black/60 focus:border-black/30"}`} value={visaFormData.name} onChange={e => setVisaFormData({ ...visaFormData, name: e.target.value })} />
                             </div>
                             <div>
-                              <label className={`block text-[10px] font-bold tracking-wide mb-1 ${cardTextClass}`}>WHAT ARE YOU LOOKING FOR? *</label>
-                              <input required type="text" placeholder="e.g., Schengen Visa, Tour Package" className={`w-full h-[40px] rounded-xl px-3 bg-white/20 border outline-none text-[12px] placeholder:opacity-60 transition-colors ${isDark ? "border-white/20 text-white" : "border-black/10 text-black placeholder:text-black/60 focus:border-black/30"}`} value={visaFormData.lookingFor} onChange={e => setVisaFormData({ ...visaFormData, lookingFor: e.target.value })} />
+                              <label className={`block text-[10px] font-bold tracking-wide mb-1 ${cardTextClass}`}>EMAIL</label>
+                              <input required type="email" placeholder="Your Email" className={`w-full h-[40px] rounded-xl px-3 bg-white/20 border outline-none text-[12px] placeholder:opacity-60 transition-colors ${isDarkActive ? "border-white/20 text-white" : "border-black/10 text-black placeholder:text-black/60 focus:border-black/30"}`} value={visaFormData.email} onChange={e => setVisaFormData({ ...visaFormData, email: e.target.value })} />
                             </div>
-                            <button type="submit" disabled={isSubmittingVisa} className={`w-full h-[40px] mt-3 rounded-full font-semibold flex items-center justify-center gap-2 transition hover:scale-[1.02] text-[14px] shadow-sm disabled:opacity-70 ${searchBarBtnClass}`}>
-                              {isSubmittingVisa ? "Submitting..." : "Submit Request"} <span className="text-lg leading-none">→</span>
-                            </button>
-                          </form>
-                        </div>
-                      )}
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                            <div>
+                              <label className={`block text-[10px] font-bold tracking-wide mb-1 ${cardTextClass}`}>PHONE NUMBER</label>
+                              <input required type="tel" placeholder="Your Ph No" className={`w-full h-[40px] rounded-xl px-3 bg-white/20 border outline-none text-[12px] placeholder:opacity-60 transition-colors ${isDarkActive ? "border-white/20 text-white" : "border-black/10 text-black placeholder:text-black/60 focus:border-black/30"}`} value={visaFormData.phone} onChange={e => setVisaFormData({ ...visaFormData, phone: e.target.value })} />
+                            </div>
+                            <div>
+                              <label className={`block text-[10px] font-bold tracking-wide mb-1 ${cardTextClass}`}>NATIONALITY</label>
+                              <input required type="text" placeholder="Your Nationality" className={`w-full h-[40px] rounded-xl px-3 bg-white/20 border outline-none text-[12px] placeholder:opacity-60 transition-colors ${isDarkActive ? "border-white/20 text-white" : "border-black/10 text-black placeholder:text-black/60 focus:border-black/30"}`} value={visaFormData.nationality} onChange={e => setVisaFormData({ ...visaFormData, nationality: e.target.value })} />
+                            </div>
+                          </div>
+                          <button type="submit" className={`w-full h-[40px] mt-3 rounded-full font-semibold flex items-center justify-center gap-2 transition hover:scale-[1.02] text-[14px] shadow-sm ${searchBarBtnClass}`}>
+                            Continue <span className="text-lg leading-none">→</span>
+                          </button>
+                        </form>
+                      </div>
+                    )}
 
-                      {visaStep === 3 && (
-                        <div className="mb-4 mt-2 relative z-10 text-center py-2 flex-1 flex flex-col justify-center">
-                          <div className="mx-auto w-[60px] h-[60px] rounded-full bg-[#ecfff8] flex items-center justify-center mb-4">
-                            <div className="w-[30px] h-[30px] rounded-full border-[3px] border-[#00b878] flex items-center justify-center">
-                              <span className="text-[#00b878] text-lg font-bold">✓</span>
+                    {visaStep === 2 && (
+                      <div className="mb-4 mt-1 relative z-10 flex-1">
+                        <button onClick={() => setVisaStep(1)} className={`text-lg mb-1 hover:opacity-70 transition ${cardTextClass}`}>←</button>
+                        <h2 className={`text-center text-[20px] font-bold mb-1 ${cardTextClass}`}>Tell us more</h2>
+
+                        <form className="space-y-3 mt-4" onSubmit={handleVisaSubmit}>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                            <div>
+                              <label className={`block text-[10px] font-bold tracking-wide mb-1 ${cardTextClass}`}>TRAVEL DATE *</label>
+                              <input required type="date" className={`w-full h-[40px] rounded-xl px-3 bg-white/20 border outline-none text-[12px] transition-colors ${isDarkActive ? "border-white/20 text-white [color-scheme:dark]" : "border-black/10 text-black focus:border-black/30 [color-scheme:light]"}`} value={visaFormData.travelDate} onChange={e => setVisaFormData({ ...visaFormData, travelDate: e.target.value })} />
+                            </div>
+                            <div>
+                              <label className={`block text-[10px] font-bold tracking-wide mb-1 ${cardTextClass}`}>NO. OF TRAVELERS *</label>
+                              <input required type="number" min="1" placeholder="2" className={`w-full h-[40px] rounded-xl px-3 bg-white/20 border outline-none text-[12px] placeholder:opacity-60 transition-colors ${isDarkActive ? "border-white/20 text-white" : "border-black/10 text-black placeholder:text-black/60 focus:border-black/30"}`} value={visaFormData.travelers} onChange={e => setVisaFormData({ ...visaFormData, travelers: e.target.value })} />
                             </div>
                           </div>
-                          <h2 className={`text-[20px] font-bold leading-tight mb-3 ${cardTextClass}`}>Success! Request received.</h2>
-                          <p className={`text-[12px] leading-relaxed max-w-[260px] mx-auto mb-6 ${cardSubTextClass}`}>
-                            Thank you! One of our specialized consultants will contact you within 24 hours.
-                          </p>
-                        </div>
-                      )}
-                      {/* Stats Row */}
-                      <div className="grid grid-cols-3 gap-2 relative z-10 mt-2">
-                        <div className={`p-3 rounded-[1rem] text-center flex flex-col items-center justify-center ${statBgClass}`}>
-                          <div className="flex items-center gap-1.5 text-[#d4af37] mb-1">
-                            <span className="material-symbols-outlined text-[18px]">public</span>
-                            <span className={`font-bold text-[14px] ${statTextClass}`}>120+</span>
+                          <div>
+                            <label className={`block text-[10px] font-bold tracking-wide mb-1 ${cardTextClass}`}>WHAT ARE YOU LOOKING FOR? *</label>
+                            <input required type="text" placeholder="e.g., Schengen Visa, Tour Package" className={`w-full h-[40px] rounded-xl px-3 bg-white/20 border outline-none text-[12px] placeholder:opacity-60 transition-colors ${isDarkActive ? "border-white/20 text-white" : "border-black/10 text-black placeholder:text-black/60 focus:border-black/30"}`} value={visaFormData.lookingFor} onChange={e => setVisaFormData({ ...visaFormData, lookingFor: e.target.value })} />
                           </div>
-                          <span className={`text-[11px] ${statSubtextClass}`}>Countries</span>
-                        </div>
-                        <div className={`p-3 rounded-[1rem] text-center flex flex-col items-center justify-center ${statBgClass}`}>
-                          <div className="flex items-center gap-1.5 text-[#d4af37] mb-1">
-                            <span className="material-symbols-outlined text-[18px]">verified</span>
-                            <span className={`font-bold text-[14px] ${statTextClass}`}>98%</span>
+                          <button type="submit" disabled={isSubmittingVisa} className={`w-full h-[40px] mt-3 rounded-full font-semibold flex items-center justify-center gap-2 transition hover:scale-[1.02] text-[14px] shadow-sm disabled:opacity-70 ${searchBarBtnClass}`}>
+                            {isSubmittingVisa ? "Submitting..." : "Submit Request"} <span className="text-lg leading-none">→</span>
+                          </button>
+                        </form>
+                      </div>
+                    )}
+
+                    {visaStep === 3 && (
+                      <div className="mb-4 mt-2 relative z-10 text-center py-2 flex-1 flex flex-col justify-center">
+                        <div className="mx-auto w-[60px] h-[60px] rounded-full bg-[#ecfff8] flex items-center justify-center mb-4">
+                          <div className="w-[30px] h-[30px] rounded-full border-[3px] border-[#00b878] flex items-center justify-center">
+                            <span className="text-[#00b878] text-lg font-bold">✓</span>
                           </div>
-                          <span className={`text-[11px] ${statSubtextClass}`}>Success Rate</span>
                         </div>
-                        <div className={`p-3 rounded-[1rem] text-center flex flex-col items-center justify-center ${statBgClass}`}>
-                          <div className="flex items-center gap-1.5 text-[#d4af37] mb-1">
-                            <span className="material-symbols-outlined text-[18px]">support_agent</span>
-                            <span className={`font-bold text-[14px] ${statTextClass}`}>24/7</span>
-                          </div>
-                          <span className={`text-[11px] ${statSubtextClass}`}>Support</span>
+                        <h2 className={`text-[20px] font-bold leading-tight mb-3 ${cardTextClass}`}>Success! Request received.</h2>
+                        <p className={`text-[12px] leading-relaxed max-w-[260px] mx-auto mb-6 ${cardSubTextClass}`}>
+                          Thank you! One of our specialized consultants will contact you within 24 hours.
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Stats Row */}
+                    <div className="grid grid-cols-3 gap-2 relative z-10 mt-2">
+                      <div className={`p-3 rounded-[1rem] text-center flex flex-col items-center justify-center transition-colors duration-700 ${statBgClass}`}>
+                        <div className="flex items-center gap-1.5 text-[#d4af37] mb-1">
+                          <span className="material-symbols-outlined text-[18px]">public</span>
+                          <span className={`font-bold text-[14px] transition-colors duration-700 ${statTextClass}`}>120+</span>
                         </div>
+                        <span className={`text-[11px] transition-colors duration-700 ${statSubtextClass}`}>Countries</span>
+                      </div>
+                      <div className={`p-3 rounded-[1rem] text-center flex flex-col items-center justify-center transition-colors duration-700 ${statBgClass}`}>
+                        <div className="flex items-center gap-1.5 text-[#d4af37] mb-1">
+                          <span className="material-symbols-outlined text-[18px]">verified</span>
+                          <span className={`font-bold text-[14px] transition-colors duration-700 ${statTextClass}`}>98%</span>
+                        </div>
+                        <span className={`text-[11px] transition-colors duration-700 ${statSubtextClass}`}>Success Rate</span>
+                      </div>
+                      <div className={`p-3 rounded-[1rem] text-center flex flex-col items-center justify-center transition-colors duration-700 ${statBgClass}`}>
+                        <div className="flex items-center gap-1.5 text-[#d4af37] mb-1">
+                          <span className="material-symbols-outlined text-[18px]">support_agent</span>
+                          <span className={`font-bold text-[14px] transition-colors duration-700 ${statTextClass}`}>24/7</span>
+                        </div>
+                        <span className={`text-[11px] transition-colors duration-700 ${statSubtextClass}`}>Support</span>
                       </div>
                     </div>
                   </div>
-
                 </div>
+
               </div>
             </div>
           );
-        })}
+        })()}
 
         {/* Slider Controls (Hidden on small mobile if needed, but keeping for functionality) */}
         <div className="absolute bottom-32 md:bottom-28 left-1/2 -translate-x-1/2 z-20 flex gap-2">
@@ -980,7 +973,7 @@ export const HomePage = () => {
       </section>
 
       {/* FLOATING BOTTOM BAR (SERVICE COLUMNS) */}
-      <div className="relative z-20 -mt-28 max-w-7xl mx-auto px-4 mb-10">
+      <div className="relative z-20 -mt-2 lg:-mt-36 max-w-7xl mx-auto px-4 mb-10">
         <div className={`rounded-[1.5rem] shadow-[0_15px_40px_-10px_rgba(0,0,0,0.18)] p-4 lg:p-5 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 lg:gap-3 border transition-colors duration-700 ${bottomBarBgClass}`}>
 
           <div className={`flex items-center gap-4 flex-1 w-full border-b lg:border-b-0 lg:border-r pb-6 lg:pb-0 lg:pr-4 transition-colors duration-700 ${bottomBarBorderClass}`}>
@@ -1283,7 +1276,10 @@ export const HomePage = () => {
               className={`space-y-2 transition-opacity duration-1000 ${visibleSections["holiday-packages"] ? "opacity-100" : "opacity-0"}`}
             >
               <h2 className={`font-headline-lg text-[30px] sm:text-2xl md:text-headline-lg text-primary ${typewriterClass("holiday-packages")}`}>
-                Featured Holiday Packages from Dubai
+                Featured Holiday Packages
+                <br className="sm:hidden" />
+                <span className="hidden sm:inline"> </span>
+                from Dubai
               </h2>
               <p className="text-on-surface-variant text-body-md">Explore curated luxury tours designed for UAE travellers.</p>
             </div>
@@ -1448,7 +1444,7 @@ export const HomePage = () => {
       </section>
 
       {/* CONTINENTS BAR TAB FILTER */}
-      <section className="relative z-10 overflow-hidden py-[120px] px-margin-mobile md:px-margin-desktop bg-transparent">
+      <section className="relative z-10 overflow-hidden py-[90px] px-margin-mobile md:px-margin-desktop bg-transparent">
         <div className="max-w-container-max mx-auto space-y-12 relative z-10">
           <div
             data-animate="global-coverage"
@@ -1501,7 +1497,7 @@ export const HomePage = () => {
       </section>
 
       {/* ABOUT SECTION */}
-      <section className="relative z-10 overflow-hidden py-[90px] px-margin-mobile md:px-margin-desktop bg-transparent">
+      <section className="relative z-10 overflow-hidden py-[20px] px-margin-mobile md:px-margin-desktop bg-transparent">
         <div className="max-w-container-max mx-auto grid grid-cols-1 md:grid-cols-2 gap-[64px] items-center relative z-10">
           <div
             data-animate="about-eshaare"
@@ -1609,7 +1605,7 @@ export const HomePage = () => {
                       setActiveSpecIndex(idx);
                     }
                   }}
-                  className={`absolute w-[280px] sm:w-[320px] md:w-[740px] lg:w-[780px] h-[460px] sm:h-[430px] md:h-[340px] rounded-[24px] sm:rounded-[32px] overflow-hidden flex flex-col md:flex-row transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] cursor-pointer select-none bg-[#1e1e1e]/95 border border-white/10 shadow-[0_15px_35px_rgba(0,0,0,0.4)] ${isActive ? "ring-2 ring-secondary/50 shadow-[0_20px_45px_rgba(29,80,58,0.3)]" : "hover:border-white/20"
+                  className={`absolute w-[280px] sm:w-[320px] md:w-[740px] lg:w-[780px] h-[500px] sm:h-[480px] md:h-[340px] rounded-[24px] sm:rounded-[32px] overflow-hidden flex flex-col md:flex-row transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] cursor-pointer select-none bg-[#1e1e1e]/95 border border-white/10 shadow-[0_15px_35px_rgba(0,0,0,0.4)] ${isActive ? "ring-2 ring-secondary/50 shadow-[0_20px_45px_rgba(29,80,58,0.3)]" : "hover:border-white/20"
                     }`}
                   style={{
                     transform: transformStyle,
@@ -1620,11 +1616,11 @@ export const HomePage = () => {
                   }}
                 >
                   {/* Left Column: Image */}
-                  <div className="w-full md:w-2/5 relative h-[180px] sm:h-[200px] md:h-auto overflow-hidden">
+                  <div className="w-full md:w-2/5 relative h-[220px] sm:h-[240px] md:h-auto overflow-hidden">
                     <img decoding="async"
                       src={member.img}
                       alt={member.name}
-                      className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+                      className="w-full h-full object-cover object-[50%_20%] transition-transform duration-700 hover:scale-105"
                       draggable="false"
                       loading="lazy"
                     />
@@ -1787,7 +1783,7 @@ export const HomePage = () => {
                   <input
                     type="text"
                     required
-                    placeholder="e.g. John Doe"
+                    placeholder="e.g. Your Name"
                     value={form.name}
                     onChange={(e) => update("name", e.target.value)}
                     className="contact-input"
@@ -1797,7 +1793,7 @@ export const HomePage = () => {
                   <input
                     type="tel"
                     required
-                    placeholder="e.g. 501234567"
+                    placeholder="e.g. Your Ph No"
                     value={form.phone}
                     onChange={(e) => update("phone", e.target.value)}
                     className="contact-input"
@@ -1808,7 +1804,7 @@ export const HomePage = () => {
                 <input
                   type="email"
                   required
-                  placeholder="e.g. john@example.com"
+                  placeholder="e.g. Your Email"
                   value={form.email}
                   onChange={(e) => update("email", e.target.value)}
                   className="contact-input"
@@ -1886,132 +1882,91 @@ export const HomePage = () => {
       </section>
 
       {/* TESTIMONIALS SECTION */}
-      <section className="relative z-10 overflow-hidden py-[120px] px-margin-mobile md:px-margin-desktop bg-transparent font-['Assistant',ui-sans-serif,system-ui]">
-        <div className="max-w-7xl mx-auto px-6">
+      <section className="relative z-10 overflow-hidden py-[80px] px-margin-mobile md:px-margin-desktop bg-gray-50 font-sans border-t border-gray-200">
+        <div className="max-w-4xl mx-auto px-4 md:px-6">
           {/* Header */}
-          <div className="text-center mb-8">
-            <div className="flex items-center justify-center gap-3 mb-4">
-              <div className="h-px w-10 bg-[#D4AF37]/40" />
-              <span className="size-1.5 rotate-45 bg-[#D4AF37]" />
-              <div className="h-px w-10 bg-[#D4AF37]/40" />
-            </div>
-            <p className="text-[11px] uppercase tracking-[0.3em] text-[#1D503A]/60 mb-3 text-center">
-              Postcards from our travellers
-            </p>
-            <h2 className="font-['Cormorant_Garamond',ui-serif,Georgia] italic text-4xl md:text-5xl text-[#1D503A] text-center">
+          <div className="text-center mb-10">
+            <h2 className="font-headline-lg text-[28px] md:text-[32px] text-gray-900 font-bold tracking-tight">
               What Our Travellers Say
             </h2>
+            <div className="flex flex-wrap items-center justify-center gap-2 mt-3 text-[14px] text-gray-600">
+              <span className="font-semibold text-gray-800">Excellent</span>
+              <div className="flex text-[#FFB400]">
+                <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+              </div>
+              <span className="text-gray-500">Based on 2,400+ reviews</span>
+            </div>
           </div>
-          {/* Featured testimonial card */}
-          <div className="relative max-w-4xl mx-auto">
-            {/* Stamp-style corner ticks */}
-            <div className="absolute -top-3 -left-3 size-6 border-t-2 border-l-2 border-[#D4AF37]/60 z-10" />
-            <div className="absolute -top-3 -right-3 size-6 border-t-2 border-r-2 border-[#D4AF37]/60 z-10" />
-            <div className="absolute -bottom-3 -left-3 size-6 border-b-2 border-l-2 border-[#D4AF37]/60 z-10" />
-            <div className="absolute -bottom-3 -right-3 size-6 border-b-2 border-r-2 border-[#D4AF37]/60 z-10" />
 
-            <div className="relative bg-white/95 backdrop-blur-md ring-1 ring-[#D4AF37]/20 shadow-[0_30px_80px_-30px_rgba(29,80,58,0.25)] px-8 md:px-16 py-12 md:py-16 rounded-[4px] overflow-hidden">
-              {/* Elegant luxury gold inner dashed frame */}
-              <div className="absolute inset-3 border border-dashed border-[#D4AF37]/25 pointer-events-none rounded-[2px]" />
-
-              {/* Circular Postmark Ink Watermark */}
-              <div className="pointer-events-none absolute -top-8 -right-8 w-48 h-48 rounded-full border border-dashed border-[#1D503A]/10 flex items-center justify-center rotate-[-15deg] select-none">
-                <div className="w-[88%] h-[88%] rounded-full border border-double border-[#1D503A]/10 flex flex-col items-center justify-center p-4 text-center">
-                  <span className="text-[9px] uppercase tracking-[0.2em] font-bold text-[#1D503A]/10">Eshaare Tours</span>
-                  <span className="my-1 text-xs uppercase font-serif italic tracking-[0.1em] font-semibold text-[#1D503A]/15 border-y border-[#1D503A]/10 py-0.5 px-2">Verified</span>
-                  <span className="text-[8px] uppercase tracking-[0.15em] font-medium text-[#1D503A]/10">Dubai Expat</span>
-                </div>
-              </div>
-
-              {/* Giant quote mark */}
-              <div className="absolute top-6 left-6 font-['Cormorant_Garamond',ui-serif,Georgia] text-[120px] leading-none text-[#D4AF37]/15 select-none pointer-events-none">
-                &ldquo;
-              </div>
-
-              <div className="relative z-10">
-                {/* Stars */}
-                <div className="flex gap-1.5 mb-6">
-                  {Array.from({ length: testimonials[activeTestimonial].rating }).map((_, i) => (
-                    <span
-                      key={i}
-                      className="size-2 rotate-45 bg-[#D4AF37] shadow-[0_0_8px_rgba(212,175,55,0.4)] inline-block"
-                    />
-                  ))}
-                </div>
-                {/* Quote */}
-                <blockquote
-                  key={activeTestimonial}
-                  className="font-['Cormorant_Garamond',ui-serif,Georgia] italic text-2xl md:text-[28px] leading-[1.45] text-[#1D503A] mb-10 animate-[fade-in_500ms_ease-out_both]"
-                >
-                  {testimonials[activeTestimonial].quote}
-                </blockquote>
-                {/* Author */}
-                <div className="flex items-center gap-5">
-                  <div className="relative">
-                    <div className="size-14 rotate-45 bg-[#1D503A] p-0.5 shadow-md flex items-center justify-center">
-                      <div className="w-full h-full border border-[#D4AF37]/40 flex items-center justify-center">
-                        <span className="-rotate-45 text-[#D4AF37] font-semibold tracking-wider text-sm">
-                          {testimonials[activeTestimonial].initials}
-                        </span>
-                      </div>
-                    </div>
+          {/* Google Review Style Card */}
+          <div className="relative mx-auto w-full max-w-3xl">
+            <div className="bg-white rounded-[16px] shadow-[0_4px_24px_rgba(0,0,0,0.06)] border border-gray-100 p-6 md:p-8">
+              <div className="flex justify-between items-start mb-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-[#1D503A] flex items-center justify-center text-white text-lg font-semibold shrink-0">
+                    {testimonials[activeTestimonial].initials}
                   </div>
                   <div>
-                    <div className="font-semibold text-[#1D503A] text-base">
+                    <h3 className="font-bold text-gray-900 text-[15px] leading-tight">
                       {testimonials[activeTestimonial].name}
-                    </div>
-                    <div className="text-[11px] uppercase tracking-[0.22em] text-[#1D503A]/60 mt-1 flex items-center gap-1.5">
-                      <span>{testimonials[activeTestimonial].trip}</span>
-                      <span className="text-[#D4AF37]">•</span>
-                      <span>{testimonials[activeTestimonial].location}</span>
-                    </div>
+                    </h3>
+                    <p className="text-gray-500 text-[12px] mt-0.5 flex items-center gap-1.5">
+                      <span className="material-symbols-outlined text-[14px] text-green-600">verified</span>
+                      Verified • {testimonials[activeTestimonial].trip}
+                    </p>
                   </div>
                 </div>
+                {/* Google Icon */}
+                <svg width="24" height="24" viewBox="0 0 24 24" className="shrink-0">
+                  <path fill="#4285F4" d="M23.7449 12.2727C23.7449 11.4818 23.674 10.7318 23.5432 10H12V14.5091H18.5771C18.2936 15.9636 17.4764 17.1818 16.2449 18.0182V20.9364H20.1983C22.5126 18.8 23.7449 15.8091 23.7449 12.2727Z" />
+                  <path fill="#34A853" d="M12 24C15.3055 24 18.0938 22.9091 20.1983 20.9364L16.2449 18.0182C15.1058 18.7818 13.6762 19.2364 12 19.2364C8.7562 19.2364 5.99946 17.0455 5.02146 14.0818H0.95752V17.2364C2.99346 21.2818 7.15146 24 12 24Z" />
+                  <path fill="#FBBC05" d="M5.02146 14.0818C4.77055 13.3273 4.62883 12.5273 4.62883 11.7091C4.62883 10.8909 4.77055 10.0909 5.02146 9.33636V6.18182H0.95752C0.117818 7.84545 -0.354004 9.72727 -0.354004 11.7091C-0.354004 13.6909 0.117818 15.5727 0.95752 17.2364L5.02146 14.0818Z" />
+                  <path fill="#EA4335" d="M12 4.18182C13.8005 4.18182 15.4053 4.8 16.6805 6.01818L20.2855 2.41364C18.083 0.363636 15.3055 -0.545455 12 -0.545455C7.15146 -0.545455 2.99346 2.17273 0.95752 6.18182L5.02146 9.33636C5.99946 6.37273 8.7562 4.18182 12 4.18182Z" />
+                </svg>
               </div>
+
+              {/* Stars */}
+              <div className="flex gap-0.5 mb-3 text-[#FFB400]">
+                {Array.from({ length: testimonials[activeTestimonial].rating }).map((_, i) => (
+                  <span key={i} className="material-symbols-outlined text-[16px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                ))}
+                {Array.from({ length: 5 - testimonials[activeTestimonial].rating }).map((_, i) => (
+                  <span key={i} className="material-symbols-outlined text-[16px] text-gray-300" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                ))}
+              </div>
+
+              {/* Quote */}
+              <p
+                key={activeTestimonial}
+                className="text-[#3c4043] text-[15px] md:text-[16px] leading-relaxed animate-[fade-in_400ms_ease-out_both] min-h-[80px]"
+              >
+                {testimonials[activeTestimonial].quote}
+              </p>
             </div>
+
             {/* Selector / pagination */}
-            <div className="mt-10 flex items-center justify-center gap-6">
+            <div className="mt-8 flex items-center justify-center gap-2.5">
               {testimonials.map((item, i) => {
                 const isActive = i === activeTestimonial;
                 return (
                   <button
                     key={item.name}
                     onClick={() => setActiveTestimonial(i)}
-                    className="group flex items-center gap-3 transition-opacity"
+                    className={`h-2.5 rounded-full transition-all duration-300 ${isActive ? "bg-primary w-8" : "bg-gray-300 hover:bg-gray-400 w-2.5"}`}
                     aria-label={`Read testimonial from ${item.name}`}
-                  >
-                    <span
-                      className={`size-2 rotate-45 transition-all ${isActive
-                        ? "bg-[#D4AF37] scale-125"
-                        : "bg-[#1D503A]/20 group-hover:bg-[#1D503A]/40"
-                        }`}
-                    />
-                    <span
-                      className={`text-[10px] uppercase tracking-[0.22em] transition-colors hidden sm:inline ${isActive ? "text-[#1D503A]" : "text-[#1D503A]/40 group-hover:text-[#1D503A]/70"
-                        }`}
-                    >
-                      {item.name.split(" ")[0]}
-                    </span>
-                  </button>
+                  />
                 );
               })}
             </div>
           </div>
-          {/* Trust footer */}
-          <div className="mt-16 flex flex-col items-center gap-4">
-            <div className="flex items-center gap-4">
-              <div className="h-px w-12 bg-[#D4AF37]/30" />
-              <div className="size-1.5 rotate-45 bg-[#D4AF37]" />
-              <div className="h-px w-12 bg-[#D4AF37]/30" />
-            </div>
-            {/* <p className="text-[11px] uppercase tracking-[0.3em] text-[#1D503A]/60 text-center">
-              4.9 / 5 · Over 2,400 journeys curated
-            </p> */}
-          </div>
         </div>
         <style>{`
           @keyframes fade-in {
-            0% { opacity: 0; transform: translateY(8px); }
+            0% { opacity: 0; transform: translateY(4px); }
             100% { opacity: 1; transform: translateY(0); }
           }
         `}</style>

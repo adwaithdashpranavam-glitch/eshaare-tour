@@ -100,18 +100,27 @@ button:focus, a:focus, input:focus, select:focus, textarea:focus {
 }
 
 /* Premium Typewriter Scroll Animation Styles */
-.typewriter-animate {
-  display: inline-block;
-  overflow: hidden;
-  white-space: nowrap;
-  width: 0;
-  margin: 0 auto;
-  letter-spacing: .05em;
+@media (min-width: 640px) {
+  .typewriter-animate {
+    display: inline-block;
+    overflow: hidden;
+    white-space: nowrap;
+    width: 0;
+    margin: 0 auto;
+    letter-spacing: .05em;
+  }
+
+  .typewriter-animate.active {
+    animation: typing 2.5s steps(30, end) forwards;
+  }
 }
 
-.typewriter-animate.active {
-  animation: 
-    typing 2.5s steps(30, end) forwards;
+@media (max-width: 639px) {
+  .typewriter-animate {
+    display: block;
+    white-space: normal;
+    width: auto;
+  }
 }
 
 /* Typing keyframe */
