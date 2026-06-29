@@ -224,14 +224,30 @@ export const LeadsListPage = () => {
     if (!user) return;
     // Realtime Listener with role filtering
     const leadsRef = collection(db, "leads");
-    let q = query(leadsRef, where("isDeleted", "==", false));
+    let q = query(leadsRef);
     if (isSales) {
-      q = query(leadsRef, where("isDeleted", "==", false), where("assignedToId", "==", user.uid));
+      q = query(leadsRef, where("assignedToId", "==", user.uid));
     }
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const items = snapshot.docs
-        .map(doc => ({ id: doc.id, ...doc.data() }))
-        .filter(l => !l.isDeleted);
+        .map(doc => {
+          const data = doc.data();
+          let normalized = { id: doc.id, ...data };
+          
+          // Map different legacy schema variations to the new flat schema
+          const details = data.details || {};
+          
+          normalized.contactName = data.contactName || data.name || details.name || "Unknown";
+          normalized.contactEmail = data.contactEmail || data.email || details.email || "";
+          normalized.contactPhone = data.contactPhone || data.phone || details.phone || "";
+          normalized.source = data.source || details.source || "Website";
+          normalized.stage = data.stage || data.status || details.status || "New";
+          normalized.destination = data.destination || data.LookingFor || details.LookingFor || "General";
+          normalized.leadNo = data.leadNo || `L-${doc.id.substring(0, 6).toUpperCase()}`;
+          
+          return normalized;
+        })
+        .filter(l => l.isDeleted !== true); // Safely filters out deleted ones without requiring the field to exist
       setLeads(items);
       setLoading(false);
     }, (error) => {

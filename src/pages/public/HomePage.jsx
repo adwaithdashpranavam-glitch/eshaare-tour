@@ -679,6 +679,32 @@ export const HomePage = () => {
     dragStartY.current = null;
   }
 
+  useEffect(() => {
+    const el = carouselRef.current;
+    if (!el) return;
+
+    const handleTouchMove = (e) => {
+      if (dragStartY.current === null) return;
+      const diff = dragStartY.current - e.touches[0].clientY;
+      const goingDown = diff > 0;
+      const goingUp = diff < 0;
+      const atEnd = activeSvc >= TOTAL_SVC - 1;
+      const atStart = activeSvc <= 0;
+
+      const shouldTrap =
+        (goingDown && !atEnd) ||
+        (goingUp && !atStart) ||
+        (activeSvc > 0 && activeSvc < TOTAL_SVC - 1);
+
+      if (shouldTrap) {
+        e.preventDefault();
+      }
+    };
+
+    el.addEventListener("touchmove", handleTouchMove, { passive: false });
+    return () => el.removeEventListener("touchmove", handleTouchMove);
+  }, [activeSvc]);
+
 
   // ─────────────────────────────────────────────────────────────────────────
 
