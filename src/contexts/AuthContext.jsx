@@ -434,10 +434,12 @@ export const AuthProvider = ({ children }) => {
     refreshEmailVerified
   };
 
+  const isPrerendering = typeof window !== 'undefined' && window.navigator.userAgent.includes('ReactSnap');
+
   return (
     <AuthContext.Provider value={value}>
       {children}
-      {loading && <LoadingSpinner message="Securing Connection..." fullScreen={true} />}
+      {loading && !isPrerendering && <LoadingSpinner message="Securing Connection..." fullScreen={true} />}
     </AuthContext.Provider>
   );
 };

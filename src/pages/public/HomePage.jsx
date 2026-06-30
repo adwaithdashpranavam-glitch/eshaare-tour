@@ -119,7 +119,7 @@ export const HomePage = () => {
   const slides = [
     {
       image: "/hero_aurora_cabin.jpg",
-      headline: <>Looking for <br /><span className="text-[#a0d2b4] italic font-serif">Visa Experts?</span></>,
+      headline: <>Eshaare Tours & Visas<br /><span className="text-[#a0d2b4] italic font-serif text-3xl md:text-[40px] leading-tight block mt-2">Dubai UAE Visa Processing and Travel Packages</span></>,
       subtext: "From document verification to application submission, our experts make your visa process faster, simpler, and stress-free.",
       theme: "dark",
     },
@@ -837,9 +837,15 @@ export const HomePage = () => {
                     const isDark = slide.theme === "dark";
                     return (
                       <div key={index} className={`col-start-1 row-start-1 flex flex-col transition-all duration-700 delay-300 transform ${isActive ? "translate-y-0 opacity-100 z-10" : "translate-y-8 opacity-0 z-0 pointer-events-none"} ${isDark ? "text-white" : "text-gray-900"}`}>
-                        <h1 className="font-display-lg text-4xl md:text-[58px] font-bold leading-[1.1] mb-5 tracking-tight">
-                          {slide.headline}
-                        </h1>
+                        {index === 0 ? (
+                          <h1 className="font-display-lg text-4xl md:text-[48px] font-bold leading-[1.1] mb-5 tracking-tight">
+                            {slide.headline}
+                          </h1>
+                        ) : (
+                          <h2 className="font-display-lg text-4xl md:text-[58px] font-bold leading-[1.1] mb-5 tracking-tight">
+                            {slide.headline}
+                          </h2>
+                        )}
                         <div className={`text-base md:text-[17px] mb-8 leading-relaxed max-w-lg ${isDark ? "text-gray-200" : "text-gray-600"}`}>
                           {slide.subtext}
                         </div>
