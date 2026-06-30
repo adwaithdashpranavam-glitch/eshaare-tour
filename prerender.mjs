@@ -1,4 +1,4 @@
-import puppeteer from 'puppeteer-core';
+import puppeteer from 'puppeteer';
 import { preview } from 'vite';
 import fs from 'fs';
 import path from 'path';
@@ -13,7 +13,7 @@ const getBrowserPath = () => {
   for (const p of paths) {
     if (fs.existsSync(p)) return p;
   }
-  throw new Error('Chrome/Edge not found');
+  return undefined; // Let puppeteer use its downloaded version
 };
 
 (async () => {
@@ -22,9 +22,9 @@ const getBrowserPath = () => {
   
   console.log('Launching browser...');
   const browser = await puppeteer.launch({ 
-    executablePath: getBrowserPath(),
-    headless: 'new',
-    args: ['--no-sandbox', '--disable-setuid-sandbox'] 
+    executablePath: process.env.VERCEL ? undefined : getBrowserPath(),
+    headless: true,
+    args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'] 
   });
   
   const routes = ['/', '/about', '/services', '/contact'];
