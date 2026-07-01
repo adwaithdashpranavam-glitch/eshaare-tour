@@ -74,6 +74,10 @@ ${formData.message}
       };
 
       await createLead(submission);
+      import("../../utils/tracking").then(m => m.trackConversion(
+        { send_to: 'AW-18089559443/AbCdEf123456789', value: 1, currency: 'AED', transaction_id: generatedNo },
+        { email: formData.email, phone: formData.phone }
+      ));
       toast.success(`Custom package request submitted! Ref: ${generatedNo}`);
       navigate("/");
     } catch (err) {

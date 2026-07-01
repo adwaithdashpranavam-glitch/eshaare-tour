@@ -77,46 +77,72 @@ service firebase.storage {
              userData.role == 'super_admin';
     }
 
+    // Helper function: check for safe travel document file types (PDF, Images, Word docs)
+    function isValidTravelDoc() {
+      return request.resource.contentType.matches('image/.*|application/pdf|application/msword|application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+    }
+
     // 1. Documents Collection uploads
-    match /documents/{documentId}/{allPaths=**} {
-      allow read: if (isSignedIn() && request.auth.uid == documentId) || canAccessTravelDocs();
-      allow write: if ((isSignedIn() && request.auth.uid == documentId) || canAccessTravelDocs()) && request.resource.size < 15 * 1024 * 1024;
+    match /documents/{userId}/{allPaths=**} {
+      allow read: if (isSignedIn() && request.auth.uid == userId) || canAccessTravelDocs();
+      allow write: if request.auth != null 
+                   && ((request.auth.uid == userId) || canAccessTravelDocs()) 
+                   && request.resource.size < 15 * 1024 * 1024 
+                   && isValidTravelDoc();
     }
     
     // 2. Travellers documents (PortalUploadModal)
     match /travellers/{travellerId}/{allPaths=**} {
       allow read: if isOwner(travellerId) || canAccessTravelDocs();
-      allow write: if (isOwner(travellerId) || canAccessTravelDocs()) && request.resource.size < 15 * 1024 * 1024;
+      allow write: if request.auth != null 
+                   && (isOwner(travellerId) || canAccessTravelDocs()) 
+                   && request.resource.size < 15 * 1024 * 1024 
+                   && isValidTravelDoc();
     }
     
     // 3. Public Visa Banners
     match /visa_banners/{allPaths=**} {
       allow read: if true;
-      allow write: if isManager();
+      allow write: if request.auth != null 
+                   && isManager() 
+                   && request.resource.size < 15 * 1024 * 1024 
+                   && request.resource.contentType.matches('image/.*');
     }
 
     // 4. Chat attachments
     match /chats/{userId}/{allPaths=**} {
       allow read: if isOwner(userId) || canAccessChatDocs();
-      allow write: if (isOwner(userId) || canAccessChatDocs()) && request.resource.size < 15 * 1024 * 1024;
+      allow write: if request.auth != null 
+                   && (isOwner(userId) || canAccessChatDocs()) 
+                   && request.resource.size < 15 * 1024 * 1024 
+                   && isValidTravelDoc();
     }
 
     // 5. Staff Profile Pictures
     match /staff_pics/{allPaths=**} {
       allow read: if true;
-      allow write: if isManager();
+      allow write: if request.auth != null 
+                   && isManager() 
+                   && request.resource.size < 15 * 1024 * 1024 
+                   && request.resource.contentType.matches('image/.*');
     }
 
     // 8. Expert Profile Pictures
     match /expert_pics/{allPaths=**} {
       allow read: if true;
-      allow write: if isSuperAdmin();
+      allow write: if request.auth != null 
+                   && isSuperAdmin() 
+                   && request.resource.size < 15 * 1024 * 1024 
+                   && request.resource.contentType.matches('image/.*');
     }
 
     // 6. System Documents (e.g., universal templates)
     match /system-documents/{allPaths=**} {
       allow read: if true;
-      allow write: if canAccessTravelDocs();
+      allow write: if request.auth != null 
+                   && canAccessTravelDocs() 
+                   && request.resource.size < 15 * 1024 * 1024 
+                   && isValidTravelDoc();
     }
 
     // 7. Application specific files
@@ -129,7 +155,10 @@ service firebase.storage {
             /databases/(default)/documents/applications/$(applicationId)
           ).data.customerId == request.auth.uid
         );
-      allow write: if canAccessTravelDocs() && request.resource.size < 15 * 1024 * 1024;
+      allow write: if request.auth != null 
+                   && canAccessTravelDocs() 
+                   && request.resource.size < 15 * 1024 * 1024 
+                   && isValidTravelDoc();
     }
   }
 }

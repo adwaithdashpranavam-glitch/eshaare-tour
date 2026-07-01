@@ -60,12 +60,16 @@ export const PackageDetailPage = () => {
         updatedAt: serverTimestamp()
       };
       await createLead(submission);
-      toast.success(`Booking request sent for ${currentPkg.title}! Ref: ${generatedNo}`);
+      import("../../utils/tracking").then(m => m.trackConversion(
+        { send_to: 'AW-18089559443/AbCdEf123456789', value: 1, currency: 'AED', transaction_id: generatedNo },
+        { email: null, phone }
+      ));
+      toast.success("Booking request sent! Our team will contact you shortly.");
       setName("");
       setPhone("");
     } catch (err) {
       console.error(err);
-      toast.error("Failed to submit booking request. Please try again.");
+      toast.error("Failed to send request. Please try again.");
     }
   };
 

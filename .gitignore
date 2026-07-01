@@ -32,3 +32,4 @@ serviceAccountKey.json
 *.sw?
 
 .npmrc
+.cache

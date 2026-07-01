@@ -28,7 +28,7 @@ const getBrowserPath = () => {
     args: process.env.VERCEL ? chromium.args : ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
   });
   
-  const routes = ['/', '/about', '/services', '/contact'];
+  const routes = ['/', '/about', '/services', '/contact', '/privacy-policy'];
   
   for (const route of routes) {
     try {

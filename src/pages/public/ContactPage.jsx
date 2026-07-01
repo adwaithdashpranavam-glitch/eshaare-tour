@@ -40,6 +40,10 @@ export const ContactPage = () => {
       };
 
       await createLead(submission);
+      import("../../utils/tracking").then(m => m.trackConversion(
+        { send_to: 'AW-18089559443/AbCdEf123456789', value: 1, currency: 'AED', transaction_id: generatedNo },
+        { email: formData.email, phone: formData.phone }
+      ));
       toast.success("Message sent! We'll reply within 2 hours!");
       setFormData({
         name: "",
@@ -88,6 +92,11 @@ export const ContactPage = () => {
               href={card.action}
               target={card.action.startsWith("http") ? "_blank" : "_self"}
               rel="noopener noreferrer"
+              onClick={() => {
+                if (card.title === "WhatsApp") {
+                  import("../../utils/tracking").then(m => m.trackWhatsAppClick());
+                }
+              }}
               className="bg-surface-container-lowest p-6 border border-outline-variant/10 rounded-2xl text-center flex flex-col items-center space-y-3 cursor-pointer premium-shadow hover:scale-[1.02] transition-transform"
             >
               <div className="p-3 rounded-full bg-secondary-container text-on-secondary-container border border-secondary">

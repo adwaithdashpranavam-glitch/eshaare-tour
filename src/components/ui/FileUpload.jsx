@@ -31,6 +31,21 @@ export const FileUpload = ({
   const uploadFile = (file) => {
     if (!file) return;
 
+    // Check file type
+    const allowedTypes = [
+      "application/pdf", 
+      "image/jpeg", 
+      "image/jpg", 
+      "image/png", 
+      "image/webp", 
+      "application/msword", 
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    ];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error("Invalid file type. Please upload PDF, JPG, PNG, WEBP, or Word document.");
+      return;
+    }
+
     // Check size limit
     const sizeInMB = file.size / (1024 * 1024);
     if (sizeInMB > maxSizeMB) {
@@ -129,7 +144,7 @@ export const FileUpload = ({
           type="file"
           className="hidden"
           onChange={handleFileInput}
-          accept=".pdf,.jpg,.jpeg,.png"
+          accept=".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx"
           disabled={uploading}
         />
 
@@ -142,7 +157,7 @@ export const FileUpload = ({
               Drag & Drop file or click to browse
             </p>
             <p className="text-xs text-on-primary-container/40 max-w-xs font-sans">
-              Supports PDF, JPG, JPEG, and PNG formats up to {maxSizeMB}MB
+              Supports PDF, JPG, PNG, WEBP, and DOCX up to {maxSizeMB}MB
             </p>
           </div>
         )}

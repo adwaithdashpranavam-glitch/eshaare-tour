@@ -874,6 +874,11 @@ export const PublicLayout = () => {
                   </Link>
                 </li>
                 <li>
+                  <Link to="/privacy-policy" className="text-on-primary-container/80 hover:text-[#D4AF37] transition-colors">
+                    Privacy Policy
+                  </Link>
+                </li>
+                <li>
                   <Link to="/login" className="text-on-primary-container/80 hover:text-[#D4AF37] transition-colors">
                     Staff Login
                   </Link>

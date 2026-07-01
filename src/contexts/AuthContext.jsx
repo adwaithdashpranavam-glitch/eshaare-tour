@@ -105,9 +105,23 @@ export const AuthProvider = ({ children }) => {
     return null;
   };
 
+  // Developer Portal Access Restriction (for testing security concerns / maintenance)
+  const checkDevRestriction = (targetEmail) => {
+    if (import.meta.env.VITE_DEV_LOGIN_ENABLED === "true") {
+      const allowedEmails = (import.meta.env.VITE_DEV_EMAILS || "")
+        .split(",")
+        .map((e) => e.trim().toLowerCase())
+        .filter(Boolean);
+      if (allowedEmails.length > 0 && !allowedEmails.includes(targetEmail.trim().toLowerCase())) {
+        throw new Error("Client Portal is currently under security testing and maintenance. Access is restricted to authorized developer and QA accounts.");
+      }
+    }
+  };
+
   const login = async (email, password) => {
     setLoading(true);
     try {
+      checkDevRestriction(email);
       const userCredential = await signInWithEmailAndPassword(auth, email.trim(), password);
       const currentUser = userCredential.user;
 
@@ -228,6 +242,7 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     registeringRef.current = true;
     try {
+      checkDevRestriction(email);
       // Atomic account creation happens server-side (Admin SDK). The callable creates the
       // Auth user + users/customers docs and rolls everything back on any failure, so the
       // client never has to manage partial-registration cleanup.
@@ -323,6 +338,18 @@ export const AuthProvider = ({ children }) => {
       }
       setLoading(true);
       if (currentUser) {
+        try {
+          checkDevRestriction(currentUser.email);
+        } catch (devErr) {
+          console.warn("Session terminated by dev maintenance mode:", devErr.message);
+          toast.error("Portal under maintenance: Access is limited to authorized QA accounts.");
+          await signOut(auth);
+          setUserAndRef(null);
+          setUserProfileAndRef(null);
+          setEmailVerified(false);
+          setLoading(false);
+          return;
+        }
         setEmailVerified(!!currentUser.emailVerified);
         // Skip re-fetching if login() already set the profile for this user (avoids race condition)
         if (userProfileRef.current && userRef.current?.uid === currentUser.uid) {

@@ -349,6 +349,10 @@ export const VisaDetailPage = () => {
       };
 
       await createLead(submission);
+      import("../../utils/tracking").then(m => m.trackConversion(
+        { send_to: 'AW-18089559443/AbCdEf123456789', value: 1, currency: 'AED', transaction_id: generatedNo },
+        { email: formData.email, phone: formData.phone }
+      ));
       toast.success(`Inquiry submitted! Reference: ${generatedNo}`);
       setIsModalOpen(false);
     } catch (err) {
@@ -1204,6 +1208,7 @@ export const VisaDetailPage = () => {
                 href={`https://wa.me/971557338429?text=Hi%2C%20I'm%20inquiring%20about%20${encodeURIComponent(visaData.name)}.`}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() => { import("../../utils/tracking").then(m => m.trackWhatsAppClick()); }}
                 className="px-6 py-3.5 bg-[#25D366] text-white font-bold rounded-xl text-xs uppercase tracking-wider hover:opacity-95 transition-all shadow-md flex items-center justify-center gap-1.5"
               >
                 <Phone className="h-4 w-4 shrink-0" />

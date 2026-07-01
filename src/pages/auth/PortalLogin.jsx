@@ -106,6 +106,19 @@ export const PortalLogin = () => {
           </p>
         </div>
 
+        {/* Developer / Maintenance Notice */}
+        {import.meta.env.VITE_DEV_LOGIN_ENABLED === "true" && (
+          <div className="p-3.5 bg-amber-50 border border-amber-200 text-amber-800 rounded-2xl text-xs space-y-1">
+            <div className="font-bold flex items-center gap-1.5 text-amber-900">
+              <span className="inline-block w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+              Maintenance &amp; Security Testing Mode
+            </div>
+            <p className="text-amber-700/90 leading-relaxed">
+              Public registration and login are temporarily disabled. Access is currently restricted to whitelisted development and QA accounts.
+            </p>
+          </div>
+        )}
+
         {/* Tab Switcher */}
         <div className="flex rounded-xl bg-[#F5F1E8] p-1 border border-[#0F3D2E]/10">
           <button

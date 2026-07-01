@@ -312,6 +312,7 @@ export const TrackApplicationPage = () => {
                   href={`https://wa.me/971557338429?text=Hi%2C%20I'm%20inquiring%20about%20my%20visa%20case%20status%20ref%20${caseData.caseNo}`}
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={() => { import("../../utils/tracking").then(m => m.trackWhatsAppClick()); }}
                   className="w-full flex items-center justify-center gap-2 py-3 bg-whatsapp-green hover:bg-whatsapp-green/90 text-white font-bold text-body-sm rounded-xl uppercase tracking-wider transition-colors"
                 >
                   <span className="material-symbols-outlined text-lg">chat</span>
@@ -334,6 +335,7 @@ export const TrackApplicationPage = () => {
                   href="https://wa.me/971557338429?text=Hi%2C%20I%20need%20help%20tracking%20my%20visa%20application."
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={() => { import("../../utils/tracking").then(m => m.trackWhatsAppClick()); }}
                   className="w-full flex items-center justify-center gap-2 py-3 bg-whatsapp-green text-white font-bold text-body-sm rounded-xl uppercase tracking-wider"
                 >
                   <span className="material-symbols-outlined text-lg">chat</span>
@@ -355,6 +357,7 @@ export const TrackApplicationPage = () => {
                   href="https://wa.me/971557338429?text=Hi%2C%20I%20need%20help%20tracking%20my%20visa%20application."
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={() => { import("../../utils/tracking").then(m => m.trackWhatsAppClick()); }}
                   className="w-full flex items-center justify-center gap-2 py-3 bg-whatsapp-green text-white font-bold text-body-sm rounded-xl uppercase tracking-wider"
                 >
                   <span className="material-symbols-outlined text-lg">chat</span>

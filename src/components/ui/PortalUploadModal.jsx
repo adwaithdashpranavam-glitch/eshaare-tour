@@ -136,9 +136,17 @@ export const PortalUploadModal = ({
     setUploadError(false);
 
     // 1. Validate file type
-    const allowedTypes = ["application/pdf", "image/jpeg", "image/jpg", "image/png"];
+    const allowedTypes = [
+      "application/pdf", 
+      "image/jpeg", 
+      "image/jpg", 
+      "image/png", 
+      "image/webp", 
+      "application/msword", 
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    ];
     if (!allowedTypes.includes(selectedFile.type)) {
-      setErrorMsg("Please upload a PDF, JPG, or PNG file");
+      setErrorMsg("Please upload a PDF, JPG, PNG, WEBP, or Word document");
       return;
     }
 
@@ -416,7 +424,7 @@ export const PortalUploadModal = ({
                       type="file"
                       className="hidden"
                       onChange={handleFileInput}
-                      accept=".pdf,.jpg,.jpeg,.png"
+                      accept=".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx"
                     />
 
                     <div className="flex flex-col items-center text-center space-y-3">
@@ -431,7 +439,7 @@ export const PortalUploadModal = ({
                   </div>
                   {/* Format & size information below the upload zone */}
                   <p className="text-xs text-gray-500 text-center">
-                    Supported formats: PDF, JPG, JPEG, PNG · Maximum size: 10&nbsp;MB
+                    Supported formats: PDF, JPG, JPEG, PNG, WEBP, DOCX · Maximum size: 10&nbsp;MB
                   </p>
                 </div>
               )}

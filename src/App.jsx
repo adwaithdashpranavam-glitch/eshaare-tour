@@ -34,6 +34,7 @@ const AppointmentBookingPage = lazy(() => import("./pages/public/AppointmentBook
 const GlobePage = lazy(() => import("./pages/public/GlobePage"));
 const CustomisePackagePage = lazy(() => import("./pages/public/CustomisePackagePage"));
 const VisaEligibilityPage = lazy(() => import("./pages/public/VisaEligibilityPage"));
+const PrivacyPolicyPage = lazy(() => import("./pages/public/PrivacyPolicyPage"));
 const NotFoundPage = lazy(() => import("./pages/public/NotFoundPage"));
 
 // Auth Pages
@@ -139,6 +140,7 @@ function App() {
                     <Route path="globe" element={<GlobePage />} />
                     <Route path="visa-eligibility" element={<VisaEligibilityPage />} />
                     <Route path="packages/customise" element={<CustomisePackagePage />} />
+                    <Route path="privacy-policy" element={<PrivacyPolicyPage />} />
 
                     {/* EMAIL VERIFICATION (authenticated but unverified) */}
                     <Route
