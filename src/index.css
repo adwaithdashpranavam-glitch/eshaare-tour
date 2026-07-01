@@ -89,14 +89,179 @@ button:focus, a:focus, input:focus, select:focus, textarea:focus {
   background: #94a3b8;
 }
 
-/* Admin and portal custom classes that enforce dark mode override */
+/* =====================================================================
+   CRM / ADMIN — PREMIUM LIGHT THEME
+   The admin shell is the ONLY place that adds the `.dark` class to
+   <html> (see AdminLayout). Portal removes it and the public site never
+   sets it, so every rule scoped under `.dark` below affects the admin
+   CRM exclusively. We remap the legacy dark-green design tokens to a
+   clean, warm light palette without editing 24+ page/component files.
+   ===================================================================== */
+
+:root {
+  /* Admin light palette — all text tones verified WCAG AA on white */
+  --crm-bg: #F3F1EA;          /* warm off-white app background     */
+  --crm-surface: #FFFFFF;     /* white cards / sidebar / header    */
+  --crm-border: #E2DED2;      /* soft warm border (visible)        */
+  --crm-border-strong: #D2CDBE;
+  --crm-input: #F7F5F0;       /* subtle input / inset surface      */
+  --crm-heading: #16211B;     /* near-black charcoal-green heading  ~14:1 */
+  --crm-text: #2F3A34;        /* body text                         ~10:1 */
+  --crm-muted: #52605A;       /* labels                            ~6:1  */
+  --crm-faint: #6A756E;       /* helper / faint                    ~4.6:1 */
+  --crm-placeholder: #8A948E; /* placeholders only                 ~3.2:1 */
+  --crm-accent: #1D503A;      /* deep emerald brand accent         */
+}
+
+/* App background + base text */
 .dark body {
-  @apply bg-primary-container text-on-primary-container;
+  background-color: var(--crm-bg);
+  color: var(--crm-text);
+}
+
+/* --- Surfaces: cards, sidebar, header, panels ---------------------- */
+.dark [class*="bg-primary-container"] {
+  background-color: var(--crm-surface);
+}
+/* faint inset overlays (bg-white/5, bg-white/2, hover:bg-white/x ...) */
+.dark [class*="bg-white/"] {
+  background-color: rgba(29, 80, 58, 0.04);
+}
+.dark [class*="hover:bg-white/"]:hover {
+  background-color: rgba(29, 80, 58, 0.07);
+}
+/* inset / toggle fills that used a dark token */
+.dark [class*="bg-on-primary-fixed"] {
+  background-color: var(--crm-input);
+}
+
+/* --- Borders ------------------------------------------------------- */
+.dark [class*="border-on-primary-fixed"],
+.dark [class*="border-primary-container"] {
+  border-color: var(--crm-border);
+}
+
+/* --- Text ---------------------------------------------------------- */
+/* muted default for every on-primary-container shade + opacity variant */
+.dark [class*="text-on-primary-container"] {
+  color: var(--crm-muted);
+}
+/* full-opacity labels read a touch stronger */
+.dark .text-on-primary-container {
+  color: var(--crm-text);
+}
+/* headings that were pure white become charcoal */
+.dark [class*="text-white"] {
+  color: var(--crm-heading);
+}
+/* faint placeholders */
+.dark [class*="placeholder-on-primary-container"]::placeholder {
+  color: var(--crm-placeholder);
+}
+
+/* =====================================================================
+   DESIGN SYSTEM — hierarchy, cards, tables, forms, focus
+   ===================================================================== */
+
+/* --- Card separation ---------------------------------------------- *
+ * A rounded surface using the container token IS a card (the shell,
+ * header and sidebar are not rounded, so they are excluded). Give every
+ * card a real border + soft, layered shadow so surfaces never merge.  */
+.dark [class*="bg-primary-container"][class*="rounded"] {
+  border: 1px solid var(--crm-border);
+  box-shadow: 0 1px 2px rgba(16, 40, 30, 0.04), 0 6px 20px rgba(16, 40, 30, 0.05);
+}
+
+/* --- Tables: scannable at 100+ rows -------------------------------- */
+.dark table thead[class*="bg-primary-container"] {
+  background-color: #EEEBE2;   /* stronger header band */
+}
+.dark table thead th {
+  color: var(--crm-heading) !important;
+  font-weight: 700 !important;
+  border-bottom: 1px solid var(--crm-border-strong);
+}
+.dark table tbody tr:nth-child(even) {
+  background-color: rgba(29, 80, 58, 0.022);   /* very subtle zebra */
+}
+.dark table tbody tr:hover {
+  background-color: rgba(29, 80, 58, 0.06) !important;   /* clear hover */
+}
+.dark table tbody td {
+  color: var(--crm-text);
+}
+.dark table [class*="divide-outline-variant"] > :not([hidden]) ~ :not([hidden]),
+.dark table tbody tr {
+  border-color: var(--crm-border);
+}
+
+/* --- Forms: borders, placeholder, focus ring ---------------------- */
+.dark input,
+.dark select,
+.dark textarea {
+  color: var(--crm-text);
+}
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: var(--crm-placeholder);
+}
+.dark input:focus,
+.dark select:focus,
+.dark textarea:focus {
+  border-color: var(--crm-accent);
+  box-shadow: 0 0 0 3px rgba(29, 80, 58, 0.14);
+}
+
+/* --- Keyboard-visible focus for interactive elements (a11y) ------- */
+.dark a:focus-visible,
+.dark button:focus-visible,
+.dark [role="button"]:focus-visible,
+.dark [tabindex]:focus-visible {
+  box-shadow: 0 0 0 3px rgba(29, 80, 58, 0.30);
+  border-radius: 8px;
+}
+
+/* --- Dividers / horizontal rules --------------------------------- */
+.dark hr,
+.dark [class*="divide-outline-variant"] > :not([hidden]) ~ :not([hidden]) {
+  border-color: var(--crm-border);
+}
+
+/* --- Protect legible white text on saturated buttons / badges ------ */
+.dark .text-white.bg-emerald-500,
+.dark .text-white.bg-emerald-600,
+.dark .text-white.bg-emerald-700,
+.dark .text-white.bg-red-500,
+.dark .text-white.bg-red-600,
+.dark .text-white.bg-rose-500,
+.dark .text-white.bg-rose-600,
+.dark .text-white.bg-rose-700,
+.dark .text-white.bg-amber-500,
+.dark .text-white.bg-amber-600,
+.dark .text-white.bg-sky-500,
+.dark .text-white.bg-blue-600,
+.dark .text-white.bg-indigo-600,
+.dark .text-white.bg-yellow-600,
+.dark .text-white.bg-success-green,
+.dark .text-white.bg-danger,
+.dark .text-white.bg-gradient-to-r,
+.dark .text-white.bg-gradient-to-br,
+.dark .text-white.bg-gradient-to-b,
+.dark .text-white.bg-\[\#1D503A\],
+.dark .text-white.bg-secondary,
+.dark .text-white.bg-success-green {
+  color: #FFFFFF;
 }
 
 .dark .glass-card {
-  background: rgba(29, 80, 58, 0.6);
-  border-color: rgba(255, 255, 255, 0.08);
+  background: #FFFFFF;
+  border: 1px solid var(--crm-border);
+  box-shadow: 0 1px 2px rgba(16, 40, 30, 0.04), 0 8px 24px rgba(16, 40, 30, 0.06);
+}
+
+/* Slightly deeper, warmer shadow for admin cards on the light bg */
+.dark .premium-shadow {
+  box-shadow: 0 1px 2px rgba(29, 80, 58, 0.05), 0 8px 24px rgba(29, 80, 58, 0.06);
 }
 
 /* Premium Typewriter Scroll Animation Styles */

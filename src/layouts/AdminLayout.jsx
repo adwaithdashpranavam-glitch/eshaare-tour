@@ -207,8 +207,8 @@ export const AdminLayout = () => {
                       to={item.path}
                       className={`flex items-center space-x-3 px-3 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all duration-150 ${
                         isActive
-                          ? "bg-white/10 text-white border-l-2 border-secondary-fixed pl-2.5"
-                          : "text-on-primary-container/80 hover:text-white hover:bg-white/5 border-l-2 border-transparent"
+                          ? "bg-secondary/10 text-secondary border-l-2 border-secondary pl-2.5"
+                          : "text-on-primary-container/80 hover:text-secondary hover:bg-secondary/10 border-l-2 border-transparent"
                       }`}
                       title={item.label}
                     >
@@ -271,7 +271,7 @@ export const AdminLayout = () => {
             </div>
             <input
               type="text"
-              className="w-full pl-10 pr-4 py-2 bg-primary-container border border-on-primary-fixed-variant text-on-primary-container placeholder-on-primary-container/60 rounded-button text-xs focus:outline-none focus:border-secondary"
+              className="w-full pl-10 pr-4 py-2 bg-[#F7F5F0] border border-on-primary-fixed-variant text-on-primary-container placeholder-on-primary-container/60 rounded-button text-xs focus:outline-none focus:border-secondary"
               placeholder="Search leads, cases by name or phone..."
               value={searchVal}
               onChange={(e) => setSearchVal(e.target.value)}
@@ -282,7 +282,7 @@ export const AdminLayout = () => {
           <div className="flex items-center space-x-3.5 ml-auto md:ml-0">
             {/* Bell Notifications */}
             <button 
-              className="p-2 rounded-lg bg-primary-container border border-on-primary-fixed-variant text-on-primary-container/60 hover:text-white relative transition-colors"
+              className="p-2 rounded-lg bg-primary-container border border-on-primary-fixed-variant text-on-primary-container/60 hover:text-secondary relative transition-colors"
               onClick={() => toast("No new notifications")}
             >
               <Bell className="h-4.5 w-4.5" />
@@ -301,7 +301,7 @@ export const AdminLayout = () => {
         </header>
 
         {/* Router Outlet view */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 pb-20 md:pb-6">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 pb-20 md:pb-6 bg-[#F4F2EC]">
           <AdminPageErrorBoundary>
             <Outlet />
           </AdminPageErrorBoundary>
@@ -314,7 +314,7 @@ export const AdminLayout = () => {
           <div className="w-64 bg-primary-container border-r border-on-primary-fixed-variant flex flex-col p-4 shadow-2xl relative animate-[slideLeft_0.2s_ease-out]">
             <button
               onClick={() => setMobileMenuOpen(false)}
-              className="absolute top-4 right-4 text-on-primary-container/50 hover:text-white"
+              className="absolute top-4 right-4 text-on-primary-container/50 hover:text-secondary"
             >
               <X className="h-5 w-5" />
             </button>
@@ -342,8 +342,8 @@ export const AdminLayout = () => {
                           onClick={() => setMobileMenuOpen(false)}
                           className={`flex items-center space-x-3 px-3 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-colors ${
                             isActive
-                              ? "bg-white/10 text-white border-l-2 border-secondary-fixed pl-2"
-                              : "text-on-primary-container/80 hover:text-white"
+                              ? "bg-secondary/10 text-secondary border-l-2 border-secondary pl-2"
+                              : "text-on-primary-container/80 hover:text-secondary"
                           }`}
                         >
                           <ItemIcon className="h-4 w-4" />

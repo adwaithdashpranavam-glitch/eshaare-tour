@@ -525,28 +525,28 @@ export const VisaCheckerCms = ({ activeTab = "cms" }) => {
   };
 
   return (
-    <div className="space-y-6 font-sans text-xs bg-[#071120] text-gray-300 p-4 md:p-6 rounded-3xl min-h-[85vh]">
+    <div className="space-y-6 font-sans text-xs bg-transparent text-gray-600 p-4 md:p-6 rounded-3xl min-h-[85vh]">
       {/* HEADER SECTION PANEL */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-800 pb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 pb-5">
         <div>
           <h1 className="text-xl md:text-2xl font-bold text-white uppercase tracking-wider flex items-center gap-2">
-            <Layers className="h-6 w-6 text-[#D4AF37]" />
+            <Layers className="h-6 w-6 text-[#8A6D1F]" />
             Visa SaaS CRM & CMS Hub
           </h1>
-          <p className="text-gray-400 mt-1">Configure user questionnaire models, scoring engines, lead captures, and meta-data tags.</p>
+          <p className="text-gray-600 mt-1">Configure user questionnaire models, scoring engines, lead captures, and meta-data tags.</p>
         </div>
 
         {/* ROLE SIMULATOR CONTROLLERS */}
         <div className="flex items-center gap-2 bg-white/5 p-2 rounded-xl border border-white/10 self-start sm:self-center">
-          <ShieldAlert className="h-4.5 w-4.5 text-[#D4AF37]" />
-          <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Simulate Role:</span>
+          <ShieldAlert className="h-4.5 w-4.5 text-[#8A6D1F]" />
+          <span className="text-[10px] font-bold uppercase tracking-wider text-gray-600">Simulate Role:</span>
           <select 
             value={adminRole} 
             onChange={(e) => {
               setAdminRole(e.target.value);
               toast.success(`Switched role permission access: ${e.target.value}`);
             }}
-            className="bg-[#0b1624] border border-gray-800 rounded-lg p-1.5 font-semibold text-white focus:outline-none focus:border-[#D4AF37]"
+            className="bg-white border border-gray-200 rounded-lg p-1.5 font-semibold text-white focus:outline-none focus:border-[#D4AF37]"
           >
             <option value="Super Admin">Super Admin</option>
             <option value="Visa Manager">Visa Manager</option>
@@ -580,7 +580,7 @@ export const VisaCheckerCms = ({ activeTab = "cms" }) => {
               {/* Analytics dashboard graphs layout */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
-                  <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Applications distribution</h4>
+                  <h4 className="text-xs font-bold text-gray-600 uppercase tracking-wider mb-3">Applications distribution</h4>
                   <div className="h-48">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={barChartData}>
@@ -594,7 +594,7 @@ export const VisaCheckerCms = ({ activeTab = "cms" }) => {
                 </div>
 
                 <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
-                  <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Approval Probability Rates</h4>
+                  <h4 className="text-xs font-bold text-gray-600 uppercase tracking-wider mb-3">Approval Probability Rates</h4>
                   <div className="h-48 flex items-center justify-center">
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
@@ -618,7 +618,7 @@ export const VisaCheckerCms = ({ activeTab = "cms" }) => {
                       {pieChartData.map(c => (
                         <div key={c.name} className="flex items-center gap-1.5">
                           <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: c.color }} />
-                          <span className="font-semibold text-gray-300">{c.name} ({c.value})</span>
+                          <span className="font-semibold text-gray-600">{c.name} ({c.value})</span>
                         </div>
                       ))}
                     </div>
@@ -626,22 +626,22 @@ export const VisaCheckerCms = ({ activeTab = "cms" }) => {
                 </div>
 
                 <div className="p-4 bg-white/5 rounded-2xl border border-white/10 flex flex-col justify-between">
-                  <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Operational KPI Performance</h4>
+                  <h4 className="text-xs font-bold text-gray-600 uppercase tracking-wider">Operational KPI Performance</h4>
                   <div className="space-y-3 py-2">
-                    <div className="flex justify-between border-b border-gray-800 pb-1.5">
-                      <span className="text-gray-400">Total Cases Evaluated</span>
+                    <div className="flex justify-between border-b border-gray-200 pb-1.5">
+                      <span className="text-gray-600">Total Cases Evaluated</span>
                       <span className="font-bold text-white">{applications.length}</span>
                     </div>
-                    <div className="flex justify-between border-b border-gray-800 pb-1.5">
-                      <span className="text-gray-400">High Success Matches</span>
+                    <div className="flex justify-between border-b border-gray-200 pb-1.5">
+                      <span className="text-gray-600">High Success Matches</span>
                       <span className="font-bold text-emerald-500">82.4%</span>
                     </div>
                     <div className="flex justify-between pb-1.5">
-                      <span className="text-gray-400">Pending File Audits</span>
+                      <span className="text-gray-600">Pending File Audits</span>
                       <span className="font-bold text-amber-500">{applications.filter(a => a.status === "Yellow").length}</span>
                     </div>
                   </div>
-                  <div className="p-3 bg-[#D4AF37]/5 border border-[#D4AF37]/20 rounded-xl text-[10px] text-gray-300">
+                  <div className="p-3 bg-[#D4AF37]/5 border border-[#D4AF37]/20 rounded-xl text-[10px] text-gray-600">
                     💡 Lead conversion levels are up 12% following dynamic document rules configuration adjustments.
                   </div>
                 </div>
@@ -649,17 +649,17 @@ export const VisaCheckerCms = ({ activeTab = "cms" }) => {
 
               {/* Lead stages pipeline switcher layout */}
               <div className="bg-white/5 border border-white/10 rounded-2xl p-5 space-y-4">
-                <div className="flex items-center justify-between border-b border-gray-800 pb-3">
+                <div className="flex items-center justify-between border-b border-gray-200 pb-3">
                   <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-                    <Users className="w-4 h-4 text-[#D4AF37]" />
+                    <Users className="w-4 h-4 text-[#8A6D1F]" />
                     Leads Pipeline Manager
                   </h3>
                   <div className="flex items-center gap-2">
-                    <Filter className="w-4 h-4 text-gray-500" />
+                    <Filter className="w-4 h-4 text-gray-600" />
                     <select
                       value={leadFilters.stage}
                       onChange={(e) => setLeadFilters(prev => ({ ...prev, stage: e.target.value }))}
-                      className="bg-[#0b1624] border border-gray-800 rounded-lg p-1 text-[11px] font-semibold text-white focus:outline-none"
+                      className="bg-white border border-gray-200 rounded-lg p-1 text-[11px] font-semibold text-white focus:outline-none"
                     >
                       <option value="All">All Stages</option>
                       <option value="New Lead">New Lead</option>
@@ -674,10 +674,10 @@ export const VisaCheckerCms = ({ activeTab = "cms" }) => {
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {/* Left leads table */}
-                  <div className="md:col-span-8 overflow-x-auto border border-gray-800 rounded-xl">
-                    <table className="min-w-full text-left divide-y divide-gray-800 text-[11px]">
+                  <div className="md:col-span-8 overflow-x-auto border border-gray-200 rounded-xl">
+                    <table className="min-w-full text-left divide-y divide-gray-200 text-[11px]">
                       <thead>
-                        <tr className="bg-white/2 text-gray-500 font-bold uppercase">
+                        <tr className="bg-white/2 text-gray-600 font-bold uppercase">
                           <th className="p-3">Customer</th>
                           <th className="p-3">WhatsApp</th>
                           <th className="p-3">Destination</th>
@@ -685,14 +685,14 @@ export const VisaCheckerCms = ({ activeTab = "cms" }) => {
                           <th className="p-3 text-right">Details</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-gray-800">
+                      <tbody className="divide-y divide-gray-200">
                         {leads
                           .filter(l => l.contactName)
                           .filter(l => leadFilters.stage === "All" ? true : l.stage === leadFilters.stage)
                           .map((lead) => (
                             <tr key={lead.id} className="hover:bg-white/2 transition-colors">
                               <td className="p-3 font-semibold text-white">{lead.contactName}</td>
-                              <td className="p-3 text-gray-400 font-mono">{lead.contactPhone}</td>
+                              <td className="p-3 text-gray-600 font-mono">{lead.contactPhone}</td>
                               <td className="p-3">{lead.destinationCountry}</td>
                               <td className="p-3">
                                 <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${
@@ -720,17 +720,17 @@ export const VisaCheckerCms = ({ activeTab = "cms" }) => {
                   </div>
 
                   {/* Right side lead edit drawer */}
-                  <div className="md:col-span-4 bg-white/2 border border-gray-800 p-4 rounded-xl space-y-4">
+                  <div className="md:col-span-4 bg-white/2 border border-gray-200 p-4 rounded-xl space-y-4">
                     {selectedLead ? (
                       <div className="space-y-4">
-                        <div className="border-b border-gray-800 pb-2 flex justify-between items-start">
+                        <div className="border-b border-gray-200 pb-2 flex justify-between items-start">
                           <div>
                             <h4 className="font-bold text-white text-sm">{selectedLead.contactName}</h4>
-                            <p className="text-[10px] text-gray-400 uppercase font-mono">{selectedLead.id}</p>
+                            <p className="text-[10px] text-gray-600 uppercase font-mono">{selectedLead.id}</p>
                           </div>
                           <button
                             onClick={() => setSelectedLead(null)}
-                            className="text-gray-500 hover:text-white"
+                            className="text-gray-600 hover:text-white"
                           >
                             <X className="w-4 h-4" />
                           </button>
@@ -738,20 +738,20 @@ export const VisaCheckerCms = ({ activeTab = "cms" }) => {
 
                         <div className="space-y-3 text-xs">
                           <div>
-                            <span className="text-[10px] text-gray-500 uppercase font-bold">Contact Phone</span>
+                            <span className="text-[10px] text-gray-600 uppercase font-bold">Contact Phone</span>
                             <p className="text-white font-mono">{selectedLead.contactPhone}</p>
                           </div>
                           <div>
-                            <span className="text-[10px] text-gray-500 uppercase font-bold">Country Target</span>
+                            <span className="text-[10px] text-gray-600 uppercase font-bold">Country Target</span>
                             <p className="text-white">{selectedLead.destinationCountry}</p>
                           </div>
                           <div>
-                            <span className="text-[10px] text-gray-500 uppercase font-bold font-sans">Pipeline Phase</span>
+                            <span className="text-[10px] text-gray-600 uppercase font-bold font-sans">Pipeline Phase</span>
                             <select
                               value={selectedLead.stage}
                               onChange={(e) => handleLeadStageChange(selectedLead.id, e.target.value)}
                               disabled={!hasEditAccess()}
-                              className="w-full bg-[#0b1624] border border-gray-800 rounded-lg p-2 text-xs text-white focus:outline-none mt-1"
+                              className="w-full bg-white border border-gray-200 rounded-lg p-2 text-xs text-white focus:outline-none mt-1"
                             >
                               <option value="New Lead">New Lead</option>
                               <option value="Contacted">Contacted</option>
@@ -762,18 +762,18 @@ export const VisaCheckerCms = ({ activeTab = "cms" }) => {
                             </select>
                           </div>
                           <div>
-                            <span className="text-[10px] text-gray-500 uppercase font-bold">Activity notes</span>
+                            <span className="text-[10px] text-gray-600 uppercase font-bold">Activity notes</span>
                             <textarea
                               value={selectedLead.notes || "Requested details callback."}
                               disabled
-                              className="w-full bg-white/2 border border-gray-800 rounded-lg p-2 text-xs text-gray-400 mt-1 resize-none"
+                              className="w-full bg-white/2 border border-gray-200 rounded-lg p-2 text-xs text-gray-600 mt-1 resize-none"
                               rows={3}
                             />
                           </div>
                         </div>
                       </div>
                     ) : (
-                      <div className="h-full flex flex-col items-center justify-center text-center p-6 text-gray-500 space-y-2">
+                      <div className="h-full flex flex-col items-center justify-center text-center p-6 text-gray-600 space-y-2">
                         <Users className="w-8 h-8 opacity-40" />
                         <p className="font-semibold text-xs uppercase tracking-wider">Select customer lead</p>
                         <p className="text-[10px]">Click 'Open' on any pipeline lead table row to update details.</p>
@@ -796,37 +796,37 @@ export const VisaCheckerCms = ({ activeTab = "cms" }) => {
                 (separate from the eligibility-checker table below)
                 ==================================================== */}
             <div className="bg-white/5 border border-white/10 rounded-2xl p-5 space-y-4">
-              <div className="border-b border-gray-800 pb-3 flex items-center justify-between">
+              <div className="border-b border-gray-200 pb-3 flex items-center justify-between">
                 <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-                  <Briefcase className="w-4 h-4 text-[#D4AF37]" />
+                  <Briefcase className="w-4 h-4 text-[#8A6D1F]" />
                   Awaiting Payment · Schengen Drafts
                 </h3>
-                <span className="text-[10px] font-mono text-gray-400 bg-white/5 border border-white/10 px-2 py-0.5 rounded-full">
+                <span className="text-[10px] font-mono text-gray-600 bg-white/5 border border-white/10 px-2 py-0.5 rounded-full">
                   {awaitingPaymentApps.length} pending
                 </span>
               </div>
 
               {awaitingPaymentApps.length === 0 ? (
-                <p className="text-[11px] text-gray-500 italic py-4 text-center">
+                <p className="text-[11px] text-gray-600 italic py-4 text-center">
                   No Schengen draft applications are awaiting payment.
                 </p>
               ) : (
-                <div className="overflow-x-auto border border-gray-800 rounded-xl">
-                  <table className="min-w-full text-left divide-y divide-gray-800 text-[11px]">
+                <div className="overflow-x-auto border border-gray-200 rounded-xl">
+                  <table className="min-w-full text-left divide-y divide-gray-200 text-sm">
                     <thead>
-                      <tr className="bg-white/2 text-gray-500 font-bold uppercase">
-                        <th className="p-3">App ID</th>
-                        <th className="p-3">Client</th>
-                        <th className="p-3">Email</th>
-                        <th className="p-3">Destination</th>
-                        <th className="p-3">Visa Type</th>
-                        <th className="p-3">Created</th>
-                        <th className="p-3">Progress</th>
-                        <th className="p-3">Payment</th>
-                        <th className="p-3 text-right">Actions</th>
+                      <tr className="bg-slate-50 text-slate-600 font-semibold uppercase text-xs tracking-wider">
+                        <th className="px-4 py-3">App ID</th>
+                        <th className="px-4 py-3">Client</th>
+                        <th className="px-4 py-3">Email</th>
+                        <th className="px-4 py-3">Destination</th>
+                        <th className="px-4 py-3">Visa Type</th>
+                        <th className="px-4 py-3">Created</th>
+                        <th className="px-4 py-3">Progress</th>
+                        <th className="px-4 py-3">Payment</th>
+                        <th className="px-4 py-3 text-right">Actions</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-800">
+                    <tbody className="divide-y divide-gray-200">
                       {awaitingPaymentApps.map((app) => {
                         let progress = 20;
                         if (app.destinationCountry) progress += 20;
@@ -836,15 +836,15 @@ export const VisaCheckerCms = ({ activeTab = "cms" }) => {
                         const fd = app.formData || {};
                         return (
                           <tr key={app.id} className="hover:bg-white/2 transition-colors">
-                            <td className="p-3 font-mono text-gray-400">{app.id.slice(0, 7)}…</td>
-                            <td className="p-3 font-semibold text-white">{fd.name || app.customerName || "—"}</td>
-                            <td className="p-3 text-gray-400">{fd.email || "—"}</td>
-                            <td className="p-3">{app.destinationCountry || "—"}</td>
-                            <td className="p-3">{app.visaType || "—"}</td>
-                            <td className="p-3 text-gray-400 font-mono">{app.createdAt ? formatShortDate(app.createdAt) : "—"}</td>
-                            <td className="p-3 text-gray-400 font-mono">{progress}%</td>
-                            <td className="p-3">
-                              <span className="text-[9px] font-bold uppercase tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded-full">
+                            <td className="px-4 py-3.5 font-mono text-[13px] text-slate-600">{app.id.slice(0, 7)}…</td>
+                            <td className="px-4 py-3.5 text-sm font-semibold text-slate-800">{fd.name || app.customerName || "—"}</td>
+                            <td className="px-4 py-3.5 text-[13px] text-slate-500">{fd.email || "—"}</td>
+                            <td className="px-4 py-3.5 text-slate-700">{app.destinationCountry || "—"}</td>
+                            <td className="px-4 py-3.5 text-slate-700">{app.visaType || "—"}</td>
+                            <td className="px-4 py-3.5 text-[13px] text-slate-500 font-mono">{app.createdAt ? formatShortDate(app.createdAt) : "—"}</td>
+                            <td className="px-4 py-3.5 text-[13px] text-slate-600 font-mono">{progress}%</td>
+                            <td className="px-4 py-3.5">
+                              <span className="text-[10px] font-bold uppercase tracking-wider bg-amber-50 text-amber-800 border border-amber-300 px-2 py-0.5 rounded-full">
                                 {app.paymentStatus || "unpaid"}
                               </span>
                             </td>
@@ -853,14 +853,14 @@ export const VisaCheckerCms = ({ activeTab = "cms" }) => {
                                 href={`/portal/applications/${app.id}/wizard`}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-block px-2.5 py-1 bg-white/5 border border-white/10 hover:bg-white/10 rounded text-[10px] font-bold uppercase"
+                                className="inline-block px-3 py-1.5 bg-white border border-gray-300 text-slate-700 hover:bg-slate-50 rounded-lg text-[11px] font-bold uppercase transition-colors"
                               >
                                 View
                               </a>
                               {canApprovePayment && (
                                 <button
                                   onClick={() => setPendingApproval(app)}
-                                  className="inline-block px-2.5 py-1 bg-emerald-600/90 hover:bg-emerald-600 text-white rounded text-[10px] font-bold uppercase"
+                                  className="inline-block px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[11px] font-bold uppercase transition-colors"
                                 >
                                   Approve Payment
                                 </button>
@@ -876,19 +876,19 @@ export const VisaCheckerCms = ({ activeTab = "cms" }) => {
             </div>
 
             <div className="bg-white/5 border border-white/10 rounded-2xl p-5 space-y-4">
-              <div className="border-b border-gray-800 pb-3 flex items-center justify-between">
+              <div className="border-b border-gray-200 pb-3 flex items-center justify-between">
                 <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-                  <FileText className="w-4 h-4 text-[#D4AF37]" />
+                  <FileText className="w-4 h-4 text-[#8A6D1F]" />
                   Eligibility-Checker Submissions & File Auditing
                 </h3>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
                 {/* Applications Table */}
-                <div className="md:col-span-7 overflow-x-auto border border-gray-800 rounded-xl">
-                  <table className="min-w-full text-left divide-y divide-gray-800 text-[11px]">
+                <div className="md:col-span-7 overflow-x-auto border border-gray-200 rounded-xl">
+                  <table className="min-w-full text-left divide-y divide-gray-200 text-[11px]">
                     <thead>
-                      <tr className="bg-white/2 text-gray-500 font-bold uppercase">
+                      <tr className="bg-white/2 text-gray-600 font-bold uppercase">
                         <th className="p-3">ID</th>
                         <th className="p-3">Customer</th>
                         <th className="p-3">Country</th>
@@ -897,16 +897,16 @@ export const VisaCheckerCms = ({ activeTab = "cms" }) => {
                         <th className="p-3 text-right">Action</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-800">
+                    <tbody className="divide-y divide-gray-200">
                       {applications.filter(a => a.fullName).map((app) => (
                         <tr key={app.id} className="hover:bg-white/2 transition-colors">
-                          <td className="p-3 font-mono text-gray-400">{app.id.slice(0, 7)}</td>
+                          <td className="p-3 font-mono text-gray-600">{app.id.slice(0, 7)}</td>
                           <td className="p-3 font-semibold text-white">{app.fullName}</td>
                           <td className="p-3">{app.destination}</td>
                           <td className="p-3 font-bold" style={{ color: app.status === "Green" ? "#10B981" : app.status === "Yellow" ? "#F59E0B" : "#EF4444" }}>
                             {app.score}%
                           </td>
-                          <td className="p-3 text-gray-400">{app.assignedStaff || "Rakhi G Hari"}</td>
+                          <td className="p-3 text-gray-600">{app.assignedStaff || "Rakhi G Hari"}</td>
                           <td className="p-3 text-right">
                             <button
                               onClick={() => setSelectedApp(app)}
@@ -923,7 +923,7 @@ export const VisaCheckerCms = ({ activeTab = "cms" }) => {
 
                 {/* Audit panel details */}
                 {selectedApp ? (
-                  <div className="md:col-span-5 bg-white/2 border border-gray-800 p-4 rounded-xl space-y-4">
+                  <div className="md:col-span-5 bg-white/2 border border-gray-200 p-4 rounded-xl space-y-4">
                     {(() => {
                     const currentApp = applications.find(a => a.id === selectedApp?.id) || selectedApp;
                     if (!currentApp) return null;
@@ -934,14 +934,14 @@ export const VisaCheckerCms = ({ activeTab = "cms" }) => {
 
                     return (
                       <div className="space-y-4">
-                        <div className="border-b border-gray-800 pb-2 flex justify-between items-start">
+                        <div className="border-b border-gray-200 pb-2 flex justify-between items-start">
                           <div>
                             <h4 className="font-bold text-white text-sm">{currentApp.fullName}</h4>
-                            <p className="text-[10px] text-gray-400 uppercase font-mono">{currentApp.destination} (Score: {currentApp.score}%)</p>
+                            <p className="text-[10px] text-gray-600 uppercase font-mono">{currentApp.destination} (Score: {currentApp.score}%)</p>
                           </div>
                           <button
                             onClick={() => setSelectedApp(null)}
-                            className="text-gray-500 hover:text-white"
+                            className="text-gray-600 hover:text-white"
                           >
                             <X className="w-4 h-4" />
                           </button>
@@ -954,7 +954,7 @@ export const VisaCheckerCms = ({ activeTab = "cms" }) => {
 
                         {/* Document checker review pipeline list */}
                         <div className="space-y-3">
-                          <span className="text-[10px] text-gray-500 uppercase font-bold">Client-Specific Documents Checklist</span>
+                          <span className="text-[10px] text-gray-600 uppercase font-bold">Client-Specific Documents Checklist</span>
                           
                           {appDocuments.map((docObj) => {
                             const isUploaded = docObj.status === "uploaded" && docObj.fileUrl;
@@ -974,12 +974,12 @@ export const VisaCheckerCms = ({ activeTab = "cms" }) => {
 
                                 {isUploaded ? (
                                   <div className="space-y-1">
-                                    <div className="flex justify-between items-center text-[10px] text-gray-400">
+                                    <div className="flex justify-between items-center text-[10px] text-gray-600">
                                       <a
                                         href={docObj.fileUrl}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="font-medium text-[#D4AF37] hover:underline flex items-center gap-1"
+                                        className="font-medium text-[#8A6D1F] hover:underline flex items-center gap-1"
                                       >
                                         📄 View Document
                                       </a>
@@ -991,7 +991,7 @@ export const VisaCheckerCms = ({ activeTab = "cms" }) => {
                                       </button>
                                     </div>
                                     {docObj.uploadedAt && (
-                                      <p className="text-[9px] text-gray-500">
+                                      <p className="text-[9px] text-gray-600">
                                         Uploaded by {docObj.uploadedBy || 'specialist'} on {new Date(docObj.uploadedAt).toLocaleString()}
                                       </p>
                                     )}
@@ -1010,16 +1010,16 @@ export const VisaCheckerCms = ({ activeTab = "cms" }) => {
                                       }}
                                     />
                                     {adminUploadingDocKey === docObj.key ? (
-                                      <div className="flex items-center gap-1 text-[10px] text-gray-400 py-1">
-                                        <Loader2 className="w-3.5 h-3.5 animate-spin text-[#D4AF37]" />
+                                      <div className="flex items-center gap-1 text-[10px] text-gray-600 py-1">
+                                        <Loader2 className="w-3.5 h-3.5 animate-spin text-[#8A6D1F]" />
                                         <span>Uploading...</span>
                                       </div>
                                     ) : (
                                       <label
                                         htmlFor={`upload-${docObj.key}`}
-                                        className="cursor-pointer px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-gray-500 rounded text-[9px] font-bold uppercase transition-all flex items-center gap-1"
+                                        className="cursor-pointer px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-gray-300 rounded text-[9px] font-bold uppercase transition-all flex items-center gap-1"
                                       >
-                                        <Upload className="w-3 h-3 text-[#D4AF37]" /> Upload PDF
+                                        <Upload className="w-3 h-3 text-[#8A6D1F]" /> Upload PDF
                                       </label>
                                     )}
                                   </div>
@@ -1032,14 +1032,14 @@ export const VisaCheckerCms = ({ activeTab = "cms" }) => {
                         {/* Staff assignment & priority configs */}
                         <div className="grid grid-cols-2 gap-3">
                           <div>
-                            <label className="text-[10px] text-gray-500 uppercase font-bold">Owner Agent</label>
+                            <label className="text-[10px] text-gray-600 uppercase font-bold">Owner Agent</label>
                             <select
                               value={currentApp.assignedStaff || "Rakhi G Hari"}
                               onChange={(e) => {
                                 toast.success("Assigned staff owner updated.");
                                 logAudit("Updated Application staff allocation", currentApp.id, e.target.value);
                               }}
-                              className="w-full bg-[#0b1624] border border-gray-800 rounded-lg p-2 text-xs text-white focus:outline-none mt-1"
+                              className="w-full bg-white border border-gray-200 rounded-lg p-2 text-xs text-white focus:outline-none mt-1"
                             >
                               <option value="Rakhi G Hari">Rakhi G Hari</option>
                               <option value="Suresh Kumar">Suresh Kumar</option>
@@ -1047,14 +1047,14 @@ export const VisaCheckerCms = ({ activeTab = "cms" }) => {
                             </select>
                           </div>
                           <div>
-                            <label className="text-[10px] text-gray-500 uppercase font-bold font-sans">Priority level</label>
+                            <label className="text-[10px] text-gray-600 uppercase font-bold font-sans">Priority level</label>
                             <select
                               value={currentApp.priority || "Medium"}
                               onChange={(e) => {
                                 toast.success("Application priority tag shifted.");
                                 logAudit("Shifts priority values", currentApp.id, e.target.value);
                               }}
-                              className="w-full bg-[#0b1624] border border-gray-800 rounded-lg p-2 text-xs text-white focus:outline-none mt-1"
+                              className="w-full bg-white border border-gray-200 rounded-lg p-2 text-xs text-white focus:outline-none mt-1"
                             >
                               <option value="High">High</option>
                               <option value="Medium">Medium</option>
@@ -1067,7 +1067,7 @@ export const VisaCheckerCms = ({ activeTab = "cms" }) => {
                   })()}
                   </div>
                 ) : (
-                    <div className="h-full flex flex-col items-center justify-center text-center p-6 text-gray-500 space-y-2">
+                    <div className="h-full flex flex-col items-center justify-center text-center p-6 text-gray-600 space-y-2">
                       <FileText className="w-8 h-8 opacity-40" />
                       <p className="font-semibold text-xs uppercase tracking-wider">Select case file</p>
                       <p className="text-[10px]">Click 'Audit files' on any customer checking record row to begin.</p>
@@ -1086,9 +1086,9 @@ export const VisaCheckerCms = ({ activeTab = "cms" }) => {
               
               {/* Questionnaire Form builder grid */}
               <div className="bg-white/5 border border-white/10 rounded-2xl p-5 space-y-4">
-                <div className="border-b border-gray-800 pb-3">
+                <div className="border-b border-gray-200 pb-3">
                   <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-                    <Layout className="w-4 h-4 text-[#D4AF37]" />
+                    <Layout className="w-4 h-4 text-[#8A6D1F]" />
                     Questionnaire Steps Builder
                   </h3>
                 </div>
@@ -1096,7 +1096,7 @@ export const VisaCheckerCms = ({ activeTab = "cms" }) => {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                   {/* Left step tabs selection */}
                   <div className="space-y-2">
-                    <span className="text-[10px] text-gray-500 uppercase font-bold block mb-1">Select Steps</span>
+                    <span className="text-[10px] text-gray-600 uppercase font-bold block mb-1">Select Steps</span>
                     {formSteps.map((step, idx) => (
                       <button
                         key={step.stepId}
@@ -1104,7 +1104,7 @@ export const VisaCheckerCms = ({ activeTab = "cms" }) => {
                         className={`w-full text-left p-3 rounded-xl border text-[11px] font-bold uppercase transition-all ${
                           idx === activeStepEdit 
                             ? "bg-[#D4AF37]/10 border-[#D4AF37] text-white" 
-                            : "bg-white/2 border-white/5 text-gray-400 hover:text-white"
+                            : "bg-white/2 border-white/5 text-gray-600 hover:text-white"
                         }`}
                       >
                         {step.title}
@@ -1116,24 +1116,24 @@ export const VisaCheckerCms = ({ activeTab = "cms" }) => {
                   <div className="md:col-span-3 space-y-4">
                     <div className="flex justify-between items-center">
                       <h4 className="font-bold text-white text-xs uppercase">Fields in step: {formSteps[activeStepEdit]?.title}</h4>
-                      <span className="text-[9px] text-[#D4AF37] font-bold">Dynamic Version: 3</span>
+                      <span className="text-[9px] text-[#8A6D1F] font-bold">Dynamic Version: 3</span>
                     </div>
 
-                    <div className="border border-gray-800 rounded-xl overflow-hidden bg-white/2">
+                    <div className="border border-gray-200 rounded-xl overflow-hidden bg-white/2">
                       <table className="min-w-full text-left text-[11px]">
                         <thead>
-                          <tr className="bg-white/3 text-gray-500 font-bold uppercase border-b border-gray-800">
+                          <tr className="bg-white/3 text-gray-600 font-bold uppercase border-b border-gray-200">
                             <th className="p-3">Label</th>
                             <th className="p-3">Field Key</th>
                             <th className="p-3">Input Type</th>
                             <th className="p-3 text-right">Action</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-800">
+                        <tbody className="divide-y divide-gray-200">
                           {formSteps[activeStepEdit]?.fields.map((field, fIdx) => (
                             <tr key={fIdx}>
                               <td className="p-3 font-semibold text-white">{field.label}</td>
-                              <td className="p-3 font-mono text-gray-400">{field.id}</td>
+                              <td className="p-3 font-mono text-gray-600">{field.id}</td>
                               <td className="p-3 uppercase">{field.type}</td>
                               <td className="p-3 text-right">
                                 <button
@@ -1151,23 +1151,23 @@ export const VisaCheckerCms = ({ activeTab = "cms" }) => {
                     </div>
 
                     {/* Add step field forms */}
-                    <div className="bg-[#0b1624] p-4 rounded-xl border border-gray-800 grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
+                    <div className="bg-white p-4 rounded-xl border border-gray-200 grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
                       <div className="space-y-1 sm:col-span-2">
-                        <label className="text-[10px] text-gray-400 uppercase font-bold">Field Label Name</label>
+                        <label className="text-[10px] text-gray-600 uppercase font-bold">Field Label Name</label>
                         <input
                           type="text"
                           placeholder="e.g. Travel History"
                           value={newFieldLabel}
                           onChange={(e) => setNewFieldLabel(e.target.value)}
-                          className="w-full bg-white/5 border border-gray-800 rounded-lg p-2 text-xs text-white"
+                          className="w-full bg-white/5 border border-gray-200 rounded-lg p-2 text-xs text-white"
                         />
                       </div>
                       <div className="space-y-1">
-                        <label className="text-[10px] text-gray-400 uppercase font-bold">Input Element</label>
+                        <label className="text-[10px] text-gray-600 uppercase font-bold">Input Element</label>
                         <select
                           value={newFieldType}
                           onChange={(e) => setNewFieldType(e.target.value)}
-                          className="w-full bg-[#0b1624] border border-gray-800 rounded-lg p-2 text-xs text-white"
+                          className="w-full bg-white border border-gray-200 rounded-lg p-2 text-xs text-white"
                         >
                           <option value="text">Text Input</option>
                           <option value="number">Number Field</option>
@@ -1205,20 +1205,20 @@ export const VisaCheckerCms = ({ activeTab = "cms" }) => {
 
               {/* Scoring Rules Builder interface */}
               <div className="bg-white/5 border border-white/10 rounded-2xl p-5 space-y-4">
-                <div className="border-b border-gray-800 pb-3 flex justify-between items-center">
+                <div className="border-b border-gray-200 pb-3 flex justify-between items-center">
                   <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-                    <Award className="w-4 h-4 text-[#D4AF37]" />
+                    <Award className="w-4 h-4 text-[#8A6D1F]" />
                     Visual Eligibility Rules Engine
                   </h3>
-                  <span className="text-[9px] text-[#D4AF37] font-bold">JSON Rule Version: 2</span>
+                  <span className="text-[9px] text-[#8A6D1F] font-bold">JSON Rule Version: 2</span>
                 </div>
 
                 <div className="space-y-4">
                   {/* Visual logic rules display list */}
-                  <div className="border border-gray-800 rounded-xl overflow-hidden bg-white/2">
+                  <div className="border border-gray-200 rounded-xl overflow-hidden bg-white/2">
                     <table className="min-w-full text-left text-[11px]">
                       <thead>
-                        <tr className="bg-white/3 text-gray-500 font-bold uppercase border-b border-gray-800">
+                        <tr className="bg-white/3 text-gray-600 font-bold uppercase border-b border-gray-200">
                           <th className="p-3">Logical condition statement</th>
                           <th className="p-3">Evaluation Operator</th>
                           <th className="p-3">Value</th>
@@ -1226,11 +1226,11 @@ export const VisaCheckerCms = ({ activeTab = "cms" }) => {
                           <th className="p-3 text-right">Delete</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-gray-800">
+                      <tbody className="divide-y divide-gray-200">
                         {rulesList.map((rule, idx) => (
                           <tr key={idx}>
                             <td className="p-3 font-semibold text-white">IF `{rule.condition}`</td>
-                            <td className="p-3 font-mono text-gray-400 uppercase">{rule.operator.replace("_", " ")}</td>
+                            <td className="p-3 font-mono text-gray-600 uppercase">{rule.operator.replace("_", " ")}</td>
                             <td className="p-3 font-semibold text-white">{rule.value}</td>
                             <td className="p-3 text-center font-mono font-bold" style={{ color: rule.scoreModifier > 0 ? "#10B981" : "#EF4444" }}>
                               {rule.scoreModifier > 0 ? `+${rule.scoreModifier}` : rule.scoreModifier}
@@ -1251,13 +1251,13 @@ export const VisaCheckerCms = ({ activeTab = "cms" }) => {
                   </div>
 
                   {/* Add logic rule editor fields */}
-                  <div className="bg-[#0b1624] p-4 rounded-xl border border-gray-800 grid grid-cols-1 sm:grid-cols-4 gap-3 items-end">
+                  <div className="bg-white p-4 rounded-xl border border-gray-200 grid grid-cols-1 sm:grid-cols-4 gap-3 items-end">
                     <div className="space-y-1">
-                      <label className="text-[10px] text-gray-400 uppercase font-bold">Variable</label>
+                      <label className="text-[10px] text-gray-600 uppercase font-bold">Variable</label>
                       <select
                         value={newRule.condition}
                         onChange={(e) => setNewRule(prev => ({ ...prev, condition: e.target.value }))}
-                        className="w-full bg-[#0b1624] border border-gray-800 rounded-lg p-2 text-xs text-white focus:outline-none"
+                        className="w-full bg-white border border-gray-200 rounded-lg p-2 text-xs text-white focus:outline-none"
                       >
                         <option value="monthlySalary">monthlySalary</option>
                         <option value="destination">destination</option>
@@ -1267,11 +1267,11 @@ export const VisaCheckerCms = ({ activeTab = "cms" }) => {
                       </select>
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[10px] text-gray-400 uppercase font-bold">Operator</label>
+                      <label className="text-[10px] text-gray-600 uppercase font-bold">Operator</label>
                       <select
                         value={newRule.operator}
                         onChange={(e) => setNewRule(prev => ({ ...prev, operator: e.target.value }))}
-                        className="w-full bg-[#0b1624] border border-gray-800 rounded-lg p-2 text-xs text-white focus:outline-none"
+                        className="w-full bg-white border border-gray-200 rounded-lg p-2 text-xs text-white focus:outline-none"
                       >
                         <option value="greater_than">greater than</option>
                         <option value="less_than">less than</option>
@@ -1280,23 +1280,23 @@ export const VisaCheckerCms = ({ activeTab = "cms" }) => {
                       </select>
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[10px] text-gray-400 uppercase font-bold">Validation Value</label>
+                      <label className="text-[10px] text-gray-600 uppercase font-bold">Validation Value</label>
                       <input
                         type="text"
                         placeholder="e.g. 10000 or Yes"
                         value={newRule.value}
                         onChange={(e) => setNewRule(prev => ({ ...prev, value: e.target.value }))}
-                        className="w-full bg-white/5 border border-gray-800 rounded-lg p-2 text-xs text-white focus:outline-none"
+                        className="w-full bg-white/5 border border-gray-200 rounded-lg p-2 text-xs text-white focus:outline-none"
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[10px] text-gray-400 uppercase font-bold font-sans">Score Modifier Weight</label>
+                      <label className="text-[10px] text-gray-600 uppercase font-bold font-sans">Score Modifier Weight</label>
                       <input
                         type="number"
                         placeholder="e.g. 15 or -10"
                         value={newRule.scoreModifier}
                         onChange={(e) => setNewRule(prev => ({ ...prev, scoreModifier: e.target.value }))}
-                        className="w-full bg-white/5 border border-gray-800 rounded-lg p-2 text-xs text-white focus:outline-none"
+                        className="w-full bg-white/5 border border-gray-200 rounded-lg p-2 text-xs text-white focus:outline-none"
                       />
                     </div>
                     <div className="sm:col-span-4 flex justify-end">
@@ -1338,45 +1338,45 @@ export const VisaCheckerCms = ({ activeTab = "cms" }) => {
                 
                 {/* Theme Customizer parameters */}
                 <div className="bg-white/5 border border-white/10 rounded-2xl p-5 space-y-5">
-                  <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-1.5 pb-2 border-b border-gray-800">
-                    <Layout className="w-4 h-4 text-[#D4AF37]" />
+                  <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-1.5 pb-2 border-b border-gray-200">
+                    <Layout className="w-4 h-4 text-[#8A6D1F]" />
                     Visual Theme Configurator
                   </h3>
                   
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1">
-                      <label className="text-[10px] text-gray-400 uppercase font-bold">Primary Background</label>
+                      <label className="text-[10px] text-gray-600 uppercase font-bold">Primary Background</label>
                       <input
                         type="color"
                         value={themeConfig.primaryBg}
                         onChange={(e) => setThemeConfig(prev => ({ ...prev, primaryBg: e.target.value }))}
-                        className="w-full h-10 bg-transparent border border-gray-800 rounded cursor-pointer"
+                        className="w-full h-10 bg-transparent border border-gray-200 rounded cursor-pointer"
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[10px] text-gray-400 uppercase font-bold">Gold Accent Color</label>
+                      <label className="text-[10px] text-gray-600 uppercase font-bold">Gold Accent Color</label>
                       <input
                         type="color"
                         value={themeConfig.goldAccent}
                         onChange={(e) => setThemeConfig(prev => ({ ...prev, goldAccent: e.target.value }))}
-                        className="w-full h-10 bg-transparent border border-gray-800 rounded cursor-pointer"
+                        className="w-full h-10 bg-transparent border border-gray-200 rounded cursor-pointer"
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[10px] text-gray-400 uppercase font-bold">CTA Button Color</label>
+                      <label className="text-[10px] text-gray-600 uppercase font-bold">CTA Button Color</label>
                       <input
                         type="color"
                         value={themeConfig.ctaOrange}
                         onChange={(e) => setThemeConfig(prev => ({ ...prev, ctaOrange: e.target.value }))}
-                        className="w-full h-10 bg-transparent border border-gray-800 rounded cursor-pointer"
+                        className="w-full h-10 bg-transparent border border-gray-200 rounded cursor-pointer"
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[10px] text-gray-400 uppercase font-bold font-sans">Border Radius style</label>
+                      <label className="text-[10px] text-gray-600 uppercase font-bold font-sans">Border Radius style</label>
                       <select
                         value={themeConfig.borderRadius}
                         onChange={(e) => setThemeConfig(prev => ({ ...prev, borderRadius: e.target.value }))}
-                        className="w-full bg-[#0b1624] border border-gray-800 rounded-lg p-2.5 text-xs text-white"
+                        className="w-full bg-white border border-gray-200 rounded-lg p-2.5 text-xs text-white"
                       >
                         <option value="0.25rem">Classic Sharp (4px)</option>
                         <option value="0.5rem">Standard Round (8px)</option>
@@ -1385,7 +1385,7 @@ export const VisaCheckerCms = ({ activeTab = "cms" }) => {
                     </div>
                   </div>
 
-                  <div className="flex justify-end pt-2 border-t border-gray-800">
+                  <div className="flex justify-end pt-2 border-t border-gray-200">
                     <button
                       onClick={handleSaveTheme}
                       disabled={!hasEditAccess()}
@@ -1398,9 +1398,9 @@ export const VisaCheckerCms = ({ activeTab = "cms" }) => {
                 </div>
 
                 {/* Live theme sandbox preview drawer */}
-                <div className="bg-[#0b1624] border border-gray-800 rounded-2xl p-5 space-y-4 relative overflow-hidden">
+                <div className="bg-white border border-gray-200 rounded-2xl p-5 space-y-4 relative overflow-hidden">
                   <span className="absolute top-2 right-2 text-[9px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded font-bold uppercase">Live Preview Sandbox</span>
-                  <h4 className="font-bold text-gray-500 text-[10px] uppercase">Theme Sandbox rendering</h4>
+                  <h4 className="font-bold text-gray-600 text-[10px] uppercase">Theme Sandbox rendering</h4>
                   
                   {/* Sandbox rendering preview board */}
                   <div 
@@ -1433,36 +1433,36 @@ export const VisaCheckerCms = ({ activeTab = "cms" }) => {
 
               {/* SEO parameters dynamic forms */}
               <div className="bg-white/5 border border-white/10 rounded-2xl p-5 space-y-5">
-                <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-1.5 pb-2 border-b border-gray-800">
-                  <Layers className="w-4 h-4 text-[#D4AF37]" />
+                <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-1.5 pb-2 border-b border-gray-200">
+                  <Layers className="w-4 h-4 text-[#8A6D1F]" />
                   Search Optimization & Metadata CMS
                 </h3>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <label className="text-[10px] text-gray-400 uppercase font-bold">SEO Page Title</label>
+                    <label className="text-[10px] text-gray-600 uppercase font-bold">SEO Page Title</label>
                     <input
                       type="text"
                       value={seoConfig.pageTitle}
                       onChange={(e) => setSeoConfig(prev => ({ ...prev, pageTitle: e.target.value }))}
-                      className="w-full bg-[#0b1624] border border-gray-800 rounded-lg p-2.5 text-xs text-white"
+                      className="w-full bg-white border border-gray-200 rounded-lg p-2.5 text-xs text-white"
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-[10px] text-gray-400 uppercase font-bold">Search Keywords tags</label>
+                    <label className="text-[10px] text-gray-600 uppercase font-bold">Search Keywords tags</label>
                     <input
                       type="text"
                       value={seoConfig.keywords}
                       onChange={(e) => setSeoConfig(prev => ({ ...prev, keywords: e.target.value }))}
-                      className="w-full bg-[#0b1624] border border-gray-800 rounded-lg p-2.5 text-xs text-white"
+                      className="w-full bg-white border border-gray-200 rounded-lg p-2.5 text-xs text-white"
                     />
                   </div>
                   <div className="space-y-1 sm:col-span-2">
-                    <label className="text-[10px] text-gray-400 uppercase font-bold">Meta Description</label>
+                    <label className="text-[10px] text-gray-600 uppercase font-bold">Meta Description</label>
                     <textarea
                       value={seoConfig.metaDescription}
                       onChange={(e) => setSeoConfig(prev => ({ ...prev, metaDescription: e.target.value }))}
-                      className="w-full bg-[#0b1624] border border-gray-800 rounded-lg p-2.5 text-xs text-white resize-none"
+                      className="w-full bg-white border border-gray-200 rounded-lg p-2.5 text-xs text-white resize-none"
                       rows={3}
                     />
                   </div>
@@ -1482,27 +1482,27 @@ export const VisaCheckerCms = ({ activeTab = "cms" }) => {
 
               {/* System Audit logs lists */}
               <div className="bg-white/5 border border-white/10 rounded-2xl p-5 space-y-4">
-                <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-1.5 pb-2 border-b border-gray-800">
-                  <Activity className="w-4 h-4 text-[#D4AF37]" />
+                <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-1.5 pb-2 border-b border-gray-200">
+                  <Activity className="w-4 h-4 text-[#8A6D1F]" />
                   System Audit Logs (Real-time events track)
                 </h3>
 
-                <div className="overflow-x-auto border border-gray-800 rounded-xl">
-                  <table className="min-w-full text-left divide-y divide-gray-800 text-[10px]">
+                <div className="overflow-x-auto border border-gray-200 rounded-xl">
+                  <table className="min-w-full text-left divide-y divide-gray-200 text-[10px]">
                     <thead>
-                      <tr className="bg-white/2 text-gray-500 font-bold uppercase">
+                      <tr className="bg-white/2 text-gray-600 font-bold uppercase">
                         <th className="p-3">Timestamp</th>
                         <th className="p-3">Admin</th>
                         <th className="p-3">Operation Action</th>
                         <th className="p-3">Detail Value change</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-800 font-mono text-gray-400">
+                    <tbody className="divide-y divide-gray-200 font-mono text-gray-600">
                       {auditLogs.map((log, idx) => (
                         <tr key={idx}>
-                          <td className="p-3 text-gray-500">{log.timestamp}</td>
+                          <td className="p-3 text-gray-600">{log.timestamp}</td>
                           <td className="p-3 font-semibold text-white">{log.admin}</td>
-                          <td className="p-3 text-[#D4AF37]">{log.action}</td>
+                          <td className="p-3 text-[#8A6D1F]">{log.action}</td>
                           <td className="p-3 max-w-xs truncate">{log.newValue}</td>
                         </tr>
                       ))}
@@ -1520,14 +1520,14 @@ export const VisaCheckerCms = ({ activeTab = "cms" }) => {
       {/* APPROVE PAYMENT CONFIRMATION MODAL */}
       {pendingApproval && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-          <div className="bg-[#0b1a2e] border border-white/10 rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4 text-gray-200">
+          <div className="bg-white border border-white/10 rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4 text-gray-700">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-emerald-500/15 flex items-center justify-center flex-shrink-0">
                 <CheckCircle2 className="w-5 h-5 text-emerald-400" />
               </div>
               <h3 className="text-base font-bold text-white">Approve Payment & Submit</h3>
             </div>
-            <p className="text-xs text-gray-400 leading-relaxed">
+            <p className="text-xs text-gray-600 leading-relaxed">
               This marks <span className="text-white font-semibold">{getApplicationDisplayName(pendingApproval)}</span>
               {pendingApproval.formData?.name ? ` for ${pendingApproval.formData.name}` : ""} as
               <span className="text-emerald-400 font-semibold"> paid</span> and submits it. The application becomes
@@ -1537,7 +1537,7 @@ export const VisaCheckerCms = ({ activeTab = "cms" }) => {
               <button
                 onClick={() => setPendingApproval(null)}
                 disabled={approvingPayment}
-                className="px-4 py-2 border border-white/10 text-gray-300 hover:bg-white/5 font-bold rounded-xl text-[10px] uppercase tracking-wider disabled:opacity-50"
+                className="px-4 py-2 border border-white/10 text-gray-600 hover:bg-white/5 font-bold rounded-xl text-[10px] uppercase tracking-wider disabled:opacity-50"
               >
                 Cancel
               </button>

@@ -479,7 +479,7 @@ export const StaffManagementPage = () => {
                 value={editForm.img}
                 onChange={(e) => setEditForm({ ...editForm, img: e.target.value })}
               />
-              <label className="px-3 py-2 border border-[#4D4740] text-white hover:border-[#7A8F6B] hover:text-[#7A8F6B] rounded text-xs font-bold uppercase tracking-wider cursor-pointer transition-colors flex items-center space-x-1.5 shrink-0">
+              <label className="px-3 py-2 border border-gray-300 text-white hover:border-[#7A8F6B] hover:text-[#5B6B62] rounded text-xs font-bold uppercase tracking-wider cursor-pointer transition-colors flex items-center space-x-1.5 shrink-0">
                 {uploadingPic ? (
                   <>
                     <Loader2 className="h-3.5 w-3.5 animate-spin" />

@@ -113,14 +113,14 @@ export default function AdminDocumentsPage() {
   };
 
   return (
-    <div className="space-y-6 font-sans text-xs bg-[#071120] text-gray-300 p-4 md:p-6 rounded-3xl min-h-[85vh]">
+    <div className="space-y-6 font-sans text-xs bg-transparent text-gray-600 p-4 md:p-6 rounded-3xl min-h-[85vh]">
       {/* Header */}
-      <div className="border-b border-gray-800 pb-5">
+      <div className="border-b border-gray-200 pb-5">
         <h1 className="text-xl md:text-2xl font-bold text-white uppercase tracking-wider flex items-center gap-2">
-          <FileText className="h-6 w-6 text-[#D4AF37]" />
+          <FileText className="h-6 w-6 text-[#8A6D1F]" />
           Documents & Templates Manager
         </h1>
-        <p className="text-gray-400 mt-1">Upload and manage universal document templates distributed to all visa applicants.</p>
+        <p className="text-gray-600 mt-1">Upload and manage universal document templates distributed to all visa applicants.</p>
       </div>
 
       {/* Main Grid */}
@@ -128,15 +128,15 @@ export default function AdminDocumentsPage() {
         
         {/* Upload Form */}
         <div className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-4">
-          <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-1.5 pb-2 border-b border-gray-800">
-            <Upload className="w-4 h-4 text-[#D4AF37]" /> Upload Universal NOC Template
+          <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-1.5 pb-2 border-b border-gray-200">
+            <Upload className="w-4 h-4 text-[#8A6D1F]" /> Upload Universal NOC Template
           </h3>
 
           <form onSubmit={handleUpload} className="space-y-4">
-            <div className="p-6 border-2 border-dashed border-gray-800 rounded-xl flex flex-col items-center justify-center text-center space-y-2 bg-[#0b1624]">
-              <FileText className="w-8 h-8 text-gray-500" />
+            <div className="p-6 border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center text-center space-y-2 bg-white">
+              <FileText className="w-8 h-8 text-gray-600" />
               <div className="text-xs">
-                <label className="cursor-pointer font-bold text-[#D4AF37] hover:underline">
+                <label className="cursor-pointer font-bold text-[#8A6D1F] hover:underline">
                   <span>Select NOC Template</span>
                   <input
                     type="file"
@@ -146,13 +146,13 @@ export default function AdminDocumentsPage() {
                   />
                 </label>
               </div>
-              <p className="text-[10px] text-gray-400">PDF, DOC, or DOCX only. Max size 15MB.</p>
+              <p className="text-[10px] text-gray-600">PDF, DOC, or DOCX only. Max size 15MB.</p>
             </div>
 
             {selectedFile && (
               <div className="p-3 bg-white/5 border border-white/10 rounded-xl flex items-center justify-between">
                 <div className="flex items-center gap-2 truncate">
-                  <FileText className="w-4 h-4 text-[#D4AF37] shrink-0" />
+                  <FileText className="w-4 h-4 text-[#8A6D1F] shrink-0" />
                   <span className="text-xs text-white truncate font-medium">{selectedFile.name}</span>
                 </div>
                 <button
@@ -188,14 +188,14 @@ export default function AdminDocumentsPage() {
         </div>
 
         {/* Current Template Status */}
-        <div className="bg-white/5 border border-[#E5E7EB]/10 rounded-2xl p-6 space-y-4">
-          <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-1.5 pb-2 border-b border-gray-800">
-            <FileCheck className="w-4 h-4 text-[#D4AF37]" /> Active NOC Document Status
+        <div className="bg-white/5 border border-gray-200 rounded-2xl p-6 space-y-4">
+          <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-1.5 pb-2 border-b border-gray-200">
+            <FileCheck className="w-4 h-4 text-[#8A6D1F]" /> Active NOC Document Status
           </h3>
 
           {loading ? (
-            <div className="py-12 flex flex-col items-center justify-center text-gray-400 gap-2">
-              <Loader2 className="w-6 h-6 animate-spin text-[#D4AF37]" />
+            <div className="py-12 flex flex-col items-center justify-center text-gray-600 gap-2">
+              <Loader2 className="w-6 h-6 animate-spin text-[#8A6D1F]" />
               <p>Checking template registries...</p>
             </div>
           ) : nocTemplate ? (
@@ -204,53 +204,53 @@ export default function AdminDocumentsPage() {
                 <FileCheck className="h-5 w-5 shrink-0 mt-0.5" />
                 <div>
                   <p className="font-bold text-xs uppercase tracking-wide">Template is Active & Deployed</p>
-                  <p className="mt-1 text-[10px] text-gray-400">All Schengen visa applicants can now view and download this NOC template from their confirmation portals.</p>
+                  <p className="mt-1 text-[10px] text-gray-600">All Schengen visa applicants can now view and download this NOC template from their confirmation portals.</p>
                 </div>
               </div>
 
-              <div className="space-y-3 bg-white/2 border border-gray-800 rounded-xl p-4 text-[11px] font-sans">
-                <div className="flex justify-between items-center pb-2 border-b border-gray-800/50">
-                  <span className="text-gray-400">Document Type:</span>
+              <div className="space-y-3 bg-white/2 border border-gray-200 rounded-xl p-4 text-[11px] font-sans">
+                <div className="flex justify-between items-center pb-2 border-b border-gray-200">
+                  <span className="text-gray-600">Document Type:</span>
                   <span className="font-bold text-white">{nocTemplate.documentType}</span>
                 </div>
-                <div className="flex justify-between items-center pb-2 border-b border-gray-800/50">
-                  <span className="text-gray-400">Document Title:</span>
+                <div className="flex justify-between items-center pb-2 border-b border-gray-200">
+                  <span className="text-gray-600">Document Title:</span>
                   <span className="font-bold text-white">{nocTemplate.title}</span>
                 </div>
-                <div className="flex justify-between items-center pb-2 border-b border-gray-800/50">
-                  <span className="text-gray-400">File Name:</span>
+                <div className="flex justify-between items-center pb-2 border-b border-gray-200">
+                  <span className="text-gray-600">File Name:</span>
                   <span className="font-bold text-white truncate max-w-[200px]" title={nocTemplate.fileName}>{nocTemplate.fileName}</span>
                 </div>
-                <div className="flex justify-between items-center pb-2 border-b border-gray-800/50">
-                  <span className="text-gray-400">File Type:</span>
+                <div className="flex justify-between items-center pb-2 border-b border-gray-200">
+                  <span className="text-gray-600">File Type:</span>
                   <span className="font-bold text-white inline-flex items-center gap-1.5">
-                    <FileText className="w-3.5 h-3.5 text-[#D4AF37]" />
+                    <FileText className="w-3.5 h-3.5 text-[#8A6D1F]" />
                     {getFileExtension(nocTemplate)}
                   </span>
                 </div>
-                <div className="flex justify-between items-center pb-2 border-b border-gray-800/50">
-                  <span className="text-gray-400">File Size:</span>
+                <div className="flex justify-between items-center pb-2 border-b border-gray-200">
+                  <span className="text-gray-600">File Size:</span>
                   <span className="font-bold text-white">{formatFileSize(nocTemplate.fileSize) || "N/A"}</span>
                 </div>
-                <div className="flex justify-between items-center pb-2 border-b border-gray-800/50">
-                  <span className="text-gray-400 font-sans">Uploaded At:</span>
-                  <span className="font-semibold text-gray-300 flex items-center gap-1">
-                    <Calendar className="w-3.5 h-3.5 text-gray-400" />
+                <div className="flex justify-between items-center pb-2 border-b border-gray-200">
+                  <span className="text-gray-600 font-sans">Uploaded At:</span>
+                  <span className="font-semibold text-gray-600 flex items-center gap-1">
+                    <Calendar className="w-3.5 h-3.5 text-gray-600" />
                     {nocTemplate.uploadedAt ? (
                       new Date(nocTemplate.uploadedAt.seconds ? nocTemplate.uploadedAt.seconds * 1000 : nocTemplate.uploadedAt).toLocaleString()
                     ) : "N/A"}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-400 font-sans">Uploaded By:</span>
-                  <span className="font-semibold text-gray-300 flex items-center gap-1 truncate max-w-[200px]" title={nocTemplate.uploadedByName || nocTemplate.uploadedBy}>
-                    <User className="w-3.5 h-3.5 text-gray-400" />
+                  <span className="text-gray-600 font-sans">Uploaded By:</span>
+                  <span className="font-semibold text-gray-600 flex items-center gap-1 truncate max-w-[200px]" title={nocTemplate.uploadedByName || nocTemplate.uploadedBy}>
+                    <User className="w-3.5 h-3.5 text-gray-600" />
                     {nocTemplate.uploadedByName || nocTemplate.uploadedBy || "N/A"}
                   </span>
                 </div>
               </div>
 
-              <p className="text-[10px] text-gray-400 italic">
+              <p className="text-[10px] text-gray-600 italic">
                 This is the active NOC template currently visible in the client portal.
               </p>
 
@@ -268,15 +268,15 @@ export default function AdminDocumentsPage() {
                   href={nocTemplate.fileUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-4 py-2.5 border border-gray-700 hover:border-gray-500 rounded-xl font-bold uppercase flex items-center gap-1.5 text-[10px]"
+                  className="px-4 py-2.5 border border-gray-200 hover:border-gray-300 rounded-xl font-bold uppercase flex items-center gap-1.5 text-[10px]"
                 >
-                  <ExternalLink className="w-3.5 h-3.5 text-[#D4AF37]" />
+                  <ExternalLink className="w-3.5 h-3.5 text-[#8A6D1F]" />
                   Open Uploaded Template
                 </a>
               </div>
             </div>
           ) : (
-            <div className="py-12 flex flex-col items-center justify-center text-center text-gray-500 space-y-2">
+            <div className="py-12 flex flex-col items-center justify-center text-center text-gray-600 space-y-2">
               <FileText className="w-8 h-8 opacity-40" />
               <p className="font-semibold text-xs uppercase tracking-wider">No NOC Template Uploaded</p>
               <p className="text-[10px] max-w-xs">Upload a universal PDF document on the left to make it downloadable in client visa workflows.</p>

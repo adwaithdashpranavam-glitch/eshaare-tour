@@ -680,7 +680,7 @@ export const VisaTypeEditorPage = () => {
                   />
                 </div>
                 <div className="flex items-center space-x-2">
-                  <label className="px-4 py-2 border border-[#4D4740] text-white hover:border-[#7A8F6B] hover:text-[#7A8F6B] rounded text-xs font-bold uppercase tracking-wider cursor-pointer transition-colors flex items-center space-x-1.5">
+                  <label className="px-4 py-2 border border-gray-300 text-white hover:border-[#7A8F6B] hover:text-[#5B6B62] rounded text-xs font-bold uppercase tracking-wider cursor-pointer transition-colors flex items-center space-x-1.5">
                     {uploading ? (
                       <>
                         <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -704,7 +704,7 @@ export const VisaTypeEditorPage = () => {
                     <button
                       type="button"
                       onClick={() => setFormData(prev => ({ ...prev, imageUrl: "" }))}
-                      className="px-3 py-2 text-xs font-bold text-[#F5F1E8]/45 hover:text-error-red transition-colors"
+                      className="px-3 py-2 text-xs font-bold text-gray-500 hover:text-error-red transition-colors"
                     >
                       Clear Image
                     </button>
@@ -1170,7 +1170,7 @@ export const VisaTypeEditorPage = () => {
                           required
                           value={dest.slug}
                           onChange={(e) => updateDestinationField(idx, "slug", e.target.value)}
-                          className="w-full bg-primary-container border border-[#4D4740] px-2.5 py-1 text-xs text-white rounded focus:border-secondary focus:outline-none font-mono"
+                          className="w-full bg-primary-container border border-gray-300 px-2.5 py-1 text-xs text-white rounded focus:border-secondary focus:outline-none font-mono"
                           placeholder="e.g. france"
                         />
                         <span className="text-[8px] text-on-primary-container/40 mt-1 block">
@@ -1184,7 +1184,7 @@ export const VisaTypeEditorPage = () => {
                           required
                           value={dest.imageUrl}
                           onChange={(e) => updateDestinationField(idx, "imageUrl", e.target.value)}
-                          className="w-full bg-primary-container border border-[#4D4740] px-2.5 py-1 text-xs text-white rounded focus:border-secondary focus:outline-none"
+                          className="w-full bg-primary-container border border-gray-300 px-2.5 py-1 text-xs text-white rounded focus:border-secondary focus:outline-none"
                           placeholder="e.g. https://images.unsplash.com/...?fm=webp"
                         />
                       </div>
@@ -1267,7 +1267,7 @@ export const VisaTypeEditorPage = () => {
                     {/* Standard Features Checklist */}
                     <div className="space-y-2 pt-2 border-t border-on-primary-fixed-variant/40">
                       <div className="flex justify-between items-center">
-                        <label className="text-[9px] font-bold uppercase text-[#F5F1E8]/50">Features Checklist</label>
+                        <label className="text-[9px] font-bold uppercase text-gray-500">Features Checklist</label>
                         <button
                           type="button"
                           onClick={() => addPackageFeature("standard")}
@@ -1283,7 +1283,7 @@ export const VisaTypeEditorPage = () => {
                               type="checkbox"
                               checked={feat.included}
                               onChange={(e) => updatePackageFeatureField("standard", idx, "included", e.target.checked)}
-                              className="rounded border-[#4D4740] text-secondary focus:ring-secondary/50 bg-[#2B2723] h-3.5 w-3.5"
+                              className="rounded border-gray-300 text-secondary focus:ring-secondary/50 bg-white h-3.5 w-3.5"
                               title="Is Included"
                             />
                             <input
@@ -1370,7 +1370,7 @@ export const VisaTypeEditorPage = () => {
                     {/* Premium Features Checklist */}
                     <div className="space-y-2 pt-2 border-t border-on-primary-fixed-variant/40">
                       <div className="flex justify-between items-center">
-                        <label className="text-[9px] font-bold uppercase text-[#F5F1E8]/50">Features Checklist</label>
+                        <label className="text-[9px] font-bold uppercase text-gray-500">Features Checklist</label>
                         <button
                           type="button"
                           onClick={() => addPackageFeature("premium")}
@@ -1386,7 +1386,7 @@ export const VisaTypeEditorPage = () => {
                               type="checkbox"
                               checked={feat.included}
                               onChange={(e) => updatePackageFeatureField("premium", idx, "included", e.target.checked)}
-                              className="rounded border-[#4D4740] text-secondary focus:ring-secondary/50 bg-[#2B2723] h-3.5 w-3.5"
+                              className="rounded border-gray-300 text-secondary focus:ring-secondary/50 bg-white h-3.5 w-3.5"
                               title="Is Included"
                             />
                             <input
@@ -1401,7 +1401,7 @@ export const VisaTypeEditorPage = () => {
                             <button
                               type="button"
                               onClick={() => updatePackageFeatureField("premium", idx, "highlighted", !feat.highlighted)}
-                              className={`p-0.5 rounded text-[10px] ${feat.highlighted ? "text-amber-500 hover:text-amber-600" : "text-on-primary-container/30 hover:text-[#F5F1E8]/70"}`}
+                              className={`p-0.5 rounded text-[10px] ${feat.highlighted ? "text-amber-500 hover:text-amber-600" : "text-on-primary-container/30 hover:text-gray-600"}`}
                               title={feat.highlighted ? "Highlighted (Gold Star Active)" : "Click to highlight gold star"}
                             >
                               ★
@@ -1483,10 +1483,10 @@ export const VisaTypeEditorPage = () => {
             {/* Google Mockup Box */}
             <div className="bg-primary-container/60 border border-on-primary-fixed-variant/80 rounded p-4 font-sans text-left space-y-1 mt-4">
               <span className="text-[10px] text-on-primary-container/40 uppercase tracking-wider block font-bold mb-1">Google Search Mockup</span>
-              <div className="text-[11px] text-[#8ab4f8] hover:underline cursor-pointer truncate font-medium">
+              <div className="text-[11px] text-blue-600 hover:underline cursor-pointer truncate font-medium">
                 {formData.metaTitle || formData.name || "Schengen Europe Visa Dubai | Eshaare Tours"}
               </div>
-              <div className="text-[10px] text-[#30a14e] truncate">
+              <div className="text-[10px] text-green-600 truncate">
                 https://eshaare-tour.vercel.app/visa/{formData.slug || "schengen"}
               </div>
               <div className="text-[11px] text-on-primary-container/70 leading-relaxed line-clamp-2">

@@ -378,7 +378,7 @@ export const ExpertsManagementPage = () => {
                   <span className="block text-[8px] uppercase tracking-wider text-on-primary-container/40">Visas</span>
                 </div>
                 <div>
-                  <span className="block font-bold text-[#D4AF37] text-sm">{expert.experienceYears || 0} yrs</span>
+                  <span className="block font-bold text-[#8A6D1F] text-sm">{expert.experienceYears || 0} yrs</span>
                   <span className="block text-[8px] uppercase tracking-wider text-on-primary-container/40">Exp</span>
                 </div>
                 <div>
@@ -393,7 +393,7 @@ export const ExpertsManagementPage = () => {
                   {expert.tags.map((tag, idx) => (
                     <span 
                       key={idx} 
-                      className="px-2 py-0.5 bg-[#2d2d2d] text-white/80 rounded text-[9px] border border-white/5 uppercase font-medium tracking-wide"
+                      className="px-2 py-0.5 bg-gray-100 text-white/80 rounded text-[9px] border border-white/5 uppercase font-medium tracking-wide"
                     >
                       {tag}
                     </span>
@@ -451,7 +451,7 @@ export const ExpertsManagementPage = () => {
           {/* Main Info Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="flex flex-col space-y-1">
-              <label className="text-[10px] font-bold text-on-primary-container/50 uppercase">Full Name</label>
+              <label className="text-[10px] font-bold text-slate-600 uppercase">Full Name</label>
               <input
                 type="text"
                 required
@@ -463,7 +463,7 @@ export const ExpertsManagementPage = () => {
               />
             </div>
             <div className="flex flex-col space-y-1">
-              <label className="text-[10px] font-bold text-on-primary-container/50 uppercase">Email Address</label>
+              <label className="text-[10px] font-bold text-slate-600 uppercase">Email Address</label>
               <input
                 type="email"
                 required
@@ -478,7 +478,7 @@ export const ExpertsManagementPage = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="flex flex-col space-y-1">
-              <label className="text-[10px] font-bold text-on-primary-container/50 uppercase">Phone / WhatsApp</label>
+              <label className="text-[10px] font-bold text-slate-600 uppercase">Phone / WhatsApp</label>
               <input
                 type="text"
                 disabled={saving}
@@ -489,7 +489,7 @@ export const ExpertsManagementPage = () => {
               />
             </div>
             <div className="flex flex-col space-y-1">
-              <label className="text-[10px] font-bold text-on-primary-container/50 uppercase">Role Title / Designation</label>
+              <label className="text-[10px] font-bold text-slate-600 uppercase">Role Title / Designation</label>
               <input
                 type="text"
                 required
@@ -504,7 +504,7 @@ export const ExpertsManagementPage = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="flex flex-col space-y-1">
-              <label className="text-[10px] font-bold text-on-primary-container/50 uppercase">Department / Category</label>
+              <label className="text-[10px] font-bold text-slate-600 uppercase">Department / Category</label>
               <select
                 disabled={saving}
                 className="px-3 py-2 bg-primary-container border border-on-primary-fixed-variant text-on-primary-container rounded focus:outline-none focus:border-secondary disabled:opacity-50 cursor-pointer"
@@ -520,7 +520,7 @@ export const ExpertsManagementPage = () => {
               </select>
             </div>
             <div className="flex flex-col space-y-1">
-              <label className="text-[10px] font-bold text-on-primary-container/50 uppercase">Display Status</label>
+              <label className="text-[10px] font-bold text-slate-600 uppercase">Display Status</label>
               <select
                 disabled={saving}
                 className="px-3 py-2 bg-primary-container border border-on-primary-fixed-variant text-on-primary-container rounded focus:outline-none focus:border-secondary disabled:opacity-50 cursor-pointer"
@@ -535,7 +535,7 @@ export const ExpertsManagementPage = () => {
 
           {/* Short Bio */}
           <div className="flex flex-col space-y-1">
-            <label className="text-[10px] font-bold text-on-primary-container/50 uppercase">Small Introduction / Bio</label>
+            <label className="text-[10px] font-bold text-slate-600 uppercase">Small Introduction / Bio</label>
             <textarea
               required
               rows={3}
@@ -550,7 +550,7 @@ export const ExpertsManagementPage = () => {
           {/* Stats Inputs */}
           <div className="grid grid-cols-3 gap-4">
             <div className="flex flex-col space-y-1">
-              <label className="text-[9px] font-bold text-on-primary-container/50 uppercase">Visas Filed</label>
+              <label className="text-[9px] font-bold text-slate-600 uppercase">Visas Filed</label>
               <input
                 type="number"
                 disabled={saving}
@@ -561,7 +561,7 @@ export const ExpertsManagementPage = () => {
               />
             </div>
             <div className="flex flex-col space-y-1">
-              <label className="text-[9px] font-bold text-on-primary-container/50 uppercase">Years Exp.</label>
+              <label className="text-[9px] font-bold text-slate-600 uppercase">Years Exp.</label>
               <input
                 type="number"
                 disabled={saving}
@@ -572,7 +572,7 @@ export const ExpertsManagementPage = () => {
               />
             </div>
             <div className="flex flex-col space-y-1">
-              <label className="text-[9px] font-bold text-on-primary-container/50 uppercase">Success %</label>
+              <label className="text-[9px] font-bold text-slate-600 uppercase">Success %</label>
               <input
                 type="number"
                 disabled={saving}
@@ -587,7 +587,7 @@ export const ExpertsManagementPage = () => {
 
           {/* Profile Picture Section */}
           <div className="flex flex-col space-y-2">
-            <label className="text-[10px] font-bold text-on-primary-container/50 uppercase">Profile Picture</label>
+            <label className="text-[10px] font-bold text-slate-600 uppercase">Profile Picture</label>
             <div className="flex items-center space-x-3">
               <input
                 type="text"
@@ -597,7 +597,7 @@ export const ExpertsManagementPage = () => {
                 value={expertForm.img}
                 onChange={(e) => setExpertForm({ ...expertForm, img: e.target.value })}
               />
-              <label className="px-3 py-2 border border-[#4D4740] text-white hover:border-[#7A8F6B] hover:text-[#7A8F6B] rounded text-xs font-bold uppercase tracking-wider cursor-pointer transition-colors flex items-center space-x-1.5 shrink-0">
+              <label className="px-3 py-2 border border-gray-300 text-slate-700 hover:bg-slate-50 hover:text-slate-900 rounded text-xs font-bold uppercase tracking-wider cursor-pointer transition-colors flex items-center space-x-1.5 shrink-0">
                 {uploadingPic ? (
                   <>
                     <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -633,7 +633,7 @@ export const ExpertsManagementPage = () => {
           {/* Tags / Display Order */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="sm:col-span-2 flex flex-col space-y-1">
-              <label className="text-[10px] font-bold text-on-primary-container/50 uppercase">Tags / Specialities (Comma separated)</label>
+              <label className="text-[10px] font-bold text-slate-600 uppercase">Tags / Specialities (Comma separated)</label>
               <input
                 type="text"
                 disabled={saving}
@@ -644,7 +644,7 @@ export const ExpertsManagementPage = () => {
               />
             </div>
             <div className="flex flex-col space-y-1">
-              <label className="text-[10px] font-bold text-on-primary-container/50 uppercase">Display Order</label>
+              <label className="text-[10px] font-bold text-slate-600 uppercase">Display Order</label>
               <input
                 type="number"
                 required
@@ -658,7 +658,7 @@ export const ExpertsManagementPage = () => {
           </div>
 
           {/* Actions */}
-          <div className="flex space-x-3 pt-4 border-t border-on-primary-fixed-variant">
+          <div className="flex space-x-3 pt-4 border-t border-gray-200">
             <button
               type="button"
               disabled={saving}
@@ -667,14 +667,14 @@ export const ExpertsManagementPage = () => {
                 setIsEditOpen(false);
                 setExpertForm(initialFormState);
               }}
-              className="flex-1 py-2.5 bg-on-primary-fixed-variant border border-on-primary-fixed-variant text-on-primary-container font-semibold rounded text-xs disabled:opacity-50"
+              className="flex-1 py-2.5 bg-white border border-gray-300 text-slate-700 hover:bg-slate-50 font-semibold rounded-lg text-xs transition-colors disabled:opacity-50"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={saving || uploadingPic}
-              className="flex-1 py-2.5 bg-gradient-to-r from-secondary-container to-secondary-container text-on-primary-fixed font-bold rounded text-xs shadow-sm disabled:opacity-50 flex items-center justify-center space-x-1"
+              className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs shadow-sm transition-colors disabled:opacity-50 flex items-center justify-center space-x-1"
             >
               {saving ? <span>Saving...</span> : <span>Save changes</span>}
             </button>

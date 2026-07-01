@@ -233,21 +233,21 @@ export const Dashboard = () => {
         <h1 className="text-3xl font-bold text-white">
           Admin Dashboard
         </h1>
-        <p className="mt-2 text-slate-300">
+        <p className="mt-2 text-slate-600">
           Overview of packages, leads, bookings, and business activity.
         </p>
       </div>
 
       {/* Overdue Alert Banner */}
       {kpis.overdueCases > 0 && (
-        <div className="flex items-center justify-between p-4 bg-red-500/10 border border-red-500/35 rounded-2xl text-red-200 text-sm">
+        <div className="flex items-center justify-between p-4 bg-red-500/10 border border-red-500/35 rounded-2xl text-red-700 text-sm">
           <div className="flex items-center space-x-2">
             <AlertCircle className="h-5 w-5 flex-shrink-0 animate-bounce" />
             <span className="font-semibold">Attention: 1 Visa Case has passed its decision expected date with no outcome updated.</span>
           </div>
           <Link
             to="/admin/cases"
-            className="text-xs font-bold underline uppercase tracking-wider text-red-300 hover:text-red-200 transition-colors"
+            className="text-xs font-bold underline uppercase tracking-wider text-red-700 hover:text-red-700 transition-colors"
           >
             Review Case
           </Link>
@@ -259,54 +259,54 @@ export const Dashboard = () => {
         <div className="rounded-3xl bg-white/5 p-6 border border-white/10 hover:border-white/20 transition-all flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between">
-              <p className="text-slate-200 text-sm font-semibold uppercase tracking-wider">Packages</p>
-              <Package className="h-5 w-5 text-slate-300" />
+              <p className="text-slate-600 text-sm font-semibold uppercase tracking-wider">Packages</p>
+              <Package className="h-5 w-5 text-slate-600" />
             </div>
             <h2 className="mt-3 text-4xl font-bold text-white">{stats.totalPackages}</h2>
           </div>
-          <p className="mt-4 text-xs text-emerald-300 font-medium">{stats.activePackages} Active • {stats.featuredPackages} Featured</p>
+          <p className="mt-4 text-xs text-emerald-700 font-medium">{stats.activePackages} Active • {stats.featuredPackages} Featured</p>
         </div>
 
         <div className="rounded-3xl bg-white/5 p-6 border border-white/10 hover:border-white/20 transition-all flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between">
-              <p className="text-slate-200 text-sm font-semibold uppercase tracking-wider">Leads</p>
-              <Users className="h-5 w-5 text-orange-300" />
+              <p className="text-slate-600 text-sm font-semibold uppercase tracking-wider">Leads</p>
+              <Users className="h-5 w-5 text-orange-700" />
             </div>
-            <h2 className="mt-3 text-4xl font-bold text-orange-300">{stats.totalLeads}</h2>
+            <h2 className="mt-3 text-4xl font-bold text-orange-700">{stats.totalLeads}</h2>
           </div>
-          <p className="mt-4 text-xs text-rose-300 font-medium">{stats.newLeads} New Inbox</p>
+          <p className="mt-4 text-xs text-rose-700 font-medium">{stats.newLeads} New Inbox</p>
         </div>
 
         <div className="rounded-3xl bg-white/5 p-6 border border-white/10 hover:border-white/20 transition-all flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between">
-              <p className="text-slate-200 text-sm font-semibold uppercase tracking-wider">Visas & Appts</p>
-              <FileText className="h-5 w-5 text-teal-300" />
+              <p className="text-slate-600 text-sm font-semibold uppercase tracking-wider">Visas & Appts</p>
+              <FileText className="h-5 w-5 text-teal-700" />
             </div>
-            <h2 className="mt-3 text-4xl font-bold text-teal-300">{stats.totalVisas}</h2>
+            <h2 className="mt-3 text-4xl font-bold text-teal-700">{stats.totalVisas}</h2>
           </div>
-          <p className="mt-4 text-xs text-emerald-300 font-medium">{stats.totalAppointments} Consultation Bookings</p>
+          <p className="mt-4 text-xs text-emerald-700 font-medium">{stats.totalAppointments} Consultation Bookings</p>
         </div>
 
         <div className="rounded-3xl bg-white/5 p-6 border border-white/10 hover:border-white/20 transition-all flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between">
-              <p className="text-slate-200 text-sm font-semibold uppercase tracking-wider">Registered Clients</p>
-              <Users className="h-5 w-5 text-purple-300" />
+              <p className="text-slate-600 text-sm font-semibold uppercase tracking-wider">Registered Clients</p>
+              <Users className="h-5 w-5 text-purple-700" />
             </div>
-            <h2 className="mt-3 text-4xl font-bold text-purple-300">{stats.totalClients}</h2>
+            <h2 className="mt-3 text-4xl font-bold text-purple-700">{stats.totalClients}</h2>
           </div>
-          <p className="mt-4 text-xs text-purple-200 font-medium">Active client accounts</p>
+          <p className="mt-4 text-xs text-purple-700 font-medium">Active client accounts</p>
         </div>
 
         <div className="rounded-3xl bg-white/5 p-6 border border-white/10 hover:border-white/20 transition-all flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between">
-              <p className="text-slate-200 text-sm font-semibold uppercase tracking-wider">Client Bookings</p>
-              <TrendingUp className="h-5 w-5 text-emerald-300" />
+              <p className="text-slate-600 text-sm font-semibold uppercase tracking-wider">Client Bookings</p>
+              <TrendingUp className="h-5 w-5 text-emerald-700" />
             </div>
-            <h2 className="mt-3 text-4xl font-bold text-emerald-300">{stats.totalBookings}</h2>
+            <h2 className="mt-3 text-4xl font-bold text-emerald-700">{stats.totalBookings}</h2>
           </div>
           <p className="mt-4 text-xs text-on-primary-container/70 font-medium">Packages purchased</p>
         </div>
@@ -314,23 +314,23 @@ export const Dashboard = () => {
         <div className="rounded-3xl bg-white/5 p-6 border border-white/10 hover:border-white/20 transition-all flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between">
-              <p className="text-slate-200 text-sm font-semibold uppercase tracking-wider">Hotels</p>
-              <Building className="h-5 w-5 text-emerald-300" />
+              <p className="text-slate-600 text-sm font-semibold uppercase tracking-wider">Hotels</p>
+              <Building className="h-5 w-5 text-emerald-700" />
             </div>
-            <h2 className="mt-3 text-4xl font-bold text-emerald-300">{stats.totalHotels}</h2>
+            <h2 className="mt-3 text-4xl font-bold text-emerald-700">{stats.totalHotels}</h2>
           </div>
-          <p className="mt-4 text-xs text-emerald-200 font-medium">Stays registered</p>
+          <p className="mt-4 text-xs text-emerald-700 font-medium">Stays registered</p>
         </div>
 
         <div className="rounded-3xl bg-white/5 p-6 border border-white/10 hover:border-white/20 transition-all flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between">
-              <p className="text-slate-200 text-sm font-semibold uppercase tracking-wider">Active Promo Offers</p>
-              <Tag className="h-5 w-5 text-amber-300" />
+              <p className="text-slate-600 text-sm font-semibold uppercase tracking-wider">Active Promo Offers</p>
+              <Tag className="h-5 w-5 text-amber-700" />
             </div>
-            <h2 className="mt-3 text-4xl font-bold text-amber-300">{stats.activeOffers}</h2>
+            <h2 className="mt-3 text-4xl font-bold text-amber-700">{stats.activeOffers}</h2>
           </div>
-          <p className="mt-4 text-xs text-amber-200 font-medium">Showcased on homepage</p>
+          <p className="mt-4 text-xs text-amber-700 font-medium">Showcased on homepage</p>
         </div>
       </div>
 
@@ -347,7 +347,7 @@ export const Dashboard = () => {
           </Link>
           <Link
             to="/admin/hotels"
-            className="rounded-2xl bg-[#0f3223] border border-white/10 p-5 text-white font-semibold transition hover:opacity-90 flex items-center justify-between shadow-lg"
+            className="rounded-2xl bg-[#1D503A] border border-white/10 p-5 text-white font-semibold transition hover:opacity-90 flex items-center justify-between shadow-lg"
           >
             <span>Hotels Manager</span>
             <span className="text-xs bg-black/20 px-2 py-0.5 rounded">{stats.totalHotels}</span>
@@ -408,7 +408,7 @@ export const Dashboard = () => {
               </PieChart>
             </ResponsiveContainer>
           </div>
-          <div className="grid grid-cols-2 gap-2 text-[10px] uppercase font-bold text-gray-400 pt-4 border-t border-white/10">
+          <div className="grid grid-cols-2 gap-2 text-[10px] uppercase font-bold text-gray-600 pt-4 border-t border-white/10">
             {casesPieData.map((e, idx) => (
               <div key={idx} className="flex items-center space-x-1">
                 <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: e.color }}></span>
@@ -425,7 +425,7 @@ export const Dashboard = () => {
         <div className="lg:col-span-4 bg-white/5 rounded-3xl p-6 border border-white/10 space-y-4">
           <div className="flex justify-between items-center border-b border-white/10 pb-2">
             <h3 className="text-sm font-semibold text-white">Today's Appointments</h3>
-            <span className="px-2 py-0.5 rounded-full bg-green-500/10 text-green-400 text-[10px] font-bold uppercase">
+            <span className="px-2 py-0.5 rounded-full bg-green-500/10 text-green-700 text-[10px] font-bold uppercase">
               {upcomingAppointments.length} Today
             </span>
           </div>
@@ -434,9 +434,9 @@ export const Dashboard = () => {
               <div key={app.id} className="py-3 flex items-center justify-between">
                 <div>
                   <h4 className="text-xs font-bold text-white">{app.clientName}</h4>
-                  <span className="text-[10px] text-gray-400 uppercase font-medium">{app.type}</span>
+                  <span className="text-[10px] text-gray-600 uppercase font-medium">{app.type}</span>
                 </div>
-                <span className="text-xs font-mono font-bold text-[#7A8F6B]">{app.time}</span>
+                <span className="text-xs font-mono font-bold text-[#5B6B62]">{app.time}</span>
               </div>
             ))}
           </div>
@@ -449,7 +449,7 @@ export const Dashboard = () => {
             {funnelData.map((stage) => (
               <div key={stage.name} className="space-y-1">
                 <div className="flex justify-between text-xs font-semibold">
-                  <span className="text-gray-400">{stage.name}</span>
+                  <span className="text-gray-600">{stage.name}</span>
                   <span className="text-white">{stage.count} leads</span>
                 </div>
                 <div className="w-full bg-black/40 h-2 rounded-full overflow-hidden border border-white/10">
@@ -468,9 +468,9 @@ export const Dashboard = () => {
               <div key={lead.id} className="py-3 flex items-center justify-between">
                 <div>
                   <h4 className="text-xs font-bold text-white">{lead.contactName}</h4>
-                  <span className="text-[10px] text-gray-400 uppercase font-medium">Source: {lead.source}</span>
+                  <span className="text-[10px] text-gray-600 uppercase font-medium">Source: {lead.source}</span>
                 </div>
-                <span className="px-2 py-0.5 rounded-full bg-[#7A8F6B]/10 border border-[#7A8F6B]/25 text-[9px] font-bold text-[#7A8F6B] uppercase">
+                <span className="px-2 py-0.5 rounded-full bg-[#7A8F6B]/10 border border-[#7A8F6B]/25 text-[9px] font-bold text-[#5B6B62] uppercase">
                   {lead.stage}
                 </span>
               </div>

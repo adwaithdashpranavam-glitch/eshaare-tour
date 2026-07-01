@@ -38,16 +38,16 @@ const isIdentityDoc = (d) => {
 };
 
 const MATCH_BADGE = {
-  matched: { label: "Profile matched", cls: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" },
-  partial: { label: "Partial match", cls: "bg-amber-500/10 text-amber-400 border-amber-500/20" },
-  mismatch: { label: "Mismatch", cls: "bg-rose-500/10 text-rose-400 border-rose-500/20" },
-  needs_review: { label: "Needs review", cls: "bg-sky-500/10 text-sky-400 border-sky-500/20" },
+  matched: { label: "Profile matched", cls: "bg-emerald-50 text-emerald-700 border-emerald-300" },
+  partial: { label: "Partial match", cls: "bg-amber-50 text-amber-800 border-amber-300" },
+  mismatch: { label: "Mismatch", cls: "bg-rose-50 text-rose-700 border-rose-300" },
+  needs_review: { label: "Needs review", cls: "bg-blue-50 text-blue-700 border-blue-300" },
 };
 
 const SEVERITY_CLS = {
-  high: "bg-rose-500/15 text-rose-300 border border-rose-500/30",
-  medium: "bg-amber-500/15 text-amber-300 border border-amber-500/30",
-  low: "bg-gray-500/15 text-gray-300 border border-gray-500/30",
+  high: "bg-rose-50 text-rose-700 border border-rose-300",
+  medium: "bg-amber-50 text-amber-800 border border-amber-300",
+  low: "bg-slate-100 text-slate-700 border border-slate-300",
 };
 
 const prettyField = (f) =>
@@ -194,87 +194,122 @@ export default function ClientDocumentReview({ travellerEmail }) {
         <div className="space-y-4">
           {docs.map((d) => {
             const pm = d.profileMatch || {};
-            const badge = MATCH_BADGE[pm.status] || MATCH_BADGE.needs_review;
+            // Source of truth for the human decision is the SAME field the client
+            // portal reads: `status` / `verificationStatus` on the document.
+            // profileMatch.status is only the AI match hint and must NOT drive the
+            // badge once a consultant has verified/rejected the document.
+            const decision =
+              d.status === "verified" || d.verificationStatus === "Verified"
+                ? "verified"
+                : d.status === "rejected" || d.verificationStatus === "Rejected"
+                ? "rejected"
+                : null;
+            const badge =
+              decision === "verified"
+                ? { label: "Verified", cls: "bg-emerald-50 text-emerald-700 border-emerald-300" }
+                : decision === "rejected"
+                ? { label: "Rejected", cls: "bg-rose-50 text-rose-700 border-rose-300" }
+                : (MATCH_BADGE[pm.status] || MATCH_BADGE.needs_review);
             const fields = d.aiCheck?.extractedFields || {};
             return (
-              <div key={d.id} className="bg-white/5 border border-on-primary-fixed-variant/70 rounded-xl p-4 space-y-3">
+              <div key={d.id} className={`bg-white border rounded-xl p-5 space-y-4 shadow-sm ${
+                decision === "rejected" ? "border-rose-200" : decision === "verified" ? "border-emerald-200" : "border-gray-200"
+              }`}>
                 {/* Header */}
                 <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-center gap-2 min-w-0">
+                  <div className="flex items-center gap-2.5 min-w-0">
                     <FileText className="h-4 w-4 text-secondary shrink-0" />
                     <div className="truncate">
-                      <p className="text-xs font-semibold text-white truncate">{d.docType || d.type}</p>
-                      <p className="text-[10px] text-on-primary-container/40 truncate font-mono">{d.fileName}</p>
+                      <p className="text-sm font-semibold text-slate-800 truncate">{d.docType || d.type}</p>
+                      <p className="text-xs text-slate-500 truncate font-mono mt-0.5">{d.fileName}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
-                    {d.requiresManualReview && (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-300 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full">
-                        <AlertTriangle className="h-3 w-3" /> Flagged
+                    {/* Flagged only matters while still pending a decision */}
+                    {!decision && d.requiresManualReview && (
+                      <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-amber-800 bg-amber-50 border border-amber-300 px-2.5 py-1 rounded-full">
+                        <AlertTriangle className="h-3.5 w-3.5" /> Flagged
                       </span>
                     )}
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${badge.cls}`}>
+                    <span className={`inline-flex items-center text-[11px] font-semibold px-2.5 py-1 rounded-full border ${badge.cls}`}>
                       {badge.label}
                     </span>
                   </div>
                 </div>
 
+                {/* Reviewed banner — makes decided docs clearly non-pending */}
+                {decision === "verified" && (
+                  <div className="flex items-center gap-2 text-[13px] text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2">
+                    <CheckCircle2 className="h-4 w-4 shrink-0" />
+                    <span>Verified{d.verifiedBy ? ` by ${d.verifiedBy}` : ""}. Consultant review complete.</span>
+                  </div>
+                )}
+                {decision === "rejected" && (
+                  <div className="flex items-start gap-2 text-[13px] text-rose-700 bg-rose-50 border border-rose-200 rounded-lg px-3 py-2">
+                    <XCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                    <span>
+                      Rejected{d.verifiedBy ? ` by ${d.verifiedBy}` : ""}.
+                      {(d.clientRejectionMessage || d.adminNotes) ? ` Client sees: “${d.clientRejectionMessage || d.adminNotes}”` : ""}
+                    </span>
+                  </div>
+                )}
+
                 {/* AI document result */}
                 {d.aiCheck?.reason && (
-                  <p className="text-[11px] text-on-primary-container/60 leading-relaxed">
-                    <span className="font-bold text-on-primary-container/80">AI:</span> {d.aiCheck.reason}
+                  <p className="text-[13px] text-slate-600 leading-relaxed">
+                    <span className="font-semibold text-slate-800">AI:</span> {d.aiCheck.reason}
                   </p>
                 )}
 
                 {/* Mismatch detail table */}
                 {Array.isArray(pm.mismatches) && pm.mismatches.length > 0 && (
                   <div className="space-y-2">
-                    <p className="text-[10px] uppercase tracking-wider font-bold text-on-primary-container/40">Mismatches</p>
+                    <p className="text-[11px] uppercase tracking-wider font-bold text-slate-500">Mismatches</p>
                     {pm.mismatches.map((m) => (
-                      <div key={m.field} className="bg-rose-500/5 border border-rose-500/20 rounded-lg p-2.5 text-[11px] space-y-1">
+                      <div key={m.field} className="bg-rose-50/60 border border-rose-200 rounded-lg p-3 text-[13px] space-y-1.5">
                         <div className="flex items-center justify-between gap-2">
-                          <span className="font-bold text-white">{prettyField(m.field)}</span>
-                          <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded ${SEVERITY_CLS[m.severity] || SEVERITY_CLS.low}`}>
+                          <span className="font-semibold text-slate-800">{prettyField(m.field)}</span>
+                          <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded ${SEVERITY_CLS[m.severity] || SEVERITY_CLS.low}`}>
                             {m.severity}
                           </span>
                         </div>
-                        <div className="grid grid-cols-2 gap-2 font-mono text-[10px]">
+                        <div className="grid grid-cols-2 gap-2 font-mono text-xs">
                           <div>
-                            <span className="text-on-primary-container/40">Profile: </span>
-                            <span className="text-emerald-300">{m.profileValue || "—"}</span>
+                            <span className="text-slate-500">Profile: </span>
+                            <span className="text-emerald-700">{m.profileValue || "—"}</span>
                           </div>
                           <div>
-                            <span className="text-on-primary-container/40">Document: </span>
-                            <span className="text-rose-300">{m.documentValue || "—"}</span>
+                            <span className="text-slate-500">Document: </span>
+                            <span className="text-rose-700">{m.documentValue || "—"}</span>
                           </div>
                         </div>
-                        <p className="text-on-primary-container/50">{m.reason}</p>
+                        <p className="text-slate-600">{m.reason}</p>
                       </div>
                     ))}
                   </div>
                 )}
 
                 {/* Matched / missing summaries */}
-                <div className="flex flex-wrap gap-1.5 text-[10px]">
+                <div className="flex flex-wrap gap-2 text-sm">
                   {(pm.matchedFields || []).map((f) => (
-                    <span key={f} className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">
-                      <CheckCircle2 className="h-3 w-3" /> {prettyField(f)}
+                    <span key={f} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-300 font-medium">
+                      <CheckCircle2 className="h-4 w-4" /> {prettyField(f)}
                     </span>
                   ))}
                   {(pm.missingFields || []).map((f) => (
-                    <span key={f} className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-gray-500/10 text-gray-300 border border-gray-500/20">
-                      {prettyField(f)}: not found
+                    <span key={f} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-50 text-slate-700 border border-slate-300 font-medium">
+                      {prettyField(f)}: <span className="text-slate-500">not found</span>
                     </span>
                   ))}
                 </div>
 
                 {/* Extracted fields (raw) */}
                 {Object.keys(fields).length > 0 && (
-                  <details className="text-[10px] text-on-primary-container/50">
-                    <summary className="cursor-pointer hover:text-on-primary-container/80">Extracted fields</summary>
-                    <div className="mt-1 grid grid-cols-2 gap-1 font-mono">
+                  <details className="text-xs text-slate-600">
+                    <summary className="cursor-pointer font-medium text-slate-600 hover:text-slate-800">Extracted fields</summary>
+                    <div className="mt-2 grid grid-cols-2 gap-1.5 font-mono">
                       {Object.entries(fields).map(([k, v]) => (
-                        <div key={k}><span className="text-on-primary-container/40">{prettyField(k)}: </span>{String(v)}</div>
+                        <div key={k}><span className="text-slate-500">{prettyField(k)}: </span>{String(v)}</div>
                       ))}
                     </div>
                   </details>
@@ -282,10 +317,31 @@ export default function ClientDocumentReview({ travellerEmail }) {
 
                 {/* Stuck-processing indicator */}
                 {d.status === "ai_processing" && (
-                  <p className="text-[11px] text-sky-300 flex items-center gap-1.5">
+                  <p className="text-[11px] text-sky-700 flex items-center gap-1.5">
                     <Loader2 className="h-3.5 w-3.5 animate-spin" /> AI processing — if this persists, re-run below.
                   </p>
                 )}
+
+                {/* View uploaded file — always available before deciding */}
+                <div className="flex pt-2">
+                  {d.fileUrl ? (
+                    <a
+                      href={d.fileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-300 text-slate-700 hover:bg-slate-50 font-bold uppercase rounded-lg text-[10px] tracking-wider transition-colors"
+                    >
+                      <FileText className="h-3.5 w-3.5" /> View document
+                    </a>
+                  ) : (
+                    <span
+                      title="No uploaded file URL on this document"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 border border-gray-200 text-slate-400 font-bold uppercase rounded-lg text-[10px] tracking-wider cursor-not-allowed"
+                    >
+                      <FileText className="h-3.5 w-3.5" /> File unavailable
+                    </span>
+                  )}
+                </div>
 
                 {/* Manual consultant override + reprocess */}
                 <div className="flex gap-2 pt-2 border-t border-on-primary-fixed-variant/50">
@@ -295,7 +351,7 @@ export default function ClientDocumentReview({ travellerEmail }) {
                     onClick={() => verifyDoc(d.id)}
                     className="flex-1 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold uppercase rounded-lg text-[10px] tracking-wider flex items-center justify-center gap-1.5 disabled:opacity-50"
                   >
-                    <CheckCircle2 className="h-3.5 w-3.5" /> Verify
+                    <CheckCircle2 className="h-3.5 w-3.5" /> {decision === "verified" ? "Re-verify" : "Verify"}
                   </button>
                   <button
                     type="button"
@@ -320,7 +376,7 @@ export default function ClientDocumentReview({ travellerEmail }) {
                 {rejectingId === d.id && (
                   <div className="mt-2 p-3 bg-rose-500/5 border border-rose-500/20 rounded-lg space-y-2">
                     <label className="block text-[10px] uppercase tracking-wider font-bold text-on-primary-container/60">
-                      Rejection reason (shown to client) <span className="text-rose-400">*</span>
+                      Rejection reason (shown to client) <span className="text-rose-600">*</span>
                     </label>
                     <select
                       value={rejectCode}
