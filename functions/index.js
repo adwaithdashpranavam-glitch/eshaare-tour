@@ -2127,3 +2127,216 @@ exports.runIntegrityAuditNow = functions.https.onCall(async (data, context) => {
   logIntegrityAuditSummary(summary);
   return summary;
 });
+
+// ===========================================================================
+// 12. Secure Document Access (short-lived signed URLs)
+// ---------------------------------------------------------------------------
+// Replaces direct Firebase Storage download URLs (getDownloadURL(), which
+// produce a permanent, unauthenticated token embedded in the URL itself) with
+// a Cloud Function that: authenticates the caller, verifies they own (or are
+// staff for) the specific document, generates a Storage V4 signed URL with a
+// short expiry, logs the access, and returns only that temporary URL. The
+// client never sees or stores a permanent Storage URL/token.
+//
+// SUPPORTED LOOKUP MODES (caller passes exactly one "shape"):
+//   1. { documentId }                — a documents/{docId} record (identity
+//      documents: Passport, Photo, Emirates ID, Bank Statements, Residence
+//      Visa). Ownership: travellerId/travellerEmail match, or staff.
+//   2. { applicationId, storageKey } — a consultant deliverable living in
+//      applications/{id}.documents[] (Appointment Letter, Hotel, Flight,
+//      Travel Insurance, Itinerary, Visa Application Form). Ownership:
+//      applications.customerId match, or staff. The storageKey must appear
+//      on that application's own documents[] array (storagePath field) —
+//      a caller cannot substitute an arbitrary path.
+//   3. { storageKey } only           — a record with no per-user Firestore
+//      ownership to check (e.g. an admin-managed system template). Staff
+//      only.
+//   4. { systemDocumentKey }         — a shared system document with NO
+//      per-user owner but that every authenticated user (client or staff)
+//      may fetch, e.g. the universal NOC template. `systemDocumentKey` must
+//      be one of the fixed keys in SYSTEM_DOCUMENT_REGISTRY below — there is
+//      no client-supplied path or storageKey in this mode at all. The
+//      backend resolves the Storage path itself from the registry + the
+//      corresponding systemDocuments/{id} Firestore doc's own trusted
+//      fields, so a caller can never substitute an arbitrary Storage object.
+//
+// PERMISSION MATRIX (see DATABASE_ROOT_CAUSE_ANALYSIS.md-style honesty note:
+// the schema has no per-application "assigned consultant" UID field — only a
+// display-only assignedConsultant.name/whatsapp object — so "consultant" and
+// "admin"/"super_admin" cannot be distinguished at the data level today. This
+// function therefore grants any staff role in DOCUMENT_STAFF_ROLES the same
+// access a truly "assigned" consultant would have. Tightening this further
+// would require a schema change (a real assignedConsultantUid field) that is
+// out of scope here — flagged, not silently assumed.):
+//   - Client:      only their own documents (mode 1 travellerId/Email match,
+//                  mode 2 customerId match), plus any allowlisted system
+//                  document (mode 4 — any authenticated user).
+//   - Staff        (super_admin/admin/manager/visa_ops): any document, any
+//                  mode.
+//   - Everyone else: permission-denied.
+// ---------------------------------------------------------------------------
+
+const DOCUMENT_STAFF_ROLES = ["super_admin", "admin", "manager", "visa_ops"];
+// Plan requires 60-120s; using the upper bound to reduce the chance a native
+// PDF viewer's follow-up range requests outlive the URL while a user is still
+// actively viewing a large multi-page document.
+const SIGNED_URL_TTL_MS = 120 * 1000;
+
+// Fixed allowlist of shared, per-user-ownerless system documents. Each entry
+// controls its own Firestore source doc and derives the Storage path from
+// that doc's OWN trusted fields — never from anything the client sends.
+// Adding a new key here is the only way to expose a new system document
+// through this mode; there is no generic/dynamic path.
+const SYSTEM_DOCUMENT_REGISTRY = {
+  noc: {
+    firestorePath: ["systemDocuments", "universal_noc_template"],
+    // Mirrors the exact deterministic path AdminDocumentsPage.jsx uploads to
+    // (system-documents/noc/Eshaare_NOC_Template.{extension}) — the
+    // extension comes from the Firestore doc's own `fileType` field, set
+    // only by the admin upload flow, never by this function's caller.
+    resolveStorageKey: (docData) => {
+      const ext = String(docData.fileType || "pdf").toLowerCase().replace(/[^a-z0-9]/g, "");
+      return `system-documents/noc/Eshaare_NOC_Template.${ext || "pdf"}`;
+    },
+  },
+};
+
+async function resolveCallerRoleForDocs(uid, tokenEmail) {
+  let doc = await db.collection("users").doc(uid).get();
+  if (!doc.exists && tokenEmail) {
+    doc = await db.collection("users").doc(tokenEmail.toLowerCase()).get();
+  }
+  return doc.exists ? (doc.data().role || null) : null;
+}
+
+exports.generateSecureDocumentAccess = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError("unauthenticated", "Authentication required.");
+  }
+  const callerUid = context.auth.uid;
+  const callerEmail = ((context.auth.token && context.auth.token.email) || "").toLowerCase();
+  const intent = data && data.intent === "download" ? "download" : "preview";
+
+  const documentId = data && data.documentId ? String(data.documentId) : null;
+  const applicationId = data && data.applicationId ? String(data.applicationId) : null;
+  const requestedStorageKey = data && data.storageKey ? String(data.storageKey) : null;
+  const systemDocumentKey = data && data.systemDocumentKey ? String(data.systemDocumentKey) : null;
+
+  if (!documentId && !applicationId && !requestedStorageKey && !systemDocumentKey) {
+    throw new functions.https.HttpsError("invalid-argument", "One of documentId, applicationId, storageKey, or systemDocumentKey is required.");
+  }
+
+  const role = await resolveCallerRoleForDocs(callerUid, callerEmail);
+  const isStaff = DOCUMENT_STAFF_ROLES.includes(role);
+
+  let storageKey = null;
+  let authorized = false;
+  let auditTarget = { collection: null, id: null };
+
+  if (documentId) {
+    // Mode 1: documents/{docId} — identity documents.
+    const snap = await db.collection("documents").doc(documentId).get();
+    if (!snap.exists) {
+      throw new functions.https.HttpsError("not-found", "Document not found.");
+    }
+    const d = snap.data();
+    storageKey = d.storageKey || null;
+    const ownsIt = d.travellerId === callerUid || (d.travellerEmail && d.travellerEmail.toLowerCase() === callerEmail);
+    authorized = isStaff || ownsIt;
+    auditTarget = { collection: "documents", id: documentId };
+  } else if (applicationId) {
+    // Mode 2: a consultant deliverable inside applications/{id}.documents[].
+    if (!requestedStorageKey) {
+      throw new functions.https.HttpsError("invalid-argument", "storageKey is required alongside applicationId.");
+    }
+    const snap = await db.collection("applications").doc(applicationId).get();
+    if (!snap.exists) {
+      throw new functions.https.HttpsError("not-found", "Application not found.");
+    }
+    const a = snap.data();
+    const list = Array.isArray(a.documents) ? a.documents : [];
+    const match = list.find((x) => x && (x.storagePath === requestedStorageKey || x.fileUrl === requestedStorageKey));
+    if (!match) {
+      // The requested path isn't actually attached to this application — refuse
+      // rather than trust a caller-supplied path blindly.
+      throw new functions.https.HttpsError("permission-denied", "This file is not attached to the specified application.");
+    }
+    storageKey = requestedStorageKey;
+    const ownsIt = a.customerId === callerUid;
+    authorized = isStaff || ownsIt;
+    auditTarget = { collection: "applications", id: applicationId };
+  } else if (systemDocumentKey) {
+    // Mode 4: a fixed, allowlisted system document (e.g. the universal NOC
+    // template) — no per-user owner, but any authenticated user may fetch it.
+    // The registry entry controls the ONLY code path that can turn this key
+    // into a Storage object; there is no way for the caller to influence the
+    // resulting path.
+    const entry = SYSTEM_DOCUMENT_REGISTRY[systemDocumentKey];
+    if (!entry) {
+      throw new functions.https.HttpsError("invalid-argument", "Unknown or disallowed system document.");
+    }
+    const snap = await db.collection(entry.firestorePath[0]).doc(entry.firestorePath[1]).get();
+    if (!snap.exists) {
+      throw new functions.https.HttpsError("not-found", "This system document has not been uploaded yet.");
+    }
+    const docData = snap.data();
+    if (docData.active === false) {
+      throw new functions.https.HttpsError("not-found", "This system document is not currently active.");
+    }
+    storageKey = entry.resolveStorageKey(docData);
+    authorized = true; // any authenticated caller — validated by `if (!context.auth)` above
+    auditTarget = { collection: entry.firestorePath[0], id: systemDocumentKey };
+  } else {
+    // Mode 3: a bare storageKey with no per-user Firestore ownership to check
+    // (e.g. an admin-managed system template). Staff only.
+    storageKey = requestedStorageKey;
+    authorized = isStaff;
+    auditTarget = { collection: null, id: storageKey };
+  }
+
+  if (!storageKey) {
+    throw new functions.https.HttpsError("not-found", "This record has no associated file.");
+  }
+  if (!authorized) {
+    // Do not reveal whether the record exists to an unauthorized caller beyond
+    // this generic denial.
+    throw new functions.https.HttpsError("permission-denied", "You do not have access to this document.");
+  }
+
+  let signedUrl;
+  const expiresAt = Date.now() + SIGNED_URL_TTL_MS;
+  try {
+    const bucket = admin.storage().bucket();
+    const file = bucket.file(storageKey);
+    const [exists] = await file.exists();
+    if (!exists) {
+      throw new functions.https.HttpsError("not-found", "The file could not be found in storage.");
+    }
+    const [url] = await file.getSignedUrl({ action: "read", expires: expiresAt });
+    signedUrl = url;
+  } catch (err) {
+    if (err instanceof functions.https.HttpsError) throw err;
+    console.error("generateSecureDocumentAccess: signing failed for", storageKey, ":", err.message);
+    throw new functions.https.HttpsError("internal", "Failed to generate document access. Please try again.");
+  }
+
+  // Audit every grant (preview and download), same posture as every other
+  // sensitive action in this file. Best-effort — a logging failure must never
+  // block a legitimate, already-authorized access.
+  db.collection("audit_logs").add({
+    action: intent === "download" ? "DOCUMENT_DOWNLOAD" : "DOCUMENT_PREVIEW",
+    performedBy: callerUid,
+    performedByRole: role || (isStaff ? "staff" : "client"),
+    targetId: auditTarget.id,
+    timestamp: FieldValue.serverTimestamp(),
+    details: {
+      storageKey,
+      collection: auditTarget.collection,
+      intent,
+      email: callerEmail || null,
+      ip: (context.rawRequest && (context.rawRequest.headers["x-forwarded-for"] || context.rawRequest.ip)) || null,
+    },
+  }).catch((err) => console.error("generateSecureDocumentAccess: audit log write failed:", err.message));
+
+  return { url: signedUrl, expiresAt, ttlSeconds: SIGNED_URL_TTL_MS / 1000 };
+});
