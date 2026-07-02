@@ -3,6 +3,7 @@ import { collection, query, where, onSnapshot, doc, updateDoc, serverTimestamp }
 import { db, auth, functions, httpsCallable } from "../../lib/firebase";
 import { ShieldCheck, AlertTriangle, CheckCircle2, XCircle, FileText, Loader2, RefreshCw } from "lucide-react";
 import { CLIENT_REJECTION_MESSAGES } from "../../utils/documentStatusMessages";
+import SecurePreviewButton from "../ui/SecurePreviewButton";
 import toast from "react-hot-toast";
 
 // Selectable client-safe rejection reasons for the manual reject flow. The label
@@ -325,14 +326,15 @@ export default function ClientDocumentReview({ travellerEmail }) {
                 {/* View uploaded file — always available before deciding */}
                 <div className="flex pt-2">
                   {d.fileUrl ? (
-                    <a
-                      href={d.fileUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                    <SecurePreviewButton
+                      access={{ documentId: d.id }}
+                      title={d.docType || d.type}
+                      fileName={d.fileName}
+                      mimeType={d.mimeType}
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-300 text-slate-700 hover:bg-slate-50 font-bold uppercase rounded-lg text-[10px] tracking-wider transition-colors"
                     >
                       <FileText className="h-3.5 w-3.5" /> View document
-                    </a>
+                    </SecurePreviewButton>
                   ) : (
                     <span
                       title="No uploaded file URL on this document"

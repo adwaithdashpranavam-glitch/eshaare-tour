@@ -3,11 +3,10 @@ import { useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { db } from "../../lib/firebase";
-import { FolderOpen, Plus, Download, Eye, Clock, CheckCircle, AlertTriangle, HelpCircle, Trash2 } from "lucide-react";
-import StatusBadge from "../../components/ui/StatusBadge";
+import { Plus, Clock, CheckCircle, AlertTriangle, Trash2 } from "lucide-react";
 import PortalUploadModal from "../../components/ui/PortalUploadModal";
 import Modal from "../../components/ui/Modal";
-import { formatShortDate } from "../../utils/formatters";
+import DocumentCard from "../../components/ui/DocumentCard";
 import LoadingSpinner from "../../components/ui/LoadingSpinner";
 import { MANDATORY_DOCUMENTS, docMatchesCategory, getMissingMandatoryLabels } from "../../utils/mandatoryDocuments";
 import { deleteClientDocument } from "../../lib/firestore";
@@ -205,35 +204,49 @@ export const PortalDocumentsPage = () => {
               No documents found. Click Upload File above to start.
             </div>
           ) : (
-            docs.map((doc) => (
-              <div key={doc.id} className="bg-white border border-[#E5E7EB] rounded-[24px] p-6 flex flex-col justify-between space-y-4 hover:shadow-md transition-all duration-200 shadow-sm">
-                <div className="flex items-center space-x-3.5">
-                  <div className="p-3 rounded-xl bg-[#0F3D2E]/5 border border-[#0F3D2E]/10 text-[#0F3D2E]">
-                    <FolderOpen className="h-5 w-5" />
-                  </div>
-                  <div className="truncate min-w-0 flex-1">
-                    <h4 className="font-semibold text-[#1A1A1A] truncate text-sm">{doc.fileName || doc.name}</h4>
-                    <span className="text-[10px] text-[#C6A969] font-bold uppercase tracking-wider">{doc.docType || doc.type}</span>
-                  </div>
-                </div>
+            docs.map((doc) => {
+              // Plain, business-friendly status + reason. Verification internals
+              // (method, OCR, profile matching, reasons, errors) are never shown
+              // to clients — those remain visible only in the admin workspace.
+              const view = getClientDocumentView(doc);
+              const statusKey = view?.tone === "verified" ? "verified" : view?.tone === "reupload" ? "rejected" : "review";
+              const toneCls = view?.tone === "verified"
+                ? "bg-green-50 text-green-700 border border-green-100"
+                : view?.tone === "reupload"
+                  ? "bg-red-50 text-red-700 border border-red-100"
+                  : "bg-blue-50 text-blue-700 border border-blue-100";
+              const Icon = view?.tone === "verified" ? CheckCircle : view?.tone === "reupload" ? AlertTriangle : Clock;
 
-                {/* Plain, business-friendly status + reason. Verification internals
-                    (method, OCR, profile matching, reasons, errors) are never shown
-                    to clients — those remain visible only in the admin workspace. */}
-                {(() => {
-                  const view = getClientDocumentView(doc);
-                  if (!view) return null;
-                  const toneCls = view.tone === "verified"
-                    ? "bg-green-50 text-green-700 border border-green-100"
-                    : view.tone === "reupload"
-                      ? "bg-red-50 text-red-700 border border-red-100"
-                      : "bg-blue-50 text-blue-700 border border-blue-100";
-                  const Icon = view.tone === "verified"
-                    ? CheckCircle
-                    : view.tone === "reupload"
-                      ? AlertTriangle
-                      : Clock;
-                  return (
+              return (
+                <DocumentCard
+                  key={doc.id}
+                  name={doc.docType || doc.type || doc.fileName || doc.name || "Document"}
+                  statusKey={statusKey}
+                  uploadedAt={doc.date || doc.createdAt}
+                  fileName={doc.fileName || doc.name}
+                  mimeType={doc.mimeType}
+                  fileSizeBytes={doc.fileSizeBytes}
+                  // Security: never pass doc.fileUrl anywhere. Preview/Download
+                  // fetch a fresh short-lived signed URL via
+                  // generateSecureDocumentAccess, keyed by documentId only.
+                  access={{ documentId: doc.id }}
+                  onReplace={() => openUpload(doc.docType || doc.type || "")}
+                  headerAction={
+                    // Clients can delete any of their own documents, including
+                    // verified ones. Deleting a verified mandatory document
+                    // re-opens the Apply-Now gate until it is re-verified.
+                    <button
+                      type="button"
+                      onClick={() => setDocToDelete(doc)}
+                      className="p-2 rounded-xl bg-[#F8F6F2] hover:bg-red-50 text-gray-400 hover:text-red-600 hover:border-red-200 transition-all border border-[#E5E7EB] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
+                      title="Delete document"
+                      aria-label={`Delete ${doc.fileName || doc.name || "document"}`}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  }
+                >
+                  {view && (
                     <div className={`rounded-lg px-3 py-2.5 space-y-1.5 ${toneCls}`}>
                       <div className="flex items-center gap-1.5">
                         <Icon className="w-3.5 h-3.5 shrink-0" />
@@ -251,40 +264,10 @@ export const PortalDocumentsPage = () => {
                         </button>
                       )}
                     </div>
-                  );
-                })()}
-
-                <div className="pt-4 border-t border-[#E5E7EB] flex justify-between items-center text-xs text-[#6B7280]">
-                  <span className="font-mono">Uploaded: {formatShortDate(doc.date || doc.createdAt)}</span>
-                  <div className="flex items-center space-x-2">
-                    <StatusBadge status={doc.status} />
-                    {doc.fileUrl && (
-                      <a
-                        href={doc.fileUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="p-2 rounded-xl bg-[#F8F6F2] hover:bg-[#0F3D2E]/5 text-[#0F3D2E] hover:text-[#C6A969] transition-all border border-[#E5E7EB]"
-                        title="View File"
-                      >
-                        <Eye className="h-4 w-4" />
-                      </a>
-                    )}
-                    {/* Clients can delete any of their own documents, including
-                        verified ones. Deleting a verified mandatory document
-                        re-opens the Apply-Now gate until it is re-verified. */}
-                    <button
-                      type="button"
-                      onClick={() => setDocToDelete(doc)}
-                      className="p-2 rounded-xl bg-[#F8F6F2] hover:bg-red-50 text-gray-400 hover:text-red-600 hover:border-red-200 transition-all border border-[#E5E7EB] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
-                      title="Delete document"
-                      aria-label={`Delete ${doc.fileName || doc.name || "document"}`}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))
+                  )}
+                </DocumentCard>
+              );
+            })
           )}
         </div>
       </div>

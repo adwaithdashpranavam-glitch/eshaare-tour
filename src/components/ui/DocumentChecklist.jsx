@@ -6,6 +6,7 @@ import StatusBadge from "./StatusBadge";
 import FileUpload from "./FileUpload";
 import PortalUploadModal from "./PortalUploadModal";
 import Modal from "./Modal";
+import SecurePreviewButton from "./SecurePreviewButton";
 import { useAuth } from "../../contexts/AuthContext";
 import { VISA_REQUIREMENTS } from "../../utils/constants";
 import toast from "react-hot-toast";
@@ -312,14 +313,14 @@ export const DocumentChecklist = ({
                 </td>
                 <td className="px-6 py-4 truncate max-w-[150px]">
                   {item.fileUrl ? (
-                    <a 
-                      href={item.fileUrl} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className="text-secondary hover:underline font-semibold"
+                    <SecurePreviewButton
+                      access={item.docId ? { documentId: item.docId } : null}
+                      title={item.name}
+                      className="text-secondary hover:underline font-semibold disabled:opacity-40 disabled:no-underline disabled:cursor-not-allowed"
+                      disabled={!item.docId}
                     >
                       View Document
-                    </a>
+                    </SecurePreviewButton>
                   ) : "-"}
                 </td>
                 <td className="px-6 py-4 text-on-primary-container/60 font-semibold">{item.uploadedBy || "-"}</td>
@@ -368,15 +369,15 @@ export const DocumentChecklist = ({
 
                       {item.status === "Verified" && (
                         <>
-                          <a 
-                            href={item.fileUrl} 
-                            target="_blank" 
-                            rel="noopener noreferrer" 
-                            className="px-2.5 py-1 bg-primary-container hover:bg-on-primary-fixed-variant text-on-primary-container font-bold uppercase rounded-button text-[10px]"
+                          <SecurePreviewButton
+                            access={item.docId ? { documentId: item.docId } : null}
+                            title={item.name}
+                            disabled={!item.docId}
+                            className="px-2.5 py-1 bg-primary-container hover:bg-on-primary-fixed-variant text-on-primary-container font-bold uppercase rounded-button text-[10px] disabled:opacity-40 disabled:cursor-not-allowed"
                           >
                             View File
-                          </a>
-                          <button 
+                          </SecurePreviewButton>
+                          <button
                             type="button"
                             onClick={() => setActiveUploadDoc(item)}
                             className="px-2.5 py-1 bg-on-primary-fixed-variant border border-on-primary-fixed-variant hover:border-secondary text-on-primary-container hover:text-secondary font-bold uppercase rounded-button text-[10px]"
@@ -389,14 +390,14 @@ export const DocumentChecklist = ({
                       {item.status === "Rejected" && (
                         <>
                           {item.fileUrl && (
-                            <a 
-                              href={item.fileUrl} 
-                              target="_blank" 
-                              rel="noopener noreferrer" 
-                              className="px-2.5 py-1 bg-primary-container hover:bg-on-primary-fixed-variant text-on-primary-container font-bold uppercase rounded-button text-[10px] mr-2"
+                            <SecurePreviewButton
+                              access={item.docId ? { documentId: item.docId } : null}
+                              title={item.name}
+                              disabled={!item.docId}
+                              className="px-2.5 py-1 bg-primary-container hover:bg-on-primary-fixed-variant text-on-primary-container font-bold uppercase rounded-button text-[10px] mr-2 disabled:opacity-40 disabled:cursor-not-allowed"
                             >
                               View
-                            </a>
+                            </SecurePreviewButton>
                           )}
                           <button 
                             type="button"
@@ -428,14 +429,14 @@ export const DocumentChecklist = ({
                         <span className="text-on-primary-container/40 italic text-[11px]">Under Review</span>
                       )}
                       {item.status === "Verified" && (
-                        <a 
-                          href={item.fileUrl} 
-                          target="_blank" 
-                          rel="noopener noreferrer" 
-                          className="px-3 py-1 bg-on-primary-fixed-variant border border-outline text-on-primary-container font-semibold uppercase rounded-button text-[10px]"
+                        <SecurePreviewButton
+                          access={item.docId ? { documentId: item.docId } : null}
+                          title={item.name}
+                          disabled={!item.docId}
+                          className="px-3 py-1 bg-on-primary-fixed-variant border border-outline text-on-primary-container font-semibold uppercase rounded-button text-[10px] disabled:opacity-40 disabled:cursor-not-allowed"
                         >
                           View File
-                        </a>
+                        </SecurePreviewButton>
                       )}
                     </div>
                   )}
@@ -485,9 +486,14 @@ export const DocumentChecklist = ({
             <div className="flex justify-between items-center text-[10px] text-on-primary-container/60 pt-2 border-t border-on-primary-fixed-variant">
               <span>Uploader: {item.uploadedBy || "-"}</span>
               {item.fileUrl && (
-                <a href={item.fileUrl} target="_blank" rel="noopener noreferrer" className="text-secondary font-semibold">
+                <SecurePreviewButton
+                  access={item.docId ? { documentId: item.docId } : null}
+                  title={item.name}
+                  disabled={!item.docId}
+                  className="text-secondary font-semibold disabled:opacity-40 disabled:cursor-not-allowed"
+                >
                   View File
-                </a>
+                </SecurePreviewButton>
               )}
             </div>
 

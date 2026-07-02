@@ -22,6 +22,7 @@ import { STEP_VALIDATORS } from "../../utils/profileValidation";
 import { getMinStartDate, getMinEndDate, validateAppointmentDates } from "../../utils/appointmentDateRules";
 import toast from "react-hot-toast";
 import LoadingSpinner from "../../components/ui/LoadingSpinner";
+import SecurePreviewButton from "../../components/ui/SecurePreviewButton";
 import { ChevronLeft, ChevronRight, ChevronDown, Save, CheckCircle, FileText, Globe, Calendar, User, List, CreditCard, Check, Download, AlertCircle, Lock, Clock, ArrowRight, MessageSquare, Phone, Mail, FileCheck, FileClock, Upload, ExternalLink, Copy, HelpCircle, Send } from "lucide-react";
 
 const SCHENGEN_COUNTRIES = [
@@ -1376,15 +1377,20 @@ export default function SchengenWizard() {
                             badgeBg = "bg-emerald-50 border-emerald-100 text-emerald-700";
                             badgeLabel = "Ready for Download";
                             descText = "Your certified NOC is generated and ready to download.";
+                            // Security: never render doc.fileUrl. The NOC template is a
+                            // shared system document with no per-user owner — routed through
+                            // the systemDocumentKey mode, which resolves the Storage path
+                            // itself from an admin-controlled allowlist entry, never from
+                            // anything this client sends.
                             actionNode = (
-                              <a
-                                href={doc.fileUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
+                              <SecurePreviewButton
+                                access={{ systemDocumentKey: "noc" }}
+                                title="NOC Certificate"
+                                fileName="NOC.pdf"
                                 className="flex items-center justify-center gap-1.5 px-3 py-2 bg-[#0F3D2E] hover:bg-[#0F3D2E]/90 text-white font-bold rounded-xl text-[10px] uppercase tracking-wider transition-all shadow-sm focus:outline-none font-sans"
                               >
                                 <Download className="w-3.5 h-3.5" /> Download NOC
-                              </a>
+                              </SecurePreviewButton>
                             );
                           } else {
                             badgeBg = "bg-amber-50 border-amber-100 text-amber-700";
@@ -1405,12 +1411,20 @@ export default function SchengenWizard() {
                             badgeBg = "bg-emerald-50 border-emerald-100 text-emerald-700";
                             badgeLabel = "Uploaded";
                             descText = "Document uploaded successfully and verified.";
+                            // Security: never render doc.fileUrl. The secure preview modal
+                            // fetches a fresh short-lived signed URL by application + the
+                            // exact storagePath this deliverable was uploaded under — never
+                            // a raw Storage URL. Older deliverables uploaded before
+                            // storagePath was recorded (e.g. via the admin audit-panel
+                            // upload path) have no storagePath yet and are disabled here
+                            // rather than falling back to the raw fileUrl.
                             actionNode = (
-                              <a
-                                href={doc.fileUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                onClick={() => {
+                              <SecurePreviewButton
+                                access={doc.storagePath ? { applicationId: id, storageKey: doc.storagePath } : null}
+                                title={doc.name}
+                                fileName={doc.fileName}
+                                disabled={!doc.storagePath}
+                                onTriggerClick={() => {
                                   // Owning client opening/downloading a ready consultant
                                   // deliverable records ONLY an access marker
                                   // (clientDeliverablesDownloadedAt). It does NOT change the
@@ -1422,10 +1436,10 @@ export default function SchengenWizard() {
                                     markClientDeliverableDownloaded(id);
                                   }
                                 }}
-                                className="flex items-center justify-center gap-1.5 px-3 py-2 bg-[#0F3D2E] hover:bg-[#0F3D2E]/90 text-white font-bold rounded-xl text-[10px] uppercase tracking-wider transition-all shadow-sm focus:outline-none font-sans"
+                                className="flex items-center justify-center gap-1.5 px-3 py-2 bg-[#0F3D2E] hover:bg-[#0F3D2E]/90 text-white font-bold rounded-xl text-[10px] uppercase tracking-wider transition-all shadow-sm focus:outline-none font-sans disabled:opacity-50 disabled:cursor-not-allowed"
                               >
                                 <Download className="w-3.5 h-3.5" /> Download File
-                              </a>
+                              </SecurePreviewButton>
                             );
                           } else {
                             badgeBg = "bg-gray-50 border-gray-200 text-gray-400";
