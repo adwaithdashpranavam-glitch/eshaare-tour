@@ -280,6 +280,7 @@ exports.deleteStaff = functions.https.onCall(async (data, context) => {
   let authDeleted = false;       // an Auth user existed and was deleted
   let authUserNotFound = false;  // a real Auth account could not be located to delete
   let authSkipped = false;       // no Auth deletion attempted (no resolvable Auth uid)
+  let authFailed = false;        // Auth account was found but deletion errored (not "not found")
 
   // Resolve the real Auth UID. The doc id might be an email (legacy) or a real UID.
   let authUid = null;
@@ -298,6 +299,18 @@ exports.deleteStaff = functions.https.onCall(async (data, context) => {
 
   // Delete the Auth user if we found one. Never let this abort the Firestore cleanup.
   if (authUid) {
+    // Revoke refresh tokens BEFORE deleting the Auth user. deleteUser() alone does not
+    // invalidate ID tokens already issued to the client — they remain cryptographically
+    // valid (and therefore pass Firestore/Storage rules checks like isOwner()) until their
+    // natural ~1hr expiry. Revoking forces the client's next token refresh to fail
+    // immediately, closing that window. Best-effort: a revoke failure must never block the
+    // actual account deletion.
+    try {
+      await admin.auth().revokeRefreshTokens(authUid);
+    } catch (err) {
+      console.warn("deleteStaff: revokeRefreshTokens warning:", authUid, err.code || err.message);
+    }
+
     try {
       await admin.auth().deleteUser(authUid);
       authDeleted = true;
@@ -305,6 +318,11 @@ exports.deleteStaff = functions.https.onCall(async (data, context) => {
       console.warn("Auth user delete warning:", err.code || err.message);
       if (err.code === "auth/user-not-found") {
         authUserNotFound = true;
+      } else {
+        // A real Auth account exists but deletion errored for some other reason
+        // (permissions, transient failure, etc.) — this is a genuine failure, not a no-op.
+        authFailed = true;
+        console.error(`deleteStaff: FAILED to delete Auth user ${authUid}:`, err.code || err.message);
       }
     }
   } else {
@@ -312,18 +330,50 @@ exports.deleteStaff = functions.https.onCall(async (data, context) => {
   }
 
   // Delete Firestore docs — both the doc id passed in and the resolved Auth UID
-  // (these differ for legacy email-keyed records). Best-effort on each; track whether
-  // at least one document was actually removed.
-  let firestoreDeleted = false;
+  // (these differ for legacy email-keyed records). Each (collection, id) pair is checked
+  // and deleted individually and sequentially so we can log exactly which records existed,
+  // which were removed, and which delete calls genuinely errored — rather than collapsing
+  // everything into one shared boolean that a single successful delete could mask a sibling
+  // failure behind (the previous Promise.all + shared-flag implementation had this bug).
   const idsToClean = [...new Set([uid, authUid].filter(Boolean))];
-  await Promise.all(
-    idsToClean.flatMap((id) => [
-      db.collection("users").doc(id).delete().then(() => { firestoreDeleted = true; }).catch(() => {}),
-      db.collection("customers").doc(id).delete().then(() => { firestoreDeleted = true; }).catch(() => {})
-    ])
+  const firestoreRecords = []; // { collection, id, existed, deleted, error }
+  let firestoreFailed = false; // true if any delete call genuinely errored (not just "missing")
+
+  for (const id of idsToClean) {
+    for (const collectionName of ["users", "customers"]) {
+      const ref = db.collection(collectionName).doc(id);
+      let existed = null; // null = existence could not be determined (read failed)
+      try {
+        const snap = await ref.get();
+        existed = snap.exists;
+      } catch (err) {
+        console.warn(`deleteStaff: failed to check ${collectionName}/${id} before delete:`, err.code || err.message);
+      }
+      try {
+        // Firestore delete() does not throw when the document does not exist — it is
+        // idempotent. A caught error here means a genuine failure (permissions, network,
+        // etc.), never "there was nothing to delete."
+        await ref.delete();
+        firestoreRecords.push({ collection: collectionName, id, existed, deleted: true });
+      } catch (err) {
+        firestoreFailed = true;
+        firestoreRecords.push({ collection: collectionName, id, existed, deleted: false, error: err.code || err.message });
+        console.error(`deleteStaff: FAILED to delete ${collectionName}/${id}:`, err.code || err.message);
+      }
+    }
+  }
+
+  // Log exactly which records were deleted vs. missing vs. failed, for observability.
+  console.log(
+    `deleteStaff: uid=${uid} authUid=${authUid || "none"} — ` +
+    firestoreRecords.map((r) => `${r.collection}/${r.id}:${r.deleted ? (r.existed ? "deleted" : "no-op(missing)") : `FAILED(${r.error})`}`).join(", ")
   );
 
-  // Write Audit Log
+  // Preserve the previous field's meaning (at least one real Firestore doc was removed)
+  // for callers that only care whether anything happened.
+  const firestoreDeleted = firestoreRecords.some((r) => r.existed && r.deleted);
+
+  // Write Audit Log — always, so there is a trace even when we are about to throw below.
   await db.collection("audit_logs").add({
     action: "STAFF_DELETION",
     performedBy: callerUid,
@@ -336,18 +386,31 @@ exports.deleteStaff = functions.https.onCall(async (data, context) => {
       authDeleted,
       firestoreDeleted,
       authUserNotFound,
-      authSkipped
+      authSkipped,
+      authFailed,
+      firestoreFailed,
+      records: firestoreRecords
     }
   });
 
-  // `success` stays true if any cleanup happened, preserving the existing frontend
-  // success toast. The extra flags let callers surface partial-failure warnings later.
+  // Never report success if a required delete genuinely failed. Missing documents (nothing
+  // to delete) are not failures; a delete call that actually errored is.
+  if (authFailed || firestoreFailed) {
+    throw new functions.https.HttpsError(
+      "internal",
+      "Staff deletion partially failed — some records could not be removed. Check audit_logs for details."
+    );
+  }
+
   return {
-    success: authDeleted || firestoreDeleted,
+    success: authDeleted || firestoreDeleted || authSkipped,
     authDeleted,
     firestoreDeleted,
     authUserNotFound,
-    authSkipped
+    authSkipped,
+    authFailed,
+    firestoreFailed,
+    records: firestoreRecords
   };
 });
 
@@ -713,6 +776,176 @@ exports.onApplicationPaid = functions.firestore
       console.log(`onApplicationPaid: reconciled ${applicationId} to Submitted + created visa_case ${caseNo}.`);
     } catch (err) {
       console.error("onApplicationPaid error:", err);
+    }
+
+    return null;
+  });
+
+// ===========================================================================
+// 9b. Cascade cleanup when an application is deleted
+// ---------------------------------------------------------------------------
+// Root cause (DATABASE_ROOT_CAUSE_ANALYSIS.md, Issue C/E): deleteApplication
+// (src/lib/firestore.js) was a bare deleteDoc() with no cascade, and no
+// onDelete trigger existed anywhere in this file — so notifications,
+// documents, and visa_cases created for a since-deleted application, plus
+// its admin-uploaded Storage files, were left permanently dangling.
+//
+// SCOPE (intentionally narrow — Phase 3 of DATABASE_FIX_IMPLEMENTATION_PLAN.md):
+//   - documents   where applicationId == the deleted applicationId (exact match)
+//   - visa_cases  where applicationId == the deleted applicationId (exact match)
+//   - notifications where applicationId == the deleted applicationId (exact match)
+//   - Storage: the exact `storageKey` recorded on each matched `documents` doc
+//     (an exact file path, never a guess), PLUS every object under the
+//     `applications/{applicationId}/` prefix (this prefix is namespaced by
+//     applicationId, so by construction it cannot contain another
+//     application's files — see VisaCheckerCms.jsx's admin-upload path,
+//     which writes here without a matching `documents` record).
+//
+// EXPLICITLY OUT OF SCOPE for this phase (do not add without a separate,
+// reviewed change): bookings, payments, other collections, any lookup by
+// email or by owner/uid, and any cleanup of orphans that already existed
+// before this trigger was deployed (historical orphans are a separate,
+// not-yet-implemented sweep).
+//
+// SAFETY:
+//   - Every query below is an EXACT equality filter on `applicationId`
+//     (`where("applicationId", "==", applicationId)`) or an exact Storage
+//     path — never a partial/prefix string match on user- or email-scoped
+//     data, and never a query across all of a user's records. This is what
+//     guarantees application B's data can never be touched while deleting
+//     application A.
+//   - IDEMPOTENT: every delete call here is naturally idempotent —
+//     Firestore's `.delete()` is a no-op on an already-missing document, and
+//     a missing Storage object is caught and logged as "already gone" rather
+//     than treated as an error. If this trigger is redelivered (Cloud
+//     Functions triggers are at-least-once, not exactly-once) or partially
+//     re-runs after a crash, re-running it again produces the same end state
+//     with no errors and no effect on unrelated data.
+//   - Every candidate record is logged BEFORE deletion is attempted, and
+//     every outcome (deleted / already-missing / failed) is logged
+//     individually — failures in one child never abort cleanup of the
+//     others, and are never silently swallowed.
+// ---------------------------------------------------------------------------
+exports.onApplicationDeleted = functions.firestore
+  .document("applications/{applicationId}")
+  .onDelete(async (snap, context) => {
+    const applicationId = context.params.applicationId;
+    const summary = { applicationId, documents: [], visaCases: [], notifications: [], storage: [] };
+
+    console.log(`onApplicationDeleted: application ${applicationId} was deleted — starting cascade cleanup.`);
+
+    // ---- 1. documents where applicationId == this application (exact match) ----
+    let matchedDocuments = [];
+    try {
+      const docSnap = await db.collection("documents").where("applicationId", "==", applicationId).get();
+      matchedDocuments = docSnap.docs;
+      console.log(`onApplicationDeleted[${applicationId}]: found ${matchedDocuments.length} documents doc(s) to remove:`, matchedDocuments.map((d) => d.id));
+    } catch (err) {
+      console.error(`onApplicationDeleted[${applicationId}]: FAILED to query documents:`, err.code || err.message);
+    }
+    for (const d of matchedDocuments) {
+      try {
+        await d.ref.delete();
+        summary.documents.push({ id: d.id, deleted: true });
+        console.log(`onApplicationDeleted[${applicationId}]: deleted documents/${d.id}`);
+      } catch (err) {
+        summary.documents.push({ id: d.id, deleted: false, error: err.code || err.message });
+        console.error(`onApplicationDeleted[${applicationId}]: FAILED to delete documents/${d.id}:`, err.code || err.message);
+      }
+    }
+
+    // ---- 2. visa_cases where applicationId == this application (exact match) ----
+    let matchedVisaCases = [];
+    try {
+      const vcSnap = await db.collection("visa_cases").where("applicationId", "==", applicationId).get();
+      matchedVisaCases = vcSnap.docs;
+      console.log(`onApplicationDeleted[${applicationId}]: found ${matchedVisaCases.length} visa_cases doc(s) to remove:`, matchedVisaCases.map((d) => d.id));
+    } catch (err) {
+      console.error(`onApplicationDeleted[${applicationId}]: FAILED to query visa_cases:`, err.code || err.message);
+    }
+    for (const v of matchedVisaCases) {
+      try {
+        await v.ref.delete();
+        summary.visaCases.push({ id: v.id, deleted: true });
+        console.log(`onApplicationDeleted[${applicationId}]: deleted visa_cases/${v.id}`);
+      } catch (err) {
+        summary.visaCases.push({ id: v.id, deleted: false, error: err.code || err.message });
+        console.error(`onApplicationDeleted[${applicationId}]: FAILED to delete visa_cases/${v.id}:`, err.code || err.message);
+      }
+    }
+
+    // ---- 3. notifications where applicationId == this application (exact match) ----
+    // Covers both the client notification (appsubmit_{applicationId}_client) and every
+    // per-staff notification (appsubmit_{applicationId}_{staffUid}) written by
+    // onApplicationSubmitted — all of them carry an `applicationId` field, so a single
+    // exact-equality query finds every one without needing to re-enumerate staff.
+    let matchedNotifications = [];
+    try {
+      const notifSnap = await db.collection("notifications").where("applicationId", "==", applicationId).get();
+      matchedNotifications = notifSnap.docs;
+      console.log(`onApplicationDeleted[${applicationId}]: found ${matchedNotifications.length} notifications doc(s) to remove:`, matchedNotifications.map((d) => d.id));
+    } catch (err) {
+      console.error(`onApplicationDeleted[${applicationId}]: FAILED to query notifications:`, err.code || err.message);
+    }
+    for (const n of matchedNotifications) {
+      try {
+        await n.ref.delete();
+        summary.notifications.push({ id: n.id, deleted: true });
+        console.log(`onApplicationDeleted[${applicationId}]: deleted notifications/${n.id}`);
+      } catch (err) {
+        summary.notifications.push({ id: n.id, deleted: false, error: err.code || err.message });
+        console.error(`onApplicationDeleted[${applicationId}]: FAILED to delete notifications/${n.id}:`, err.code || err.message);
+      }
+    }
+
+    // ---- 4. Storage: exact storageKey from each matched document, plus the
+    //         applications/{applicationId}/ prefix (application-scoped by construction) ----
+    const storagePaths = new Set();
+    for (const d of matchedDocuments) {
+      const key = d.data() && d.data().storageKey;
+      if (key) storagePaths.add(key);
+    }
+    try {
+      const bucket = admin.storage().bucket();
+      const [prefixFiles] = await bucket.getFiles({ prefix: `applications/${applicationId}/` });
+      prefixFiles.forEach((f) => storagePaths.add(f.name));
+    } catch (err) {
+      console.error(`onApplicationDeleted[${applicationId}]: FAILED to list Storage prefix applications/${applicationId}/:`, err.code || err.message);
+    }
+
+    console.log(`onApplicationDeleted[${applicationId}]: found ${storagePaths.size} Storage object(s) to remove:`, [...storagePaths]);
+    for (const path of storagePaths) {
+      try {
+        await admin.storage().bucket().file(path).delete();
+        summary.storage.push({ path, deleted: true });
+        console.log(`onApplicationDeleted[${applicationId}]: deleted storage://${path}`);
+      } catch (err) {
+        // A 404 here just means the file was already gone (idempotent re-run, or it was
+        // never actually written) — log it as such rather than a hard failure.
+        if (err.code === 404) {
+          summary.storage.push({ path, deleted: true, note: "already missing" });
+          console.log(`onApplicationDeleted[${applicationId}]: storage://${path} already missing (no-op).`);
+        } else {
+          summary.storage.push({ path, deleted: false, error: err.code || err.message });
+          console.error(`onApplicationDeleted[${applicationId}]: FAILED to delete storage://${path}:`, err.code || err.message);
+        }
+      }
+    }
+
+    const failures = [
+      ...summary.documents.filter((r) => r.deleted === false),
+      ...summary.visaCases.filter((r) => r.deleted === false),
+      ...summary.notifications.filter((r) => r.deleted === false),
+      ...summary.storage.filter((r) => r.deleted === false),
+    ];
+    console.log(
+      `onApplicationDeleted[${applicationId}]: cascade cleanup complete — ` +
+      `documents=${summary.documents.length} visa_cases=${summary.visaCases.length} ` +
+      `notifications=${summary.notifications.length} storage=${summary.storage.length} ` +
+      `failures=${failures.length}`
+    );
+    if (failures.length > 0) {
+      console.error(`onApplicationDeleted[${applicationId}]: ${failures.length} child cleanup(s) FAILED:`, JSON.stringify(failures));
     }
 
     return null;
@@ -1577,3 +1810,320 @@ exports.sweepStuckAiDocuments = functions.pubsub
     }
     return null;
   });
+
+// ===========================================================================
+// 11. Read-Only Database Integrity Audit
+// ---------------------------------------------------------------------------
+// Detects orphan records, broken references, duplicate emails/applications,
+// and orphaned Storage files — the same categories investigated in
+// DATABASE_ROOT_CAUSE_ANALYSIS.md. Ported from the read-only
+// scripts/maintenance/audit-database.cjs CLI tool so both entry points share
+// one definition of "what counts as an issue."
+//
+// STRICTLY READ-ONLY: every call in `computeIntegrityAudit` is a `.get()`,
+// `listUsers()`, or `bucket.getFiles()` read. It never calls `.set()`,
+// `.update()`, `.delete()`, or any Storage write/delete. The only output is a
+// structured object that both callers below log via `console.log` — nothing
+// is written back to Firestore or Storage. This is intentionally a stricter
+// posture than DATABASE_FIX_IMPLEMENTATION_PLAN.md's "Minimal fix" (which
+// proposed persisting a summary to an `integrity_reports` collection); that
+// persistence step is deliberately deferred to a later phase so this pass
+// makes zero writes of any kind.
+//
+// It does NOT delete, flag, or modify any orphaned/broken record it finds —
+// it only reports. Cascading cleanup remains a separate, not-yet-implemented
+// phase (see DATABASE_FIX_IMPLEMENTATION_PLAN.md Items 3/4).
+// ---------------------------------------------------------------------------
+
+const INTEGRITY_AUDIT_COLLECTIONS = [
+  "users", "customers", "user_profiles", "applications", "visa_cases",
+  "documents", "payments", "bookings", "appointments", "notifications",
+  "audit_logs", "chats", "leads",
+];
+
+// Storage prefixes that hold public/system assets rather than user-owned
+// uploads — excluded from the orphan-file list (mirrors audit-database.cjs).
+const INTEGRITY_AUDIT_PUBLIC_STORAGE_PREFIXES = [
+  "system-documents/", "visa_banners/", "staff_pics/", "expert_pics/",
+];
+
+function integrityAuditNormEmail(e) {
+  return e ? String(e).trim().toLowerCase() : "";
+}
+
+// Caps how many example IDs are kept per issue category in the returned
+// summary, so a badly-orphaned project still produces a log-sized report.
+const INTEGRITY_AUDIT_SAMPLE_LIMIT = 25;
+function capSample(arr) {
+  return arr.slice(0, INTEGRITY_AUDIT_SAMPLE_LIMIT);
+}
+
+async function computeIntegrityAudit() {
+  const startedAt = Date.now();
+
+  // ---- Reads only ----
+  const authUsers = [];
+  {
+    let pageToken;
+    do {
+      const res = await admin.auth().listUsers(1000, pageToken);
+      authUsers.push(...res.users);
+      pageToken = res.pageToken;
+    } while (pageToken);
+  }
+
+  const data = {};
+  for (const c of INTEGRITY_AUDIT_COLLECTIONS) {
+    const snap = await db.collection(c).get().catch((err) => {
+      console.warn(`computeIntegrityAudit: failed to read collection ${c}:`, err.message);
+      return null;
+    });
+    data[c] = snap ? snap.docs.map((d) => ({ id: d.id, ref: `${c}/${d.id}`, data: d.data() })) : [];
+  }
+
+  const bucket = admin.storage().bucket();
+  const [storageFiles] = await bucket.getFiles().catch((err) => {
+    console.warn("computeIntegrityAudit: failed to list Storage files:", err.message);
+    return [[]];
+  });
+
+  // ---- Indexes ----
+  const authById = new Map(authUsers.map((u) => [u.uid, u]));
+  const authByEmail = new Map();
+  authUsers.forEach((u) => {
+    if (!u.email) return;
+    const e = integrityAuditNormEmail(u.email);
+    if (!authByEmail.has(e)) authByEmail.set(e, []);
+    authByEmail.get(e).push(u);
+  });
+
+  const usersById = new Map(data.users.map((d) => [d.id, d]));
+  const customersById = new Map(data.customers.map((d) => [d.id, d]));
+  const profilesById = new Map(data.user_profiles.map((d) => [d.id, d]));
+  const applicationsById = new Map(data.applications.map((d) => [d.id, d]));
+  const visaCasesById = new Map(data.visa_cases.map((d) => [d.id, d]));
+  const storageByName = new Map(storageFiles.map((f) => [f.name, f]));
+
+  const allKnownUids = new Set([
+    ...authUsers.map((u) => u.uid),
+    ...data.users.map((d) => d.id),
+    ...data.customers.map((d) => d.id),
+    ...data.user_profiles.map((d) => d.id),
+  ]);
+
+  // ---- Orphans & broken references ----
+  const orphans = []; // { collection, id, reason }
+  const brokenRefs = []; // { source, destination, issue }
+
+  for (const a of data.applications) {
+    const cid = a.data.customerId;
+    if (!cid) {
+      orphans.push({ collection: "applications", id: a.id, reason: "Missing customerId (no owner UID)" });
+    } else if (!allKnownUids.has(cid)) {
+      brokenRefs.push({ source: a.ref, destination: `users|customers/${cid}`, issue: "customerId does not resolve to any known user/customer/profile/Auth record" });
+    }
+  }
+
+  for (const v of data.visa_cases) {
+    const appId = v.data.applicationId;
+    if (!appId) {
+      orphans.push({ collection: "visa_cases", id: v.id, reason: "Missing applicationId (may be a valid lead-conversion case — see DATABASE_ROOT_CAUSE_ANALYSIS.md Issue D)" });
+    } else if (!applicationsById.has(appId)) {
+      orphans.push({ collection: "visa_cases", id: v.id, reason: `applicationId ${appId} does not exist` });
+      brokenRefs.push({ source: v.ref, destination: `applications/${appId}`, issue: "Referenced application does not exist" });
+    }
+  }
+
+  for (const d of data.documents) {
+    const appId = d.data.applicationId;
+    const vcId = d.data.visaCaseId;
+    const travellerId = d.data.travellerId;
+    if (!appId && !vcId && !travellerId && !d.data.travellerEmail) {
+      orphans.push({ collection: "documents", id: d.id, reason: "No owner reference at all" });
+    }
+    if (appId && !applicationsById.has(appId)) {
+      orphans.push({ collection: "documents", id: d.id, reason: `applicationId ${appId} does not exist` });
+      brokenRefs.push({ source: d.ref, destination: `applications/${appId}`, issue: "Referenced application does not exist" });
+    }
+    if (vcId && !visaCasesById.has(vcId)) {
+      orphans.push({ collection: "documents", id: d.id, reason: `visaCaseId ${vcId} does not exist` });
+      brokenRefs.push({ source: d.ref, destination: `visa_cases/${vcId}`, issue: "Referenced visa case does not exist" });
+    }
+    if (d.data.storageKey && !storageByName.has(d.data.storageKey)) {
+      brokenRefs.push({ source: d.ref, destination: `storage://${d.data.storageKey}`, issue: "storageKey points to a Storage file that does not exist" });
+    }
+  }
+
+  for (const p of data.payments) {
+    const appId = p.data.applicationId;
+    if (appId && !applicationsById.has(appId)) {
+      orphans.push({ collection: "payments", id: p.id, reason: `applicationId ${appId} does not exist` });
+      brokenRefs.push({ source: p.ref, destination: `applications/${appId}`, issue: "Referenced application does not exist" });
+    }
+  }
+
+  for (const b of data.bookings) {
+    const appId = b.data.applicationId;
+    if (appId && !applicationsById.has(appId)) {
+      orphans.push({ collection: "bookings", id: b.id, reason: `applicationId ${appId} does not exist` });
+      brokenRefs.push({ source: b.ref, destination: `applications/${appId}`, issue: "Referenced application does not exist" });
+    }
+  }
+
+  for (const n of data.notifications) {
+    const appId = n.data.applicationId || (n.id.match(/^appsubmit_([^_]+)_/) || [])[1];
+    if (appId && !applicationsById.has(appId)) {
+      orphans.push({ collection: "notifications", id: n.id, reason: `References deleted/missing application ${appId}` });
+      brokenRefs.push({ source: n.ref, destination: `applications/${appId}`, issue: "Referenced application does not exist" });
+    }
+    if (n.data.userId && !allKnownUids.has(n.data.userId)) {
+      orphans.push({ collection: "notifications", id: n.id, reason: `userId ${n.data.userId} does not resolve to any known user` });
+    }
+  }
+
+  for (const c of data.chats) {
+    const participants = Array.isArray(c.data.participants) ? c.data.participants : [];
+    for (const p of participants) {
+      if (!allKnownUids.has(p)) {
+        brokenRefs.push({ source: c.ref, destination: `(uid) ${p}`, issue: "Chat participant does not resolve to any known user" });
+      }
+    }
+  }
+
+  for (const l of data.audit_logs) {
+    if (l.data.performedBy && !allKnownUids.has(l.data.performedBy)) {
+      brokenRefs.push({ source: l.ref, destination: `(uid) ${l.data.performedBy}`, issue: "performedBy does not resolve to any known user (expected for an audit trail — see RCA Issue G)" });
+    }
+  }
+
+  for (const p of data.user_profiles) {
+    if (!usersById.has(p.id) && !customersById.has(p.id) && !authById.has(p.id)) {
+      orphans.push({ collection: "user_profiles", id: p.id, reason: "No matching users doc, customers doc, or Auth user for this UID" });
+    }
+  }
+
+  for (const c of data.customers) {
+    if (!usersById.has(c.id)) orphans.push({ collection: "customers", id: c.id, reason: "No matching users doc for this UID" });
+    if (!authById.has(c.id)) orphans.push({ collection: "customers", id: c.id, reason: "No matching Firebase Auth user for this UID" });
+  }
+
+  const uidLike = (id) => /^[A-Za-z0-9]{20,36}$/.test(id);
+  for (const u of data.users) {
+    if (uidLike(u.id) && !authById.has(u.id)) {
+      orphans.push({ collection: "users", id: u.id, reason: "No matching Firebase Auth user for this UID (uid-shaped doc id)" });
+    }
+  }
+
+  for (const au of authUsers) {
+    if (!usersById.has(au.uid) && !customersById.has(au.uid) && !profilesById.has(au.uid)) {
+      orphans.push({ collection: "Firebase Auth", id: au.uid, reason: `Auth user (${au.email || "no email"}) has no users/customers/user_profiles doc` });
+    }
+  }
+
+  // ---- Duplicates ----
+  const dupEmails = [];
+  for (const [email, list] of authByEmail.entries()) {
+    if (list.length > 1) dupEmails.push({ email, uids: list.map((u) => u.uid) });
+  }
+  const emailToUidsFromDocs = new Map();
+  for (const d of [...data.users, ...data.customers]) {
+    const e = integrityAuditNormEmail(d.data.email);
+    if (!e) continue;
+    if (!emailToUidsFromDocs.has(e)) emailToUidsFromDocs.set(e, new Set());
+    emailToUidsFromDocs.get(e).add(d.id);
+  }
+  for (const [email, uidSet] of emailToUidsFromDocs.entries()) {
+    if (uidSet.size > 1 && !dupEmails.find((x) => x.email === email)) {
+      dupEmails.push({ email, uids: [...uidSet] });
+    }
+  }
+
+  const appSignature = new Map();
+  const dupApplications = [];
+  for (const a of data.applications) {
+    const sig = `${a.data.customerId || ""}|${integrityAuditNormEmail(a.data.destinationCountry)}|${integrityAuditNormEmail(a.data.visaType)}`;
+    if (!sig.replace(/\|/g, "")) continue;
+    if (!appSignature.has(sig)) appSignature.set(sig, []);
+    appSignature.get(sig).push(a.id);
+  }
+  for (const [sig, ids] of appSignature.entries()) {
+    if (ids.length > 1) dupApplications.push({ signature: sig, ids });
+  }
+
+  // ---- Storage orphans ----
+  const allStorageKeys = new Set(data.documents.map((d) => d.data.storageKey).filter(Boolean));
+  const storageOrphanFiles = storageFiles.filter((f) =>
+    !allStorageKeys.has(f.name) &&
+    !INTEGRITY_AUDIT_PUBLIC_STORAGE_PREFIXES.some((p) => f.name.startsWith(p))
+  );
+
+  // ---- Summary ----
+  const counts = { authUsers: authUsers.length, storageObjects: storageFiles.length };
+  for (const c of INTEGRITY_AUDIT_COLLECTIONS) counts[c] = data[c].length;
+
+  const totalIssues = orphans.length + brokenRefs.length + dupEmails.length + dupApplications.length + storageOrphanFiles.length;
+  const durationMs = Date.now() - startedAt;
+
+  return {
+    generatedAt: new Date().toISOString(),
+    durationMs,
+    counts,
+    totals: {
+      orphans: orphans.length,
+      brokenReferences: brokenRefs.length,
+      duplicateEmails: dupEmails.length,
+      duplicateApplications: dupApplications.length,
+      orphanedStorageFiles: storageOrphanFiles.length,
+      totalIssues,
+    },
+    // Sampled (capped) detail so a badly-orphaned project doesn't blow up log size.
+    orphans: capSample(orphans),
+    brokenReferences: capSample(brokenRefs),
+    duplicateEmails: capSample(dupEmails),
+    duplicateApplications: capSample(dupApplications),
+    orphanedStorageFiles: capSample(storageOrphanFiles.map((f) => ({ path: f.name, size: Number(f.metadata.size || 0) }))),
+  };
+}
+
+function logIntegrityAuditSummary(summary) {
+  console.log(
+    `integrityAudit: ${summary.totals.totalIssues} issue(s) in ${summary.durationMs}ms — ` +
+    `orphans=${summary.totals.orphans} brokenRefs=${summary.totals.brokenReferences} ` +
+    `dupEmails=${summary.totals.duplicateEmails} dupApplications=${summary.totals.duplicateApplications} ` +
+    `orphanedStorageFiles=${summary.totals.orphanedStorageFiles}`
+  );
+  console.log("integrityAudit: counts by collection:", JSON.stringify(summary.counts));
+  if (summary.totals.totalIssues > 0) {
+    console.log("integrityAudit: full summary (sampled):", JSON.stringify(summary));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 11a. Scheduled read-only audit (logs only — see header comment above).
+// Mirrors the sweepStuckAiDocuments schedule pattern. Runs daily; makes no
+// writes anywhere. Safe to leave enabled once deployed — it cannot alter data.
+// ---------------------------------------------------------------------------
+exports.scheduledIntegrityAudit = functions.pubsub
+  .schedule("every 24 hours")
+  .onRun(async () => {
+    try {
+      const summary = await computeIntegrityAudit();
+      logIntegrityAuditSummary(summary);
+    } catch (err) {
+      console.error("scheduledIntegrityAudit error:", err);
+    }
+    return null;
+  });
+
+// ---------------------------------------------------------------------------
+// 11b. Manual on-demand trigger (super_admin only) — same read-only audit,
+// callable immediately instead of waiting for the daily schedule. Returns the
+// full summary to the caller in addition to logging it. Still makes zero
+// writes to Firestore or Storage.
+// ---------------------------------------------------------------------------
+exports.runIntegrityAuditNow = functions.https.onCall(async (data, context) => {
+  await verifySuperAdmin(context);
+  const summary = await computeIntegrityAudit();
+  logIntegrityAuditSummary(summary);
+  return summary;
+});
