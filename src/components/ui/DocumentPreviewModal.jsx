@@ -18,8 +18,14 @@ const isPdfFile = (fileName, mimeType) => {
 
 /**
  * Enterprise document preview modal. Fetches a short-lived signed URL from
- * `generateSecureDocumentAccess` (never a permanent Storage URL) each time it
- * opens, and again on download — the URL is never persisted client-side.
+ * `generateSecureDocumentAccess` (never a permanent Storage URL), then
+ * immediately downloads that URL as a Blob and renders a local
+ * `URL.createObjectURL(blob)` object URL instead — the external Storage URL
+ * itself is never assigned to an <img>/<iframe> `src`, never rendered in the
+ * DOM, and is discarded as soon as the fetch completes. This also avoids this
+ * site's `frame-src 'none'; object-src 'none';` CSP (see firebase.json)
+ * rejecting a cross-origin iframe: the object URL's origin is this page's own
+ * origin, so the browser treats it as a same-origin embed.
  *
  * Pass exactly one lookup shape via `access`:
  *   { documentId }
@@ -36,15 +42,23 @@ export const DocumentPreviewModal = ({
   allowDownload = true,
 }) => {
   const [status, setStatus] = useState("idle"); // idle | loading | ready | error
-  const [previewUrl, setPreviewUrl] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null); // always a local blob: object URL, never the signed Storage URL
   const [errorMessage, setErrorMessage] = useState("");
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
   const [downloading, setDownloading] = useState(false);
   const requestIdRef = useRef(0);
+  const objectUrlRef = useRef(null);
 
   const isImage = isImageFile(fileName, mimeType);
   const isPdf = isPdfFile(fileName, mimeType);
+
+  const revokeObjectUrl = useCallback(() => {
+    if (objectUrlRef.current) {
+      URL.revokeObjectURL(objectUrlRef.current);
+      objectUrlRef.current = null;
+    }
+  }, []);
 
   const fetchAccess = useCallback(async (intent) => {
     if (!access) throw new Error("Missing document reference.");
@@ -52,14 +66,35 @@ export const DocumentPreviewModal = ({
     return res.data;
   }, [access]);
 
+  // Fetches the short-lived signed URL, downloads its bytes, and converts them
+  // into a local object URL. The signed URL itself lives only inside this
+  // function's local scope — it is never stored in component state and never
+  // reaches the rendered DOM.
+  const fetchAsObjectUrl = useCallback(async (intent) => {
+    const { url } = await fetchAccess(intent);
+    const res = await fetch(url);
+    if (!res.ok) {
+      throw new Error(`Failed to retrieve the document (HTTP ${res.status}).`);
+    }
+    const blob = await res.blob();
+    return URL.createObjectURL(blob);
+  }, [fetchAccess]);
+
   const load = useCallback(async () => {
     const myRequestId = ++requestIdRef.current;
     setStatus("loading");
     setErrorMessage("");
     try {
-      const { url } = await fetchAccess("preview");
-      if (requestIdRef.current !== myRequestId) return; // stale response, modal reopened
-      setPreviewUrl(url);
+      const objectUrl = await fetchAsObjectUrl("preview");
+      if (requestIdRef.current !== myRequestId) {
+        // Stale response (modal was closed/reopened mid-fetch) — discard
+        // immediately rather than leaking this blob URL.
+        URL.revokeObjectURL(objectUrl);
+        return;
+      }
+      revokeObjectUrl(); // release any previous object URL before adopting the new one
+      objectUrlRef.current = objectUrl;
+      setPreviewUrl(objectUrl);
       setStatus("ready");
     } catch (err) {
       if (requestIdRef.current !== myRequestId) return;
@@ -67,15 +102,25 @@ export const DocumentPreviewModal = ({
       setErrorMessage(err.message || "Unable to load this document.");
       setStatus("error");
     }
-  }, [fetchAccess]);
+  }, [fetchAsObjectUrl, revokeObjectUrl]);
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) {
+      // Modal closed — release the current preview's object URL immediately
+      // rather than waiting for the next open or component unmount.
+      revokeObjectUrl();
+      setPreviewUrl(null);
+      return;
+    }
     setZoom(1);
     setRotation(0);
     setPreviewUrl(null);
     load();
-  }, [isOpen, load]);
+  }, [isOpen, load, revokeObjectUrl]);
+
+  // Unmount safety net, in case the modal is torn down while still open
+  // (e.g. its parent unmounts) without isOpen ever transitioning to false.
+  useEffect(() => () => revokeObjectUrl(), [revokeObjectUrl]);
 
   useEffect(() => {
     const handleEscape = (e) => { if (e.key === "Escape") onClose(); };
@@ -94,15 +139,20 @@ export const DocumentPreviewModal = ({
     try {
       // A fresh signed URL is fetched for the download itself (the preview URL
       // may be near expiry by the time the user clicks Download) and logged as
-      // a DOCUMENT_DOWNLOAD audit action distinct from the preview.
-      const { url } = await fetchAccess("download");
+      // a DOCUMENT_DOWNLOAD audit action distinct from the preview. As with
+      // preview, the signed URL is fetched to a Blob and only the resulting
+      // local object URL is ever assigned to a DOM element.
+      const objectUrl = await fetchAsObjectUrl("download");
       const a = document.createElement("a");
-      a.href = url;
+      a.href = objectUrl;
       a.download = fileName || "document";
       a.rel = "noopener noreferrer";
       document.body.appendChild(a);
       a.click();
       a.remove();
+      // Revoke shortly after triggering the save, rather than synchronously,
+      // so the browser has time to start reading the blob for the download.
+      setTimeout(() => URL.revokeObjectURL(objectUrl), 30000);
     } catch (err) {
       console.error("DocumentPreviewModal: download failed:", err);
       setErrorMessage(err.message || "Unable to download this document.");
