@@ -254,7 +254,15 @@ service cloud.firestore {
       // AND only when a valid registration (users doc) already exists for them.
       allow create: if isSignedIn() && request.auth.uid == userId &&
                     exists(/databases/$(database)/documents/users/$(request.auth.uid));
-      allow update: if isOwner(userId) || isManager();
+      // Same guard as create: an owner can only update their own profile while their
+      // users/{uid} doc still exists. isOwner() alone is not sufficient here because it
+      // resolves via getUserData(), which falls back to a legacy email-keyed users doc —
+      // so without this direct check, a client whose users/{uid} doc was deleted could
+      // still pass isOwner() (and keep writing to this uid-keyed profile) as long as some
+      // legacy email-keyed users doc for their token email happens to exist.
+      allow update: if (isOwner(userId) &&
+                    exists(/databases/$(database)/documents/users/$(request.auth.uid))) ||
+                    isManager();
       allow delete: if isSuperAdmin();
 
       // Family members live under the user's profile and are owner-managed.
